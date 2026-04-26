@@ -1,0 +1,22 @@
+# CCMS企业级费控管理系统主配置文件
+spring:
+  profiles:
+    active: dev
+  
+# 应用配置
+app:
+  name: CCMS
+  version: 1.0.0
+  description: 企业级费控管理系统
+
+# 日志配置
+logging:
+  level:
+    com.ccms: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  file:
+    name: logs/ccms.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

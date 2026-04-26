@@ -1,0 +1,57 @@
+# CCMS开发环境配置文件
+spring:
+  # 数据源配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/ccms?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: Asia/Shanghai
+  
+  # 缓存配置
+  cache:
+    type: redis
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  
+# JWT配置
+jwt:
+  secret: ccms-jwt-secret-key-2025-enterprise-cost-management-system
+  expiration: 86400
+  
+# 文件存储配置
+file:
+  upload-path: ./uploads/
+  max-size: 10485760
+  
+# 系统初始化配置
+init:
+  data: true
+  
+# 开发环境特殊配置
+dev:
+  cors:
+    allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
+    allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+    allowed-headers: "*"
