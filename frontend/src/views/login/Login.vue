@@ -53,23 +53,52 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 用户登录组件
+ * 负责处理用户认证和登录流程
+ * 
+ * @file Login.vue
+ * @description 企业级费控管理系统登录页面
+ * @author CCMS开发团队
+ * @version 1.0.0
+ */
+
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import type { LoginData } from '@/types/user'
 
+// Vue路由实例
 const router = useRouter()
+// 用户状态管理
 const userStore = useUserStore()
 
+/**
+ * 登录表单引用
+ * 用于表单验证和重置操作
+ */
 const loginFormRef = ref<FormInstance>()
+
+/**
+ * 登录按钮加载状态
+ * 控制登录过程中的加载动画和禁用状态
+ */
 const loading = ref(false)
 
+/**
+ * 登录表单数据
+ * 包含用户名和密码字段
+ */
 const loginForm = reactive<LoginData>({
   username: '',
   password: ''
 })
 
+/**
+ * 登录表单验证规则
+ * 定义表单字段的验证要求和错误提示
+ */
 const loginRules: FormRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -81,22 +110,44 @@ const loginRules: FormRules = {
   ]
 }
 
+/**
+ * 处理用户登录操作
+ * 
+ * 主要流程：
+ * 1. 表单验证
+ * 2. 调用登录API
+ * 3. 登录成功跳转
+ * 4. 错误处理
+ * 
+ * @throws {Error} 登录过程中出现的错误
+ * @returns {Promise<void>}
+ */
 const handleLogin = async () => {
+  // 表单引用安全检查
   if (!loginFormRef.value) return
   
+  // 表单验证
   const valid = await loginFormRef.value.validate()
   if (!valid) return
   
+  // 设置加载状态
   loading.value = true
   
   try {
+    // 调用用户登录状态管理
     await userStore.login(loginForm)
+    
+    // 登录成功提示
     ElMessage.success('登录成功')
+    
+    // 跳转到仪表板页面
     router.push('/dashboard')
   } catch (error) {
+    // 登录失败处理
     console.error('登录失败:', error)
     ElMessage.error('登录失败，请检查用户名和密码')
   } finally {
+    // 重置加载状态
     loading.value = false
   }
 }

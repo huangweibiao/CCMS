@@ -1,0 +1,25 @@
+{
+  "name": "ccms-ui-tests",
+  "version": "1.0.0",
+  "description": "CCMS系统UI自动化测试",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:chrome": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright test --reporter=html",
+    "report": "playwright show-report",
+    "install-browsers": "playwright install",
+    "codegen": "playwright codegen",
+    "screenshot": "playwright screenshot"
+  },
+  "keywords": [],
+  "author": "CCMS Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.0.0"
+  }
+}

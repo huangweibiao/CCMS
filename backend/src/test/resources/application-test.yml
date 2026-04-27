@@ -1,0 +1,49 @@
+# 单元测试配置文件
+spring:
+  # 数据源配置 - 使用H2内存数据库
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    
+  # JPA配置
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        
+  # 缓存配置 - 测试环境禁用缓存
+  cache:
+    type: none
+    
+  # 安全配置 - 简化测试环境认证
+  security:
+    basic:
+      enabled: false
+    
+# 测试特定的应用配置
+app:
+  # JWT配置
+  jwt:
+    secret: test-jwt-secret-key-for-unit-testing-only
+    expiration: 86400000  # 24小时
+    issuer: ccms-test
+    
+  # 测试数据配置
+  test:
+    admin-email: admin@example.com
+    admin-password: admin123
+    
+# 日志配置 - 测试环境简化日志
+logging:
+  level:
+    com.ccms: DEBUG
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    org.springframework.test: INFO

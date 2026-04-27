@@ -1,0 +1,79 @@
+# CCMS测试环境配置文件
+spring:
+  # 数据源配置 - 使用H2内存数据库
+  datasource:
+    url: jdbc:h2:mem:ccms_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  # H2控制台配置（仅在测试环境开启）
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false
+  
+  # 缓存配置
+  cache:
+    type: simple
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 20MB
+
+# 服务器配置
+server:
+  port: 8081
+  servlet:
+    context-path: /
+
+# JWT配置
+jwt:
+  secret: ccms-test-jwt-secret-key-2025-enterprise-cost-management-system
+  expiration: 3600
+  
+# 文件存储配置
+file:
+  upload-path: ./test-uploads/
+  max-size: 5242880
+  
+# 系统初始化配置
+init:
+  data: true
+  
+# 测试环境特殊配置
+test:
+  # Mock数据配置
+  mock:
+    enabled: true
+    user-count: 10
+    department-count: 3
+    
+  # CORS配置
+  cors:
+    allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
+    allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+    allowed-headers: "*"
+
+# 日志配置
+logging:
+  level:
+    com.ccms: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+  file:
+    name: logs/ccms-test.log
