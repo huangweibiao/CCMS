@@ -1,14 +1,9 @@
 package com.ccms.entity.approval;
 
 import com.ccms.entity.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "approval")
 public class Approval extends BaseEntity {
@@ -63,4 +58,141 @@ public class Approval extends BaseEntity {
     
     @Column(name = "remark", length = 1000)
     private String remark;
+
+    // Getter and Setter methods
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getBusinessType() {
+        return businessType;
+    }
+
+    public void setBusinessType(String businessType) {
+        this.businessType = businessType;
+    }
+
+    public Long getBusinessId() {
+        return businessId;
+    }
+
+    public void setBusinessId(Long businessId) {
+        this.businessId = businessId;
+    }
+
+    public Long getApplicantId() {
+        return applicantId;
+    }
+
+    public void setApplicantId(Long applicantId) {
+        this.applicantId = applicantId;
+    }
+
+    public String getApplicantName() {
+        return applicantName;
+    }
+
+    public void setApplicantName(String applicantName) {
+        this.applicantName = applicantName;
+    }
+
+    public Long getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(Long deptId) {
+        this.deptId = deptId;
+    }
+
+    public String getDeptName() {
+        return deptName;
+    }
+
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
+    }
+
+    public LocalDateTime getApplyTime() {
+        return applyTime;
+    }
+
+    public void setApplyTime(LocalDateTime applyTime) {
+        this.applyTime = applyTime;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Integer getCurrentStep() {
+        return currentStep;
+    }
+
+    public void setCurrentStep(Integer currentStep) {
+        this.currentStep = currentStep;
+    }
+
+    public Long getCurrentApproverId() {
+        return currentApproverId;
+    }
+
+    public void setCurrentApproverId(Long currentApproverId) {
+        this.currentApproverId = currentApproverId;
+    }
+
+    public String getCurrentApproverName() {
+        return currentApproverName;
+    }
+
+    public void setCurrentApproverName(String currentApproverName) {
+        this.currentApproverName = currentApproverName;
+    }
+
+    public LocalDateTime getSubmitTime() {
+        return submitTime;
+    }
+
+    public void setSubmitTime(LocalDateTime submitTime) {
+        this.submitTime = submitTime;
+    }
+
+    public LocalDateTime getApproveTime() {
+        return approveTime;
+    }
+
+    public void setApproveTime(LocalDateTime approveTime) {
+        this.approveTime = approveTime;
+    }
+
+    public LocalDateTime getRejectTime() {
+        return rejectTime;
+    }
+
+    public void setRejectTime(LocalDateTime rejectTime) {
+        this.rejectTime = rejectTime;
+    }
+
+    public String getRejectReason() {
+        return rejectReason;
+    }
+
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 }

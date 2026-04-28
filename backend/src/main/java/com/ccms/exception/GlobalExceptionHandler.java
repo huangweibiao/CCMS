@@ -17,7 +17,6 @@ import org.springframework.web.context.request.WebRequest;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
-import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,10 +51,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 处理文件权限异常
+     * 处理其他类型的权限异常
      */
-    @ExceptionHandler(FileAccessDeniedException.class)
-    public ResponseEntity<ApiResponse<Object>> handleFileAccessDeniedException(FileAccessDeniedException ex) {
+    @ExceptionHandler(java.nio.file.AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleFileAccessDeniedException(java.nio.file.AccessDeniedException ex) {
         logger.warn("文件访问权限异常: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.error(403, "文件访问权限不足"));

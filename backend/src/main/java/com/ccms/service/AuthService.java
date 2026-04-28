@@ -103,4 +103,98 @@ public interface AuthService {
      * @return 注册成功的用户信息
      */
     SysUser register(SysUser user, List<Long> roleIds);
+    
+    /**
+     * 校验权限
+     * 
+     * @param token 访问令牌
+     * @param permission 权限编码
+     * @return 是否有权限
+     */
+    boolean checkPermission(String token, String permission);
+    
+    /**
+     * 获取用户分页列表
+     * 
+     * @param page 页码
+     * @param size 每页大小
+     * @param username 用户名（可选）
+     * @param deptId 部门ID（可选）
+     * @return 用户分页列表
+     */
+    Object getUserList(int page, int size, String username, Long deptId);
+    
+    /**
+     * 根据ID获取用户信息
+     * 
+     * @param userId 用户ID
+     * @return 用户信息
+     */
+    SysUser getUserById(Long userId);
+    
+    /**
+     * 创建用户
+     * 
+     * @param user 用户信息
+     * @return 创建的用户信息
+     */
+    SysUser createUser(SysUser user);
+    
+    /**
+     * 更新用户
+     * 
+     * @param user 用户信息
+     * @return 更新后的用户信息
+     */
+    SysUser updateUser(SysUser user);
+    
+    /**
+     * 删除用户
+     * 
+     * @param userId 用户ID
+     * @return 是否删除成功
+     */
+    boolean deleteUser(Long userId);
+    
+    /**
+     * 更新用户状态
+     * 
+     * @param userId 用户ID
+     * @param status 状态值
+     * @return 是否更新成功
+     */
+    boolean updateUserStatus(Long userId, Integer status);
+    
+    /**
+     * 分配用户角色
+     * 
+     * @param userId 用户ID
+     * @param roleIds 角色ID数组
+     * @return 是否分配成功
+     */
+    boolean assignUserRoles(Long userId, Long[] roleIds);
+    
+    /**
+     * 获取用户统计信息
+     * 
+     * @param deptId 部门ID（可选）
+     * @return 用户统计数据
+     */
+    Map<String, Object> getUserStatistics(Long deptId);
+    
+    /**
+     * 根据用户名加载用户信息
+     * 
+     * @param username 用户名
+     * @return 用户信息
+     */
+    SysUser loadUserByUsername(String username);
+    
+    /**
+     * 根据令牌获取用户名
+     * 
+     * @param token 访问令牌
+     * @return 用户名
+     */
+    String getUsernameFromToken(String token);
 }

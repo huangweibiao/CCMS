@@ -21,4 +21,9 @@ public interface ReimburseAttachmentRepository extends BaseRepository<ReimburseA
     
     @Query("SELECT COUNT(ra) FROM ReimburseAttachment ra WHERE ra.reimburseMainId = :mainId")
     Long countByReimburseMainId(@Param("mainId") Long mainId);
+    
+    List<ReimburseAttachment> findByExpenseReimburseId(Long expenseReimburseId);
+    
+    @Query("SELECT ra FROM ReimburseAttachment ra WHERE ra.expenseReimburseId = :expenseReimburseId ORDER BY ra.uploadTime DESC")
+    List<ReimburseAttachment> findByExpenseReimburseIdOrderByUploadTimeDesc(@Param("expenseReimburseId") Long expenseReimburseId);
 }

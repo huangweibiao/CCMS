@@ -32,4 +32,14 @@ public interface ReimburseItemRepository extends BaseRepository<ReimburseItem, L
     
     @Query("SELECT ri FROM ReimburseItem ri WHERE ri.expenseTypeId = :expenseTypeId")
     List<ReimburseItem> findByExpenseTypeId(@Param("expenseTypeId") Long expenseTypeId);
+    
+    List<ReimburseItem> findByExpenseReimburseId(Long expenseReimburseId);
+    
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ReimburseItem ri WHERE ri.expenseReimburseId = :expenseReimburseId")
+    void deleteByExpenseReimburseId(@Param("expenseReimburseId") Long expenseReimburseId);
+    
+    @Query("SELECT ri FROM ReimburseItem ri WHERE ri.expenseReimburseId = :expenseReimburseId ORDER BY ri.itemNo ASC")
+    List<ReimburseItem> findByExpenseReimburseIdOrderByItemNo(@Param("expenseReimburseId") Long expenseReimburseId);
 }

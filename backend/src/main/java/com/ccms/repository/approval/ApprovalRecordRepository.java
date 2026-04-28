@@ -23,7 +23,7 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
      * @param businessType 业务类型
      * @return 审批记录列表
      */
-    List<ApprovalRecord> findByBusinessIdAndBusinessType(Long businessId, Integer businessType);
+    List<ApprovalRecord> findByBusinessIdAndBusinessType(Long businessId, String businessType);
 
     /**
      * 根据审批人ID查询审批记录
@@ -56,8 +56,8 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
      * @param businessType 业务类型
      * @return 当前审批节点
      */
-    @Query("SELECT ar FROM ApprovalRecord ar WHERE ar.businessId = :businessId AND ar.businessType = :businessType ORDER BY ar.nodeOrder DESC LIMIT 1")
-    ApprovalRecord findLatestRecordByBusiness(@Param("businessId") Long businessId, @Param("businessType") Integer businessType);
+    @Query("SELECT ar FROM ApprovalRecord ar WHERE ar.businessId = :businessId AND ar.businessType = :businessType ORDER BY ar.approvalTime DESC LIMIT 1")
+    ApprovalRecord findLatestRecordByBusiness(@Param("businessId") Long businessId, @Param("businessType") String businessType);
 
     /**
      * 统计用户的待审批数量
@@ -86,8 +86,8 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
      * @param businessType 业务类型
      * @return 审批记录列表
      */
-    @Query("SELECT ar FROM ApprovalRecord ar WHERE ar.businessId = :businessId AND ar.businessType = :businessType ORDER BY ar.nodeOrder ASC")
-    List<ApprovalRecord> findRecordsByBusinessOrdered(@Param("businessId") Long businessId, @Param("businessType") Integer businessType);
+    @Query("SELECT ar FROM ApprovalRecord ar WHERE ar.businessId = :businessId AND ar.businessType = :businessType ORDER BY ar.approvalTime ASC")
+    List<ApprovalRecord> findRecordsByBusinessOrdered(@Param("businessId") Long businessId, @Param("businessType") String businessType);
 
     /**
      * 查询指定业务已审批通过的记录
@@ -96,7 +96,7 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
      * @param businessType 业务类型
      * @return 已通过审批记录列表
      */
-    List<ApprovalRecord> findByBusinessIdAndBusinessTypeAndApprovalStatus(Long businessId, Integer businessType, Integer approvalStatus);
+    List<ApprovalRecord> findByBusinessIdAndBusinessTypeAndApprovalStatus(Long businessId, String businessType, Integer approvalStatus);
 
     /**
      * 统计指定业务的审批记录数量
@@ -105,5 +105,18 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
      * @param businessType 业务类型
      * @return 记录数量
      */
-    Long countByBusinessIdAndBusinessType(Long businessId, Integer businessType);
+    Long countByBusinessIdAndBusinessType(Long businessId, String businessType);
+    
+    /**
+     * 创建委派记录
+     * 
+     * @param processId 流程ID
+     * @param sourceApproverId 原审批人ID
+     * @param targetApproverId 目标审批人ID
+     * @param comment 委派说明
+     * @return 创建的记录
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "INSERT INTO approval_record (process_id, approver_id, original_approver_id, delegation_comment, create_time) VALUES (:processId, :targetApproverId, :sourceApproverId, :comment, CURRENT_TIMESTAMP)", nativeQuery = true)
+    void createDelegationRecord(@Param("processId") Long processId, @Param("sourceApproverId") Long sourceApproverId, @Param("targetApproverId") Long targetApproverId, @Param("comment") String comment);
 }

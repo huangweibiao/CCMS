@@ -107,4 +107,12 @@ public interface SysUserRepository extends JpaRepository<SysUser, Long> {
      */
     @Query("SELECT u FROM SysUser u WHERE u.username LIKE %:keyword% OR u.name LIKE %:keyword%")
     List<SysUser> findByUsernameOrNameContaining(@Param("keyword") String keyword);
+    
+    /**
+     * 根据状态统计用户数量
+     * 
+     * @param status 状态值
+     * @return 用户数量
+     */
+    long countByStatus(Integer status);
 }

@@ -145,6 +145,21 @@ public interface BudgetService {
      */
     boolean returnBudget(Long deptId, Integer expenseType, BigDecimal amount, Integer year);
     
+    // 添加BudgetController调用的方法
+    boolean checkPermission(String permissionType, String operationType);
+    
+    Budget deleteBudget(Long budgetId);
+    
+    Budget approveBudget(Long budgetId, Long approverId, Integer status, String comment);
+    
+    Budget allocateBudget(Long budgetId, Long allocUserId, Double amount);
+    
+    Budget adjustBudgetAmount(Long budgetId, Double newAmount, String reason);
+    
+    BudgetExecution getBudgetExecution(Long budgetId);
+    
+    BudgetStatistics getAnnualBudgetStatistics(Integer year);
+    
     /**
      * 预算统计信息类
      */
@@ -166,5 +181,25 @@ public interface BudgetService {
         public BigDecimal getUsedBudget() { return usedBudget; }
         public BigDecimal getRemainingBudget() { return remainingBudget; }
         public BigDecimal getUsageRate() { return usageRate; }
+    }
+    
+    /**
+     * 预算执行情况类
+     */
+    class BudgetExecution {
+        private final BigDecimal plannedAmount;
+        private final BigDecimal actualAmount;
+        private final BigDecimal executionRate;
+        
+        public BudgetExecution(BigDecimal plannedAmount, BigDecimal actualAmount, BigDecimal executionRate) {
+            this.plannedAmount = plannedAmount;
+            this.actualAmount = actualAmount;
+            this.executionRate = executionRate;
+        }
+        
+        // Getters
+        public BigDecimal getPlannedAmount() { return plannedAmount; }
+        public BigDecimal getActualAmount() { return actualAmount; }
+        public BigDecimal getExecutionRate() { return executionRate; }
     }
 }

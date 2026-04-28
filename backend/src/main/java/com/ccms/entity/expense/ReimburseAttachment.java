@@ -1,19 +1,18 @@
 package com.ccms.entity.expense;
 
 import com.ccms.entity.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "reimburse_attachment")
 public class ReimburseAttachment extends BaseEntity {
     
     @Column(name = "reimburse_main_id", nullable = false)
     private Long reimburseMainId;
+    
+    @Column(name = "expense_reimburse_id", nullable = false)
+    private Long expenseReimburseId = 0L;
     
     @Column(name = "file_name", nullable = false, length = 200)
     private String fileName;
@@ -28,7 +27,7 @@ public class ReimburseAttachment extends BaseEntity {
     private String fileType;
     
     @Column(name = "upload_time", nullable = false)
-    private java.time.LocalDateTime uploadTime;
+    private LocalDateTime uploadTime;
     
     @Column(name = "upload_user_id", nullable = false)
     private Long uploadUserId;
@@ -41,4 +40,93 @@ public class ReimburseAttachment extends BaseEntity {
     
     @Column(name = "remark", length = 500)
     private String remark;
+
+    // Getter and Setter methods
+    public Long getReimburseMainId() {
+        return reimburseMainId;
+    }
+
+    public void setReimburseMainId(Long reimburseMainId) {
+        this.reimburseMainId = reimburseMainId;
+    }
+
+    public Long getExpenseReimburseId() {
+        return expenseReimburseId;
+    }
+
+    public void setExpenseReimburseId(Long expenseReimburseId) {
+        this.expenseReimburseId = expenseReimburseId;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public LocalDateTime getUploadTime() {
+        return uploadTime;
+    }
+
+    public void setUploadTime(LocalDateTime uploadTime) {
+        this.uploadTime = uploadTime;
+    }
+
+    public Long getUploadUserId() {
+        return uploadUserId;
+    }
+
+    public void setUploadUserId(Long uploadUserId) {
+        this.uploadUserId = uploadUserId;
+    }
+
+    public String getUploadUserName() {
+        return uploadUserName;
+    }
+
+    public void setUploadUserName(String uploadUserName) {
+        this.uploadUserName = uploadUserName;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 }

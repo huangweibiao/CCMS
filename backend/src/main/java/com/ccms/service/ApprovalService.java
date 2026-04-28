@@ -3,9 +3,12 @@ package com.ccms.service;
 import com.ccms.entity.approval.ApprovalProcess;
 import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.entity.approval.ApprovalNode;
+import com.ccms.entity.approval.Approval;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 审批流程服务接口
@@ -136,6 +139,53 @@ public interface ApprovalService {
      * @return 用户审批统计
      */
     UserApprovalStatistics getUserApprovalStatistics(Long approverId, LocalDateTime startDate, LocalDateTime endDate);
+    
+    // 认证相关方法
+    boolean checkPermission(String token, String permission);
+    
+    // 基本的CRUD方法
+    Page<Approval> getApprovalList(int page, int size, Long approverId, Long applicantId, Integer status, String businessType);
+    
+    Approval getApprovalById(Long approvalId);
+    
+    void createApproval(Approval approval);
+    
+    void updateApproval(Approval approval);
+    
+    void deleteApproval(Long approvalId);
+    
+    // 审批操作
+    void approve(Long approvalId, Long approverId, Integer result, String comment);
+    
+    // 分页查询方法
+    Page<Approval> getPendingApprovals(int page, int size, Long approverId, String businessType);
+    
+    // 委托和加急
+    void delegateApproval(Long approvalId, Long delegateToId, String reason);
+    
+    void setApprovalUrgent(Long approvalId, String urgentReason, Integer priority);
+    
+    // 历史记录和统计
+    Object getApprovalHistory(Long approvalId);
+    
+    Map<String, Object> getApprovalStatistics(Long approverId, Long deptId, String startDate, String endDate);
+    
+    // 配置和管理
+    void configureApproval(String businessType, Object approvalFlow);
+    
+    void batchOperation(Long[] approvalIds, String operation);
+    
+    void setApprovalNotification(Long userId, String notifyType, Boolean enabled);
+    
+    Object exportApprovals(Map<String, Object> exportParams);
+    
+    Object analyzeApprovalEfficiency(Map<String, Object> analysisParams);
+    
+    void handleApprovalException(Long approvalId, String exceptionType, String action, String comment);
+    
+    Object monitorApprovalProcess(Map<String, Object> monitorParams);
+    
+    Object getOptimizationSuggestions(Map<String, Object> suggestionParams);
     
     /**
      * 催办审批

@@ -67,6 +67,66 @@ public class ApprovalRecord extends BaseEntity {
      */
     @Column(name = "transfer_to")
     private Long transferTo;
+    
+    /**
+     * 进程ID - 添加ApprovalServiceImpl调用时需要的字段
+     */
+    @Transient  // 标记为非持久化字段，因为数据库中可能没有这个字段
+    private Long processId;
+    
+    /**
+     * 审批状态 - 修正业务类型参数
+     */
+    @Column(name = "approval_status")
+    private Integer approvalStatus;
+    
+    /**
+     * 节点排序
+     */
+    @Column(name = "node_order")
+    private Integer nodeOrder;
+    
+    /**
+     * 设置进程ID的方法
+     */
+    public void setProcessId(Long processId) {
+        this.processId = processId;
+    }
+    
+    /**
+     * 获取进程ID的方法
+     */
+    public Long getProcessId() {
+        return processId;
+    }
+    
+    /**
+     * 获取审批状态的方法
+     */
+    public Integer getApprovalStatus() {
+        return approvalStatus;
+    }
+    
+    /**
+     * 设置审批状态的方法
+     */
+    public void setApprovalStatus(Integer approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+    
+    /**
+     * 获取节点排序的方法
+     */
+    public Integer getNodeOrder() {
+        return nodeOrder;
+    }
+    
+    /**
+     * 设置节点排序的方法
+     */
+    public void setNodeOrder(Integer nodeOrder) {
+        this.nodeOrder = nodeOrder;
+    }
 
     // Getters and Setters
     public Long getInstanceId() {

@@ -32,4 +32,25 @@ public interface ExpenseReimburseRepository extends BaseRepository<ExpenseReimbu
     
     @Query("SELECT COUNT(er) FROM ExpenseReimburse er WHERE er.applyUserId = :userId AND er.status = :status")
     Long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") Integer status);
+    
+    @Query("SELECT COUNT(er) FROM ExpenseReimburse er WHERE er.status = :status AND er.currentApproverId = :approverId")
+    Long countByStatusAndApproverId(@Param("status") Integer status, @Param("approverId") Long approverId);
+    
+    @Query("SELECT er FROM ExpenseReimburse er WHERE er.status = :status AND er.submitTime BETWEEN :startDate AND :endDate")
+    List<ExpenseReimburse> findByStatusAndDateRange(@Param("status") Integer status, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    
+    @Query("SELECT COUNT(er) FROM ExpenseReimburse er WHERE er.deptId = :deptId AND er.submitTime BETWEEN :startDate AND :endDate")
+    Long countByDeptIdAndDateRange(@Param("deptId") Long deptId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    
+    @Query("SELECT SUM(er.totalAmount) FROM ExpenseReimburse er WHERE er.deptId = :deptId AND er.submitTime BETWEEN :startDate AND :endDate")
+    java.math.BigDecimal sumAmountByDeptIdAndDateRange(@Param("deptId") Long deptId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    
+    @Query("SELECT COUNT(er) FROM ExpenseReimburse er WHERE er.deptId = :deptId AND er.status = :status AND er.submitTime BETWEEN :startDate AND :endDate")
+    Long countByDeptIdAndStatusAndDateRange(@Param("deptId") Long deptId, @Param("status") Integer status, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    
+    @Query("SELECT COUNT(er) FROM ExpenseReimburse er WHERE er.deptId = :deptId AND er.paymentStatus = :paymentStatus AND er.submitTime BETWEEN :startDate AND :endDate")
+    Long countByDeptIdAndPaymentStatusAndDateRange(@Param("deptId") Long deptId, @Param("paymentStatus") Integer paymentStatus, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    
+    @Query("SELECT SUM(er.totalAmount) FROM ExpenseReimburse er WHERE er.deptId = :deptId AND er.paymentStatus = 1 AND er.submitTime BETWEEN :startDate AND :endDate")
+    java.math.BigDecimal sumPaidAmountByDeptIdAndDateRange(@Param("deptId") Long deptId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
 }

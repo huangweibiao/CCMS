@@ -45,6 +45,12 @@ public class ExpenseType extends BaseEntity {
     
     @Column(name = "is_system", columnDefinition = "tinyint(1) default 0")
     private Boolean system = false;
+    
+    @Column(name = "create_user")
+    private Long createUser;
+    
+    @Column(name = "update_user")
+    private Long updateUser;
 
     // Getter and Setter methods
     public String getTypeCode() {
@@ -141,5 +147,21 @@ public class ExpenseType extends BaseEntity {
 
     public void setSystem(Boolean system) {
         this.system = system;
+    }
+
+    public Long getCreateUser() {
+        return createUser;
+    }
+
+    public void setCreateUser(Long createUser) {
+        this.createUser = createUser;
+    }
+
+    public Long getUpdateUser() {
+        return updateUser;
+    }
+
+    public void setUpdateUser(Long updateUser) {
+        this.updateUser = updateUser;
     }
 }
