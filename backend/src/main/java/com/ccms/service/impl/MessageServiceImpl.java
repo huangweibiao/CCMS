@@ -220,9 +220,9 @@ public class MessageServiceImpl implements MessageService {
         
         String result = template;
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-            String placeholder = "\{" + entry.getKey() + "\}";
+            String placeholder = "{" + entry.getKey() + "}";
             String value = entry.getValue() != null ? entry.getValue().toString() : "";
-            result = result.replaceAll(placeholder, value);
+            result = result.replace(placeholder, value);
         }
         
         return result;

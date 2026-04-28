@@ -25,7 +25,7 @@ interface ConfirmOptions {
 }
 
 // 提示消息
-export const showMessage = (
+const showMessage = (
   message: string,
   type: MessageType = 'info',
   duration: number = 3000
@@ -40,27 +40,27 @@ export const showMessage = (
 }
 
 // 成功消息
-export const showSuccess = (message: string, duration: number = 3000) => {
+const showSuccess = (message: string, duration: number = 3000) => {
   return showMessage(message, 'success', duration)
 }
 
 // 警告消息
-export const showWarning = (message: string, duration: number = 5000) => {
+const showWarning = (message: string, duration: number = 5000) => {
   return showMessage(message, 'warning', duration)
 }
 
 // 错误消息
-export const showError = (message: string, duration: number = 5000) => {
+const showError = (message: string, duration: number = 5000) => {
   return showMessage(message, 'error', duration)
 }
 
 // 信息消息
-export const showInfo = (message: string, duration: number = 3000) => {
+const showInfo = (message: string, duration: number = 3000) => {
   return showMessage(message, 'info', duration)
 }
 
 // 通知提示
-export const showNotification = (
+const showNotification = (
   title: string,
   message: string,
   type: MessageType = 'info',
@@ -80,7 +80,7 @@ export const showNotification = (
 }
 
 // 确认对话框
-export const showConfirm = (options: ConfirmOptions): Promise<boolean> => {
+const showConfirm = (options: ConfirmOptions): Promise<boolean> => {
   return new Promise((resolve) => {
     const {
       title = '提示',
@@ -115,7 +115,7 @@ export const showConfirm = (options: ConfirmOptions): Promise<boolean> => {
 }
 
 // 输入对话框
-export const showPrompt = (
+const showPrompt = (
   message: string,
   title: string = '输入',
   inputType: 'text' | 'textarea' = 'text',
@@ -141,7 +141,7 @@ export const showPrompt = (
 }
 
 // 消息加载
-export const showLoading = (message: string = '加载中...'): () => void => {
+const showLoading = (message: string = '加载中...'): () => void => {
   const loading = ElMessage({
     message,
     type: 'info',
@@ -183,10 +183,10 @@ class MessageQueue {
 }
 
 // 创建消息队列实例
-export const messageQueue = new MessageQueue()
+const messageQueue = new MessageQueue()
 
 // 队列化消息（避免连续消息重叠）
-export const queuedMessage = (
+const queuedMessage = (
   message: string,
   type: MessageType = 'info',
   duration: number = 3000
@@ -197,7 +197,7 @@ export const queuedMessage = (
 }
 
 // 全局消息配置
-export const configureGlobalMessages = (config: {
+const configureGlobalMessages = (config: {
   maxCount?: number
   zIndex?: number
 }): void => {
@@ -217,8 +217,8 @@ export const configureGlobalMessages = (config: {
   }
 }
 
-// 导出所有方法给组件外使用
-export const messageApi = {
+// 创建消息API对象用于组件内部使用
+const messageApi = {
   // 基础消息
   showMessage,
   showSuccess,
@@ -243,13 +243,29 @@ export const messageApi = {
   configureGlobalMessages
 }
 
-// 默认导出消息API
-export default messageApi
+// 使用defineExpose将消息API暴露给组件模板
+defineExpose({
+  showMessage,
+  showSuccess,
+  showWarning,
+  showError,
+  showInfo,
+  showNotification,
+  showConfirm,
+  showPrompt,
+  showLoading,
+  queuedMessage,
+  configureGlobalMessages,
+  messageApi
+})
 
-// 全局注册（可选）
+// 全局注册消息API（使其可用作全局插件）
 if (typeof window !== 'undefined') {
-  // @ts-ignore
-  window.$message = messageApi
+  Object.defineProperty(window, '$message', {
+    value: messageApi,
+    writable: false,
+    configurable: false
+  })
 }
 </script>
 

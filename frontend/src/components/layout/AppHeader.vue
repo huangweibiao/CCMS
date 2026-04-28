@@ -2,7 +2,7 @@
   <header class="app-header">
     <div class="header-left">
       <div class="logo">
-        <img src="@/assets/images/logo.png" alt="CCMS" class="logo-img" />
+        <div class="logo-placeholder">C</div>
         <span class="logo-text">企业费控系统</span>
       </div>
     </div>
@@ -158,10 +158,18 @@ onUnmounted(() => {
   color: #409eff;
 }
 
-.logo-img {
+.logo-placeholder {
   width: 32px;
   height: 32px;
   margin-right: 8px;
+  background-color: #409eff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 16px;
 }
 
 .header-center {

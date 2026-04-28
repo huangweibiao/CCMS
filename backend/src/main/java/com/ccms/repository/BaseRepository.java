@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,9 +14,10 @@ import java.util.Optional;
  * 
  * @author 系统生成
  * @param <T> 实体类型，必须继承BaseEntity
+ * @param <ID> 主键类型
  */
 @NoRepositoryBean
-public interface BaseRepository<T extends BaseEntity> extends JpaRepository<T, Long>, JpaSpecificationExecutor<T> {
+public interface BaseRepository<T extends BaseEntity, ID extends Serializable> extends JpaRepository<T, ID>, JpaSpecificationExecutor<T> {
 
     /**
      * 根据ID查询未删除的记录

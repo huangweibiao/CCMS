@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -473,5 +475,231 @@ class ApprovalServiceTest {
 
         // 验证结果
         assertFalse(result);
+    }
+
+    @Test
+    void testConcurrentApprovalTaskHandling() throws InterruptedException {
+        // 模拟多个审批人同时对同一审批实例进行操作
+        when(approvalTaskRepository.findById(1L)).thenReturn(Optional.of(pendingTask));
+        when(approvalInstanceRepository.findById(1L)).thenReturn(Optional.of(submittedInstance));
+        when(approvalTaskRepository.save(any(ApprovalTask.class))).thenAnswer(invocation -> {
+            Thread.sleep(100); // 模拟数据库操作延迟
+            return invocation.getArgument(0);
+        });
+        when(approvalInstanceRepository.save(any(ApprovalInstance.class))).thenReturn(submittedInstance);
+
+        ExecutorService executor = Executors.newFixedThreadPool(5);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failureCount = new AtomicInteger(0);
+
+        // 创建5个并发审批任务
+        List<Callable<Boolean>> tasks = new java.util.ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            final int approverId = 3001 + i;
+            tasks.add(() -> {
+                try {
+                    boolean result = approvalService.approveTask(1L, true, "同意", approverId);
+                    if (result) {
+                        successCount.incrementAndGet();
+                    }
+                    return result;
+                } catch (Exception e) {
+                    failureCount.incrementAndGet();
+                    return false;
+                }
+            });
+        }
+
+        // 并发执行
+        List<Future<Boolean>> futures = executor.invokeAll(tasks);
+        executor.shutdown();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
+
+        // 验证结果：只有第一个审批应该成功，其他应该失败或返回false
+        int actualSuccesses = 0;
+        int actualFailures = 0;
+        for (Future<Boolean> future : futures) {
+            if (future.get()) {
+                actualSuccesses++;
+            } else {
+                actualFailures++;
+            }
+        }
+
+        // 断言：最多一个审批应该成功（防止重复审批）
+        assertTrue(actualSuccesses <= 1, "并发审批应该最多只有一个能成功");
+        assertTrue(successCount.get() <= 1, "成功计数应该不超过1");
+    }
+
+    @Test
+    void testConcurrentApprovalProcessStart() throws InterruptedException {
+        // 模拟并发启动多个审批流程
+        when(approvalFlowConfigRepository.findByFlowTypeAndDeptId("BUDGET", 101L))
+                .thenReturn(Optional.of(budgetFlowConfig));
+        when(approvalInstanceRepository.save(any(ApprovalInstance.class))).thenAnswer(invocation -> {
+            Thread.sleep(50); // 模拟实例创建延迟
+            return submittedInstance;
+        });
+        when(approvalTaskRepository.save(any(ApprovalTask.class))).thenReturn(pendingTask);
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failureCount = new AtomicInteger(0);
+
+        // 创建3个并发启动审批流程的任务
+        List<Callable<ApprovalInstance>> tasks = new java.util.ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            final int businessId = 1001 + i;
+            tasks.add(() -> {
+                try {
+                    ApprovalInstance result = approvalService.startApprovalProcess("BUDGET", businessId, 2001L, 101L);
+                    successCount.incrementAndGet();
+                    return result;
+                } catch (Exception e) {
+                    failureCount.incrementAndGet();
+                    throw e;
+                }
+            });
+        }
+
+        // 并发执行
+        List<Future<ApprovalInstance>> futures = executor.invokeAll(tasks);
+        executor.shutdown();
+        executor.awaitTermination(3, TimeUnit.SECONDS);
+
+        // 验证所有审批流程都能成功启动
+        assertEquals(3, successCount.get(), "所有并发审批流程都应该成功启动");
+        assertEquals(0, failureCount.get(), "不应该有失败的审批流程启动");
+
+        // 验证每个审批流程都创建了独立的实例
+        assertEquals(3, futures.size());
+        for (Future<ApprovalInstance> future : futures) {
+            assertNotNull(future.get());
+        }
+    }
+
+    @Test
+    void testConcurrentApprovalStatusCheck() throws InterruptedException {
+        // 模拟多个用户并发查询审批状态
+        when(approvalInstanceRepository.findByBusinessTypeAndBusinessId("BUDGET", 1001L))
+                .thenReturn(Optional.of(submittedInstance));
+
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        AtomicInteger successCount = new AtomicInteger(0);
+
+        // 创建10个并发状态查询任务
+        List<Callable<Integer>> tasks = new java.util.ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            tasks.add(() -> {
+                int result = approvalService.checkApprovalStatus("BUDGET", 1001L);
+                successCount.incrementAndGet();
+                return result;
+            });
+        }
+
+        // 并发执行
+        List<Future<Integer>> futures = executor.invokeAll(tasks);
+        executor.shutdown();
+        executor.awaitTermination(3, TimeUnit.SECONDS);
+
+        // 验证所有查询都成功返回相同的结果
+        assertEquals(10, successCount.get(), "所有并发状态查询都应该成功");
+        for (Future<Integer> future : futures) {
+            assertEquals(1, future.get().intValue(), "所有查询结果应该一致");
+        }
+    }
+
+    @Test
+    void testConcurrentApprovalCancellation() throws InterruptedException {
+        // 模拟并发取消审批流程的场景
+        when(approvalInstanceRepository.findById(1L)).thenReturn(Optional.of(submittedInstance));
+        when(approvalTaskRepository.save(any(ApprovalTask.class))).thenReturn(pendingTask);
+        when(approvalInstanceRepository.save(any(ApprovalInstance.class))).thenReturn(submittedInstance);
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failureCount = new AtomicInteger(0);
+
+        // 创建3个并发取消审批的任务
+        List<Callable<Boolean>> tasks = new java.util.ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            final String reason = "并发取消原因" + i;
+            tasks.add(() -> {
+                try {
+                    boolean result = approvalService.cancelApprovalProcess(1L, reason);
+                    if (result) {
+                        successCount.incrementAndGet();
+                    }
+                    return result;
+                } catch (Exception e) {
+                    failureCount.incrementAndGet();
+                    return false;
+                }
+            });
+        }
+
+        // 并发执行
+        List<Future<Boolean>> futures = executor.invokeAll(tasks);
+        executor.shutdown();
+        executor.awaitTermination(3, TimeUnit.SECONDS);
+
+        // 验证：只有第一个取消操作应该成功，其他的应该返回false
+        int actualSuccesses = 0;
+        for (Future<Boolean> future : futures) {
+            if (future.get()) {
+                actualSuccesses++;
+            }
+        }
+
+        assertTrue(actualSuccesses <= 1, "并发取消审批只能有一个成功");
+    }
+
+    @Test
+    void testThreadSafetyForApprovalTaskUpdates() throws InterruptedException {
+        // 测试多线程环境下审批任务更新的线程安全性
+        when(approvalTaskRepository.findById(1L)).thenReturn(Optional.of(pendingTask));
+        when(approvalInstanceRepository.findById(1L)).thenReturn(Optional.of(submittedInstance));
+        when(approvalTaskRepository.save(any(ApprovalTask.class))).thenAnswer(invocation -> {
+            ApprovalTask task = invocation.getArgument(0);
+            Thread.sleep(10); // 模拟小的延迟
+            return task;
+        });
+        when(approvalInstanceRepository.save(any(ApprovalInstance.class))).thenReturn(submittedInstance);
+
+        ExecutorService executor = Executors.newFixedThreadPool(8);
+        CountDownLatch startLatch = new CountDownLatch(8);
+        CountDownLatch endLatch = new CountDownLatch(8);
+        AtomicInteger completedTasks = new AtomicInteger(0);
+
+        List<Callable<Void>> tasks = new java.util.ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            final int threadId = i;
+            tasks.add(() -> {
+                startLatch.countDown();
+                startLatch.await(); // 等待所有线程就绪
+                
+                try {
+                    // 模拟不同线程的审批操作
+                    boolean result = approvalService.approveTask(1L, threadId % 2 == 0, 
+                            "审批意见" + threadId, 3001L);
+                    if (result) {
+                        completedTasks.incrementAndGet();
+                    }
+                } catch (Exception e) {
+                    // 忽略异常，关注线程安全性
+                } finally {
+                    endLatch.countDown();
+                }
+                return null;
+            });
+        }
+
+        // 并发执行
+        executor.invokeAll(tasks);
+        executor.shutdown();
+        endLatch.await(5, TimeUnit.SECONDS);
+
+        // 验证没有出现线程安全问题（如NPE或数据损坏）
+        assertTrue(completedTasks.get() <= 1, "多线程环境下应该保证审批操作的原子性");
     }
 }

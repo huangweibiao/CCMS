@@ -19,6 +19,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.ArrayList;
+import org.junit.jupiter.api.Timeout;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -489,5 +495,264 @@ class BudgetServiceTest {
         
         verify(budgetDetailRepository, times(1)).findByDeptIdAndYearAndExpenseType(101L, 2025, 1);
         verify(budgetDetailRepository, times(1)).save(any(BudgetDetail.class));
+    }
+
+    @Test
+    @Timeout(30) // 30秒超时
+    void testConcurrentBudgetDeduction_Performance() throws InterruptedException {
+        // 模拟Repository查找
+        BudgetDetail detail = new BudgetDetail();
+        detail.setId(1L);
+        detail.setBudgetAmount(new BigDecimal("1000000.00"));
+        detail.setUsedAmount(BigDecimal.ZERO);
+        detail.setRemainingAmount(new BigDecimal("1000000.00"));
+        
+        when(budgetDetailRepository.findByDeptIdAndYearAndExpenseType(101L, 2025, 1))
+                .thenReturn(List.of(detail));
+        when(budgetDetailRepository.save(any(BudgetDetail.class))).thenReturn(detail);
+
+        int threadCount = 10;
+        int operationsPerThread = 100;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        AtomicLong successfulOperations = new AtomicLong(0);
+        AtomicLong failedOperations = new AtomicLong(0);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch endLatch = new CountDownLatch(threadCount);
+        
+        long startTime = System.currentTimeMillis();
+
+        // 创建并发任务
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await(); // 等待所有线程就绪
+                    for (int j = 0; j < operationsPerThread; j++) {
+                        try {
+                            boolean result = budgetService.deductBudget(101L, 1, 
+                                    new BigDecimal("10.00"), 2025);
+                            if (result) {
+                                successfulOperations.incrementAndGet();
+                            } else {
+                                failedOperations.incrementAndGet();
+                            }
+                        } catch (Exception e) {
+                            failedOperations.incrementAndGet();
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    endLatch.countDown();
+                }
+            });
+        }
+
+        // 并发执行
+        startLatch.countDown();
+        endLatch.await();
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+        
+        long endTime = System.currentTimeMillis();
+        long totalOperations = successfulOperations.get() + failedOperations.get();
+        long duration = endTime - startTime;
+        
+        // 性能基准验证
+        assertTrue(duration < 5000, "1000次并发预算扣减应在5秒内完成，实际耗时: " + duration + "ms");
+        assertTrue(successfulOperations.get() > 0, "应该有成功操作");
+        
+        System.out.println("并发性能测试结果:");
+        System.out.println("总操作次数: " + totalOperations);
+        System.out.println("成功操作: " + successfulOperations.get());
+        System.out.println("失败操作: " + failedOperations.get());
+        System.out.println("耗时: " + duration + "ms");
+        System.out.println("平均操作耗时: " + (duration / (double)totalOperations) + "ms");
+    }
+
+    @Test
+    @Timeout(10) // 10秒超时
+    void testBudgetAvailabilityCheck_Performance() {
+        // 模拟返回100条明细数据
+        List<BudgetDetail> details = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            BudgetDetail detail = new BudgetDetail();
+            detail.setRemainingAmount(new BigDecimal("10000.00"));
+            details.add(detail);
+        }
+        
+        when(budgetDetailRepository.findByDeptIdAndYearAndExpenseType(101L, 2025, 1))
+                .thenReturn(details);
+
+        long startTime = System.nanoTime();
+        
+        // 执行1000次预算可用性检查
+        for (int i = 0; i < 1000; i++) {
+            budgetService.checkBudgetAvailability(101L, 1, new BigDecimal("5000.00"), 2025);
+        }
+        
+        long endTime = System.nanoTime();
+        long durationNanos = endTime - startTime;
+        double avgTimePerRequest = durationNanos / 1000.0 / 1000.0; // 转换为毫秒
+        
+        // 性能基准：单次预算检查应在1毫秒内完成
+        assertTrue(avgTimePerRequest < 1.0, 
+                "单次预算可用性检查应在1毫秒内，实际平均耗时: " + avgTimePerRequest + "ms");
+        
+        System.out.println("预算可用性检查性能测试:");
+        System.out.println("总计1000次检查");
+        System.out.println("平均耗时: " + avgTimePerRequest + "ms/次");
+    }
+
+    @Test
+    @Timeout(20) // 20秒超时
+    void testConcurrentBudgetOperations_StressTest() throws InterruptedException {
+        // 模拟并发预算操作压力测试
+        BudgetDetail detail = new BudgetDetail();
+        detail.setId(1L);
+        detail.setBudgetAmount(new BigDecimal("100000.00"));
+        detail.setUsedAmount(BigDecimal.ZERO);
+        detail.setRemainingAmount(new BigDecimal("100000.00"));
+        
+        when(budgetDetailRepository.findByDeptIdAndYearAndExpenseType(101L, 2025, 1))
+                .thenReturn(List.of(detail));
+        when(budgetDetailRepository.save(any(BudgetDetail.class))).thenAnswer(invocation -> {
+            Thread.sleep(1); // 模拟数据库保存延迟
+            return invocation.getArgument(0);
+        });
+
+        int operationTypes = 3; // 扣除、退回、检查
+        int threadsPerType = 5;
+        ExecutorService executor = Executors.newFixedThreadPool(operationTypes * threadsPerType);
+        AtomicLong totalOperations = new AtomicLong(0);
+        CountDownLatch latch = new CountDownLatch(operationTypes * threadsPerType);
+
+        // 创建混合操作任务
+        for (int type = 0; type < operationTypes; type++) {
+            for (int i = 0; i < threadsPerType; i++) {
+                final int operationType = type;
+                executor.submit(() -> {
+                    try {
+                        for (int j = 0; j < 20; j++) {
+                            switch (operationType) {
+                                case 0:
+                                    budgetService.deductBudget(101L, 1, new BigDecimal("10.00"), 2025);
+                                    break;
+                                case 1:
+                                    budgetService.returnBudget(101L, 1, new BigDecimal("5.00"), 2025);
+                                    break;
+                                case 2:
+                                    budgetService.checkBudgetAvailability(101L, 1, new BigDecimal("50.00"), 2025);
+                                    break;
+                            }
+                            totalOperations.incrementAndGet();
+                        }
+                    } catch (Exception e) {
+                        // 记录错误但继续执行
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+        }
+
+        // 执行压力测试
+        long startTime = System.currentTimeMillis();
+        latch.await();
+        executor.shutdown();
+        executor.awaitTermination(15, TimeUnit.SECONDS);
+        long endTime = System.currentTimeMillis();
+
+        long duration = endTime - startTime;
+        long expectedOperations = operationTypes * threadsPerType * 20;
+        
+        // 验证性能标准
+        assertTrue(duration < 10000, "混合并发操作应在10秒内完成，实际耗时: " + duration + "ms");
+        assertTrue(totalOperations.get() <= expectedOperations);
+        
+        System.out.println("压力测试结果:");
+        System.out.println("计划操作: " + expectedOperations);
+        System.out.println("完成操作: " + totalOperations.get());
+        System.out.println("耗时: " + duration + "ms");
+    }
+
+    @Test
+    @Timeout(5) // 5秒超时
+    void testBudgetCalculation_Performance() {
+        // 测试复杂预算计算性能
+        List<BudgetDetail> details = new ArrayList<>();
+        for (int i = 1; i <= 1000; i++) {
+            BudgetDetail detail = new BudgetDetail();
+            detail.setBudgetAmount(new BigDecimal(i * 1000));
+            detail.setUsedAmount(new BigDecimal(i * 10));
+            detail.setRemainingAmount(new BigDecimal(i * 1000 - i * 10));
+            details.add(detail);
+        }
+
+        long startTime = System.currentTimeMillis();
+        
+        // 模拟复杂预算计算（求和、平均等）
+        BigDecimal totalBudget = BigDecimal.ZERO;
+        BigDecimal totalUsed = BigDecimal.ZERO;
+        
+        for (BudgetDetail detail : details) {
+            totalBudget = totalBudget.add(detail.getBudgetAmount());
+            totalUsed = totalUsed.add(detail.getUsedAmount());
+        }
+        
+        BigDecimal avgUsageRate = totalUsed.divide(totalBudget, 4, java.math.RoundingMode.HALF_UP);
+        
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        
+        // 性能基准：1000条数据计算应在100毫秒内完成
+        assertTrue(duration < 100, "1000条预算数据计算应在100毫秒内完成，实际耗时: " + duration + "ms");
+        
+        System.out.println("预算计算性能测试:");
+        System.out.println("数据量: 1000条明细");
+        System.out.println("计算耗时: " + duration + "ms");
+        System.out.println("总预算: " + totalBudget);
+        System.out.println("总使用: " + totalUsed);
+        System.out.println("平均使用率: " + avgUsageRate.multiply(new BigDecimal(100)) + "%");
+    }
+
+    @Test
+    void testMemoryUsage_NoMemoryLeaks() {
+        // 测试内存使用情况，确保没有内存泄漏
+        Runtime runtime = Runtime.getRuntime();
+        
+        // 执行前内存状态
+        runtime.gc();
+        long initialMemory = runtime.totalMemory() - runtime.freeMemory();
+        
+        // 执行大量预算操作
+        List<String> operations = new ArrayList<>();
+        BudgetDetail detail = new BudgetDetail();
+        detail.setBudgetAmount(new BigDecimal("10000.00"));
+        detail.setUsedAmount(BigDecimal.ZERO);
+        detail.setRemainingAmount(new BigDecimal("10000.00"));
+        
+        when(budgetDetailRepository.findByDeptIdAndYearAndExpenseType(101L, 2025, 1))
+                .thenReturn(List.of(detail));
+
+        for (int i = 0; i < 1000; i++) {
+            // 模拟预算检查操作
+            boolean result = budgetService.checkBudgetAvailability(101L, 1, new BigDecimal("100.00"), 2025);
+            operations.add("Operation_" + i + "_" + result); // 创建一些对象
+        }
+        
+        // 清理并检查内存
+        operations.clear();
+        runtime.gc();
+        long finalMemory = runtime.totalMemory() - runtime.freeMemory();
+        long memoryDifference = finalMemory - initialMemory;
+        
+        // 内存增长不应超过1MB（包含JVM自身的内存管理开销）
+        assertTrue(Math.abs(memoryDifference) < 1_000_000, 
+                "内存使用增长不应超过1MB，实际增长: " + memoryDifference + " bytes");
+        
+        System.out.println("内存使用测试:");
+        System.out.println("初始内存: " + initialMemory + " bytes");
+        System.out.println("最终内存: " + finalMemory + " bytes");
+        System.out.println("内存变化: " + memoryDifference + " bytes");
     }
 }

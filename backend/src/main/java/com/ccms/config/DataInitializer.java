@@ -175,10 +175,10 @@ public class DataInitializer {
 
     private SysDept createDept(String name, String code, Long parentId, Integer orderNum, String description) {
         SysDept dept = new SysDept();
-        dept.setName(name);
-        dept.setCode(code);
+        dept.setDeptName(name);
+        dept.setDeptCode(code);
         dept.setParentId(parentId);
-        dept.setOrderNum(orderNum);
+        dept.setSortOrder(orderNum);
         dept.setDescription(description);
         dept.setStatus(1);
         dept.setCreateTime(LocalDateTime.now());
@@ -190,8 +190,8 @@ public class DataInitializer {
 
     private SysRole createRole(String name, String code, String description, String category) {
         SysRole role = new SysRole();
-        role.setName(name);
-        role.setCode(code);
+        role.setRoleName(name);
+        role.setRoleCode(code);
         role.setDescription(description);
         role.setCategory(category);
         role.setStatus(1);
@@ -204,10 +204,10 @@ public class DataInitializer {
 
     private BudgetCategory createBudgetCategory(String name, Integer orderNum, String description) {
         BudgetCategory category = new BudgetCategory();
-        category.setName(name);
-        category.setOrderNum(orderNum);
+        category.setCategoryName(name);
+        category.setSortOrder(orderNum);
         category.setDescription(description);
-        category.setStatus(1);
+        category.setEnabled(true);
         category.setCreateTime(LocalDateTime.now());
         category.setUpdateTime(LocalDateTime.now());
         category.setCreateUser(1L);
@@ -217,11 +217,11 @@ public class DataInitializer {
 
     private ExpenseType createExpenseType(String name, String code, String description, Integer orderNum) {
         ExpenseType expenseType = new ExpenseType();
-        expenseType.setName(name);
-        expenseType.setCode(code);
+        expenseType.setTypeName(name);
+        expenseType.setTypeCode(code);
         expenseType.setDescription(description);
-        expenseType.setOrderNum(orderNum);
-        expenseType.setStatus(1);
+        expenseType.setSortOrder(orderNum);
+        expenseType.setEnabled(true);
         expenseType.setCreateTime(LocalDateTime.now());
         expenseType.setUpdateTime(LocalDateTime.now());
         expenseType.setCreateUser(1L);

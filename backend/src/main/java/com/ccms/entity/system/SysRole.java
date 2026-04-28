@@ -26,6 +26,18 @@ public class SysRole extends BaseEntity {
     private String roleName;
     
     /**
+     * 角色分类
+     */
+    @Column(name = "category", length = 64)
+    private String category;
+    
+    /**
+     * 角色描述
+     */
+    @Column(name = "description", length = 200)
+    private String description;
+    
+    /**
      * 状态：0-禁用 1-启用
      */
     @Column(name = "status", nullable = false)
@@ -56,12 +68,30 @@ public class SysRole extends BaseEntity {
         this.status = status;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
         return "SysRole{" +
                 "id=" + getId() +
                 ", roleCode='" + roleCode + '\'' +
                 ", roleName='" + roleName + '\'' +
+                ", category='" + category + '\'' +
+                ", description='" + description + '\'' +
                 ", status=" + status +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +

@@ -192,8 +192,8 @@ import DataTable from '@/components/common/DataTable.vue'
 import CustomModal from '@/components/common/CustomModal.vue'
 import CustomDrawer from '@/components/common/CustomDrawer.vue'
 import UserForm from './components/UserForm.vue'
-import { getUserList, updateUser, deleteUser, resetPassword } from '@/api/user'
-import { showSuccess, showError, showConfirm } from '@/components/common/Message.vue'
+import { userApi } from '@/api/user'
+import messageApi from '@/components/common/Message.vue'
 
 // 表格列配置
 const tableColumns = [
@@ -326,11 +326,11 @@ const loadTableData = async () => {
       pageSize: pagination.pageSize
     }
     
-    const response = await getUserList(params)
+    const response = await userApi.getUserList(params)
     tableData.value = response.data.list
     pagination.total = response.data.total
   } catch (error) {
-    showError('获取用户列表失败')
+    messageApi.showError('获取用户列表失败')
     console.error('获取用户列表失败:', error)
   } finally {
     loading.value = false
@@ -388,8 +388,8 @@ const handleEditClosed = () => {
 const handleFormSubmit = async (formData: any) => {
   try {
     formLoading.value = true
-    await updateUser(formData)
-    showSuccess(currentUser.value ? '用户修改成功' : '用户添加成功')
+    await userApi.updateUser(formData.id || 0, formData)
+    messageApi.showSuccess(currentUser.value ? '用户修改成功' : '用户添加成功')
     editDrawerVisible.value = false
     loadTableData()
   } catch (error) {
@@ -405,13 +405,13 @@ const handleFormCancel = () => {
 
 const handleDelete = async (row: any) => {
   try {
-    const confirm = await showConfirm({
+    const confirm = await messageApi.showConfirm({
       message: `确定要删除用户 "${row.realName || row.username}" 吗？此操作不可恢复。`,
       type: 'warning'
     })
     
     if (confirm) {
-      await deleteUser(row.id)
+      await userApi.deleteUser(row.id)
       showSuccess('用户删除成功')
       loadTableData()
     }
@@ -436,10 +436,7 @@ const handleResetPasswordSubmit = async () => {
     if (!valid) return
 
     resetPasswordLoading.value = true
-    await resetPassword({
-      userId: currentResetUserId.value,
-      newPassword: resetPasswordForm.newPassword
-    })
+    await userApi.resetPassword(currentResetUserId.value)
     
     showSuccess('密码重置成功')
     resetPasswordModalVisible.value = false
@@ -460,13 +457,13 @@ const handleToggleStatus = async (row: any) => {
     const newStatus = row.status === 1 ? 0 : 1
     const action = row.status === 1 ? '禁用' : '启用'
     
-    const confirm = await showConfirm({
+    const confirm = await messageApi.showConfirm({
       message: `确定要${action}用户 "${row.realName || row.username}" 吗？`,
       type: 'warning'
     })
     
     if (confirm) {
-      await updateUser({
+      await userApi.updateUser(row.id, {
         ...row,
         status: newStatus
       })

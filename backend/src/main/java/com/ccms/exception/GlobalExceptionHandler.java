@@ -17,7 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
-import java.nio.file.AccessDeniedException as FileAccessDeniedException;
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
