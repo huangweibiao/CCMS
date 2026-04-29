@@ -107,6 +107,7 @@ target/
 
 # IDE files
 .idea/
+.comate/
 *.swp
 *.swo
 *~

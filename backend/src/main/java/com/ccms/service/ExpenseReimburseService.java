@@ -3,6 +3,8 @@ package com.ccms.service;
 import com.ccms.entity.expense.ExpenseReimburse;
 import com.ccms.entity.expense.ReimburseItem;
 import com.ccms.entity.expense.ReimburseAttachment;
+import com.ccms.entity.expense.ExpenseReimburseDetail;
+import com.ccms.entity.expense.ExpenseInvoice;
 import org.springframework.data.domain.Page;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -131,6 +133,77 @@ public interface ExpenseReimburseService {
      * @return 总金额
      */
     BigDecimal calculateTotalAmount(Long reimburseId);
+    
+    /**
+     * 创建费用报销明细
+     * 
+     * @param detail 费用报销明细
+     * @return 创建的明细
+     */
+    ExpenseReimburseDetail createExpenseReimburseDetail(ExpenseReimburseDetail detail);
+    
+    /**
+     * 更新费用报销明细
+     * 
+     * @param detail 费用报销明细
+     * @return 更新后的明细
+     */
+    ExpenseReimburseDetail updateExpenseReimburseDetail(ExpenseReimburseDetail detail);
+    
+    /**
+     * 删除费用报销明细
+     * 
+     * @param detailId 明细ID
+     */
+    void deleteExpenseReimburseDetail(Long detailId);
+    
+    /**
+     * 获取费用报销的所有明细
+     * 
+     * @param reimburseId 费用报销ID
+     * @return 明细列表
+     */
+    List<ExpenseReimburseDetail> getExpenseReimburseDetails(Long reimburseId);
+    
+    /**
+     * 创建发票记录
+     * 
+     * @param invoice 发票信息
+     * @return 创建的发票
+     */
+    ExpenseInvoice createExpenseInvoice(ExpenseInvoice invoice);
+    
+    /**
+     * 更新发票记录
+     * 
+     * @param invoice 发票信息
+     * @return 更新后的发票
+     */
+    ExpenseInvoice updateExpenseInvoice(ExpenseInvoice invoice);
+    
+    /**
+     * 根据发票号码查询发票
+     * 
+     * @param invoiceNo 发票号码
+     * @return 发票列表
+     */
+    List<ExpenseInvoice> getExpenseInvoicesByNo(String invoiceNo);
+    
+    /**
+     * 获取费用报销的所有发票
+     * 
+     * @param reimburseId 费用报销ID
+     * @return 发票列表
+     */
+    List<ExpenseInvoice> getExpenseInvoicesByReimburse(Long reimburseId);
+    
+    /**
+     * 验证发票真伪
+     * 
+     * @param invoiceId 发票ID
+     * @return 验证结果
+     */
+    boolean verifyExpenseInvoice(Long invoiceId);
     
     /**
      * 获取待处理的费用报销数量

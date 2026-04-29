@@ -91,6 +91,18 @@ public class ExpenseReimburse extends BaseEntity {
     @Column(name = "payment_time")
     private LocalDateTime paymentTime;
 
+    @Column(name = "actual_payment_amount", precision = 15, scale = 2)
+    private BigDecimal actualPaymentAmount;
+
+    @Column(name = "approved_user_id")
+    private Long approvedUserId;
+
+    @Column(name = "approved_time")
+    private LocalDateTime approvedTime;
+
+    @Column(name = "approval_comment", length = 500)
+    private String approvalComment;
+
     // Getter and Setter methods
     public String getReimburseNo() {
         return reimburseNo;
@@ -290,6 +302,38 @@ public class ExpenseReimburse extends BaseEntity {
 
     public void setPaymentTime(LocalDateTime paymentTime) {
         this.paymentTime = paymentTime;
+    }
+
+    public BigDecimal getActualPaymentAmount() {
+        return actualPaymentAmount;
+    }
+
+    public void setActualPaymentAmount(BigDecimal actualPaymentAmount) {
+        this.actualPaymentAmount = actualPaymentAmount;
+    }
+
+    public Long getApprovedUserId() {
+        return approvedUserId;
+    }
+
+    public void setApprovedUserId(Long approvedUserId) {
+        this.approvedUserId = approvedUserId;
+    }
+
+    public LocalDateTime getApprovedTime() {
+        return approvedTime;
+    }
+
+    public void setApprovedTime(LocalDateTime approvedTime) {
+        this.approvedTime = approvedTime;
+    }
+
+    public String getApprovalComment() {
+        return approvalComment;
+    }
+
+    public void setApprovalComment(String approvalComment) {
+        this.approvalComment = approvalComment;
     }
     
     // Added missing methods

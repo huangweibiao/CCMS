@@ -3,9 +3,13 @@ package com.ccms.service.impl;
 import com.ccms.entity.expense.ExpenseReimburse;
 import com.ccms.entity.expense.ReimburseItem;
 import com.ccms.entity.expense.ReimburseAttachment;
+import com.ccms.entity.expense.ExpenseReimburseDetail;
+import com.ccms.entity.expense.ExpenseInvoice;
 import com.ccms.repository.expense.ExpenseReimburseRepository;
 import com.ccms.repository.expense.ReimburseItemRepository;
 import com.ccms.repository.expense.ReimburseAttachmentRepository;
+import com.ccms.repository.expense.ExpenseReimburseDetailRepository;
+import com.ccms.repository.expense.ExpenseInvoiceRepository;
 import com.ccms.service.ExpenseReimburseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,14 +39,20 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
     private final ExpenseReimburseRepository expenseReimburseRepository;
     private final ReimburseItemRepository reimburseItemRepository;
     private final ReimburseAttachmentRepository reimburseAttachmentRepository;
+    private final ExpenseReimburseDetailRepository expenseReimburseDetailRepository;
+    private final ExpenseInvoiceRepository expenseInvoiceRepository;
 
     @Autowired
     public ExpenseReimburseServiceImpl(ExpenseReimburseRepository expenseReimburseRepository,
                                      ReimburseItemRepository reimburseItemRepository,
-                                     ReimburseAttachmentRepository reimburseAttachmentRepository) {
+                                     ReimburseAttachmentRepository reimburseAttachmentRepository,
+                                     ExpenseReimburseDetailRepository expenseReimburseDetailRepository,
+                                     ExpenseInvoiceRepository expenseInvoiceRepository) {
         this.expenseReimburseRepository = expenseReimburseRepository;
         this.reimburseItemRepository = reimburseItemRepository;
         this.reimburseAttachmentRepository = reimburseAttachmentRepository;
+        this.expenseReimburseDetailRepository = expenseReimburseDetailRepository;
+        this.expenseInvoiceRepository = expenseInvoiceRepository;
     }
 
     @Override
@@ -101,12 +111,26 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
         
         // 检查报销明细是否完整
         List<ReimburseItem> items = reimburseItemRepository.findByExpenseReimburseId(reimburseId);
-        if (items == null || items.isEmpty()) {
-            throw new RuntimeException("报销明细不能为空");
+        List<ExpenseReimburseDetail> details = expenseReimburseDetailRepository.findByReimburseId(reimburseId);
+        
+        if ((items == null || items.isEmpty()) && (details == null || details.isEmpty())) {
+            throw new RuntimeException("报销明细和费用明细不能同时为空");
         }
         
-        // 计算总金额
+        // 检查发票验真状态（有发票的情况下）
+        List<ExpenseInvoice> invoices = expenseInvoiceRepository.findByReimburseId(reimburseId);
+        for (ExpenseInvoice invoice : invoices) {
+            if (invoice.getVerifyStatus() != null && invoice.getVerifyStatus() != 1) {
+                throw new RuntimeException("存在未通过验真的发票，请先完成发票验真");
+            }
+        }
+        
+        // 计算并验证总金额
         BigDecimal totalAmount = calculateTotalAmount(reimburseId);
+        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("报销总金额必须大于0");
+        }
+        
         reimburse.setTotalAmount(totalAmount);
         
         // 更新状态为待审批
@@ -330,17 +354,72 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
         }
         
         ExpenseReimburse reimburse = reimburseOpt.get();
-        // 只有审批通过才能支付
+        // 只有审批通过且未支付的才能支付
         if (reimburse.getApprovalStatus() != 2) {
             throw new RuntimeException("只有审批通过的报销申请才能进行支付");
         }
+        
+        if (reimburse.getPaymentStatus() == 1) {
+            throw new RuntimeException("报销申请已支付，不能重复支付");
+        }
+        
+        // 处理借款抵扣逻辑
+        handleLoanDeduction(reimburse);
+        
+        // 记录实际支付金额（考虑借款抵扣后）
+        BigDecimal actualPaymentAmount = calculateActualPaymentAmount(reimburse);
         
         reimburse.setPaymentStatus(1); // 已支付
         reimburse.setPaymentMethod(paymentMethod);
         reimburse.setPaymentDocNumber(paymentDocNumber);
         reimburse.setPaymentTime(LocalDateTime.now());
+        reimburse.setActualPaymentAmount(actualPaymentAmount);
+        
+        // 通知财务系统（简化实现）
+        notifyFinanceSystem(reimburse);
         
         expenseReimburseRepository.save(reimburse);
+    }
+    
+    /**
+     * 处理借款抵扣逻辑
+     */
+    private void handleLoanDeduction(ExpenseReimburse reimburse) {
+        List<ExpenseReimburseDetail> details = expenseReimburseDetailRepository.findByReimburseId(reimburse.getId());
+        
+        BigDecimal totalLoanDeduct = details.stream()
+                .map(ExpenseReimburseDetail::getLoanDeductAmount)
+                .filter(amount -> amount != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // 如果存在借款抵扣，记录抵扣金额
+        if (totalLoanDeduct.compareTo(BigDecimal.ZERO) > 0) {
+            reimburse.setLoanDeductionAmount(totalLoanDeduct);
+        }
+    }
+    
+    /**
+     * 计算实际支付金额
+     */
+    private BigDecimal calculateActualPaymentAmount(ExpenseReimburse reimburse) {
+        BigDecimal totalAmount = reimburse.getTotalAmount();
+        BigDecimal loanDeduction = reimburse.getLoanDeductionAmount();
+        
+        if (loanDeduction == null) {
+            return totalAmount;
+        }
+        
+        // 实际支付金额 = 总金额 - 借款抵扣金额
+        return totalAmount.subtract(loanDeduction);
+    }
+    
+    /**
+     * 通知财务系统（简化实现）
+     */
+    private void notifyFinanceSystem(ExpenseReimburse reimburse) {
+        // 这里应该调用财务系统的API
+        // 暂时记录日志
+        System.out.println("通知财务系统：报销单 " + reimburse.getReimburseNo() + " 已完成支付，金额：" + reimburse.getActualPaymentAmount());
     }
 
     @Override
@@ -371,6 +450,202 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
         
         return new ExpenseReimburseStatistics(totalCount, totalAmount, pendingCount, 
                 approvedCount, paidCount, totalPaidAmount);
+    }
+
+    @Override
+    public ExpenseReimburseDetail createExpenseReimburseDetail(ExpenseReimburseDetail detail) {
+        // 验证报销单是否存在
+        Optional<ExpenseReimburse> reimburseOpt = expenseReimburseRepository.findById(detail.getReimburseId());
+        if (reimburseOpt.isEmpty()) {
+            throw new RuntimeException("费用报销申请不存在");
+        }
+        
+        ExpenseReimburse reimburse = reimburseOpt.get();
+        // 检查报销单状态
+        if (reimburse.getStatus() != 0) {
+            throw new RuntimeException("只有在草稿状态才能添加明细");
+        }
+        
+        // 自动计算金额，如果数量和单价都提供的话
+        if (detail.getQuantity() != null && detail.getUnitPrice() != null) {
+            detail.setAmount(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())));
+        }
+        
+        return expenseReimburseDetailRepository.save(detail);
+    }
+
+    @Override
+    public ExpenseReimburseDetail updateExpenseReimburseDetail(ExpenseReimburseDetail detail) {
+        Optional<ExpenseReimburseDetail> existingOpt = expenseReimburseDetailRepository.findById(detail.getId());
+        if (existingOpt.isEmpty()) {
+            throw new RuntimeException("报销明细不存在");
+        }
+        
+        // 验证报销单状态
+        ExpenseReimburseDetail existing = existingOpt.get();
+        Optional<ExpenseReimburse> reimburseOpt = expenseReimburseRepository.findById(existing.getReimburseId());
+        if (reimburseOpt.isEmpty()) {
+            throw new RuntimeException("费用报销申请不存在");
+        }
+        
+        ExpenseReimburse reimburse = reimburseOpt.get();
+        if (reimburse.getStatus() != 0) {
+            throw new RuntimeException("非草稿状态的费用报销申请不允许修改明细");
+        }
+        
+        // 更新字段
+        existing.setFeeTypeId(detail.getFeeTypeId());
+        existing.setExpenseDate(detail.getExpenseDate());
+        existing.setQuantity(detail.getQuantity());
+        existing.setUnitPrice(detail.getUnitPrice());
+        existing.setDescription(detail.getDescription());
+        existing.setInvoiceNo(detail.getInvoiceNo());
+        existing.setBudgetId(detail.getBudgetId());
+        existing.setLoanDeductAmount(detail.getLoanDeductAmount());
+        
+        // 重新计算金额
+        if (existing.getQuantity() != null && existing.getUnitPrice() != null) {
+            existing.setAmount(existing.getUnitPrice().multiply(BigDecimal.valueOf(existing.getQuantity())));
+        } else if (detail.getAmount() != null) {
+            existing.setAmount(detail.getAmount());
+        }
+        
+        return expenseReimburseDetailRepository.save(existing);
+    }
+
+    @Override
+    public void deleteExpenseReimburseDetail(Long detailId) {
+        Optional<ExpenseReimburseDetail> detailOpt = expenseReimburseDetailRepository.findById(detailId);
+        if (detailOpt.isEmpty()) {
+            throw new RuntimeException("报销明细不存在");
+        }
+        
+        // 验证报销单状态
+        ExpenseReimburseDetail detail = detailOpt.get();
+        Optional<ExpenseReimburse> reimburseOpt = expenseReimburseRepository.findById(detail.getReimburseId());
+        if (reimburseOpt.isEmpty()) {
+            throw new RuntimeException("费用报销申请不存在");
+        }
+        
+        ExpenseReimburse reimburse = reimburseOpt.get();
+        if (reimburse.getStatus() != 0) {
+            throw new RuntimeException("非草稿状态的费用报销申请不允许删除明细");
+        }
+        
+        expenseReimburseDetailRepository.deleteById(detailId);
+    }
+
+    @Override
+    public List<ExpenseReimburseDetail> getExpenseReimburseDetails(Long reimburseId) {
+        return expenseReimburseDetailRepository.findByReimburseId(reimburseId);
+    }
+
+    @Override
+    public ExpenseInvoice createExpenseInvoice(ExpenseInvoice invoice) {
+        // 验证报销明细存在
+        Optional<ExpenseReimburseDetail> detailOpt = expenseReimburseDetailRepository.findById(invoice.getReimburseDetailId());
+        if (detailOpt.isEmpty()) {
+            throw new RuntimeException("报销明细不存在");
+        }
+        
+        // 验证发票号码唯一性（同一报销明细）
+        List<ExpenseInvoice> existingInvoices = expenseInvoiceRepository.findByReimburseDetailId(invoice.getReimburseDetailId());
+        if (existingInvoices.stream().anyMatch(i -> i.getInvoiceNo().equals(invoice.getInvoiceNo()))) {
+            throw new RuntimeException("同一报销明细下发票号码不能重复");
+        }
+        
+        // 设置默认状态
+        if (invoice.getVerifyStatus() == null) {
+            invoice.setVerifyStatus(0); // 未验真
+        }
+        
+        return expenseInvoiceRepository.save(invoice);
+    }
+
+    @Override
+    public ExpenseInvoice updateExpenseInvoice(ExpenseInvoice invoice) {
+        Optional<ExpenseInvoice> existingOpt = expenseInvoiceRepository.findById(invoice.getId());
+        if (existingOpt.isEmpty()) {
+            throw new RuntimeException("发票记录不存在");
+        }
+        
+        ExpenseInvoice existing = existingOpt.get();
+        
+        // 验证报销明细存在
+        Optional<ExpenseReimburseDetail> detailOpt = expenseReimburseDetailRepository.findById(existing.getReimburseDetailId());
+        if (detailOpt.isEmpty()) {
+            throw new RuntimeException("报销明细不存在");
+        }
+        
+        // 验证报销单状态
+        ExpenseReimburseDetail detail = detailOpt.get();
+        Optional<ExpenseReimburse> reimburseOpt = expenseReimburseRepository.findById(detail.getReimburseId());
+        if (reimburseOpt.isEmpty()) {
+            throw new RuntimeException("费用报销申请不存在");
+        }
+        
+        ExpenseReimburse reimburse = reimburseOpt.get();
+        if (reimburse.getStatus() != 0) {
+            throw new RuntimeException("非草稿状态的费用报销申请不允许修改发票信息");
+        }
+        
+        // 更新字段
+        existing.setInvoiceType(invoice.getInvoiceType());
+        existing.setInvoiceCode(invoice.getInvoiceCode());
+        existing.setInvoiceAmount(invoice.getInvoiceAmount());
+        existing.setTaxAmount(invoice.getTaxAmount());
+        existing.setInvoiceDate(invoice.getInvoiceDate());
+        existing.setSellerName(invoice.getSellerName());
+        existing.setSellerTaxNo(invoice.getSellerTaxNo());
+        existing.setFilePath(invoice.getFilePath());
+        
+        // 如果修改了发票号码，需要重置验真状态
+        if (!existing.getInvoiceNo().equals(invoice.getInvoiceNo())) {
+            existing.setInvoiceNo(invoice.getInvoiceNo());
+            existing.setVerifyStatus(0); // 重置为未验真
+            existing.setVerifyResult(null);
+            existing.setVerifyTime(null);
+        }
+        
+        return expenseInvoiceRepository.save(existing);
+    }
+
+    @Override
+    public List<ExpenseInvoice> getExpenseInvoicesByNo(String invoiceNo) {
+        return expenseInvoiceRepository.findByInvoiceNo(invoiceNo);
+    }
+
+    @Override
+    public List<ExpenseInvoice> getExpenseInvoicesByReimburse(Long reimburseId) {
+        return expenseInvoiceRepository.findByReimburseId(reimburseId);
+    }
+
+    @Override
+    public boolean verifyExpenseInvoice(Long invoiceId) {
+        Optional<ExpenseInvoice> invoiceOpt = expenseInvoiceRepository.findById(invoiceId);
+        if (invoiceOpt.isEmpty()) {
+            throw new RuntimeException("发票记录不存在");
+        }
+        
+        ExpenseInvoice invoice = invoiceOpt.get();
+        
+        // 模拟发票验真（实际应调用外部API）
+        // 这里简化实现，检查发票号码格式等
+        if (invoice.getInvoiceNo() == null || invoice.getInvoiceNo().length() < 8) {
+            invoice.setVerifyStatus(2); // 验真失败
+            invoice.setVerifyResult("发票号码格式不正确");
+            invoice.setVerifyTime(LocalDateTime.now());
+            expenseInvoiceRepository.save(invoice);
+            return false;
+        }
+        
+        // 模拟成功验真
+        invoice.setVerifyStatus(1); // 已验真通过
+        invoice.setVerifyResult("验真通过");
+        invoice.setVerifyTime(LocalDateTime.now());
+        expenseInvoiceRepository.save(invoice);
+        
+        return true;
     }
     
     /**
@@ -407,10 +682,29 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
         if (reimburseOpt.isPresent()) {
             ExpenseReimburse reimburse = reimburseOpt.get();
             
+            // 验证当前状态是否可以审批
+            if (reimburse.getApprovalStatus() != 1) { // 非审批中状态
+                throw new RuntimeException("只有审批中的报销申请才能进行审批操作");
+            }
+            
             if (action == 1) { // 通过
                 reimburse.setApprovalStatus(2); // 已审批
-            } else { // 拒绝
+                reimburse.setStatus(2); // 审批通过
+                reimburse.setApprovedUserId(approverId);
+                reimburse.setApprovedTime(LocalDateTime.now());
+                reimburse.setApprovalComment(comment);
+            } else if (action == 2) { // 拒绝
                 reimburse.setApprovalStatus(3); // 已拒绝
+                reimburse.setStatus(3); // 审批拒绝
+                reimburse.setApprovedUserId(approverId);
+                reimburse.setApprovedTime(LocalDateTime.now());
+                reimburse.setApprovalComment(comment);
+            } else if (action == 3) { // 退回修改
+                reimburse.setApprovalStatus(0); // 待提交
+                reimburse.setStatus(0); // 草稿状态
+                reimburse.setApprovalComment("审批人建议修改: " + comment);
+            } else {
+                throw new RuntimeException("无效的审批操作");
             }
             
             expenseReimburseRepository.save(reimburse);

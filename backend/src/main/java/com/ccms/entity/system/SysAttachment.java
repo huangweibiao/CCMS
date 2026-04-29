@@ -3,6 +3,7 @@ package com.ccms.entity.system;
 import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 附件表实体类
@@ -67,6 +68,54 @@ public class SysAttachment extends BaseEntity {
      */
     @Column(name = "upload_user_id", nullable = false)
     private Long uploadUserId;
+    
+    /**
+     * 文件MD5值（用于去重）
+     */
+    @Column(name = "file_md5", length = 32)
+    private String fileMd5;
+    
+    /**
+     * MIME类型
+     */
+    @Column(name = "mime_type", length = 100)
+    private String mimeType;
+    
+    /**
+     * 是否公开（0:私有, 1:公开）
+     */
+    @Column(name = "is_public", nullable = false)
+    private Boolean isPublic = false;
+    
+    /**
+     * 下载次数
+     */
+    @Column(name = "download_count", nullable = false)
+    private Integer downloadCount = 0;
+    
+    /**
+     * 是否已删除（0:正常, 1:已删除）
+     */
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+    
+    /**
+     * 最后下载时间
+     */
+    @Column(name = "last_download_time")
+    private LocalDateTime lastDownloadTime;
+    
+    /**
+     * 删除时间
+     */
+    @Column(name = "delete_time")
+    private LocalDateTime deleteTime;
+    
+    /**
+     * 删除人
+     */
+    @Column(name = "deleted_by", length = 64)
+    private String deletedBy;
     
     /**
      * 描述
@@ -155,6 +204,70 @@ public class SysAttachment extends BaseEntity {
         this.description = description;
     }
 
+    public String getFileMd5() {
+        return fileMd5;
+    }
+
+    public void setFileMd5(String fileMd5) {
+        this.fileMd5 = fileMd5;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public Integer getDownloadCount() {
+        return downloadCount;
+    }
+
+    public void setDownloadCount(Integer downloadCount) {
+        this.downloadCount = downloadCount;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    public LocalDateTime getLastDownloadTime() {
+        return lastDownloadTime;
+    }
+
+    public void setLastDownloadTime(LocalDateTime lastDownloadTime) {
+        this.lastDownloadTime = lastDownloadTime;
+    }
+
+    public LocalDateTime getDeleteTime() {
+        return deleteTime;
+    }
+
+    public void setDeleteTime(LocalDateTime deleteTime) {
+        this.deleteTime = deleteTime;
+    }
+
+    public String getDeletedBy() {
+        return deletedBy;
+    }
+
+    public void setDeletedBy(String deletedBy) {
+        this.deletedBy = deletedBy;
+    }
+
     @Override
     public String toString() {
         return "SysAttachment{" +
@@ -166,8 +279,16 @@ public class SysAttachment extends BaseEntity {
                 ", fileUrl='" + fileUrl + '\'' +
                 ", fileSize=" + fileSize +
                 ", fileType='" + fileType + '\'' +
+                ", fileMd5='" + fileMd5 + '\'' +
+                ", mimeType='" + mimeType + '\'' +
                 ", storageType=" + storageType +
                 ", uploadUserId=" + uploadUserId +
+                ", isPublic=" + isPublic +
+                ", downloadCount=" + downloadCount +
+                ", isDeleted=" + isDeleted +
+                ", lastDownloadTime=" + lastDownloadTime +
+                ", deleteTime=" + deleteTime +
+                ", deletedBy='" + deletedBy + '\'' +
                 ", description='" + description + '\'' +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
