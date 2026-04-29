@@ -53,4 +53,7 @@ public interface ExpenseReimburseRepository extends BaseRepository<ExpenseReimbu
     
     @Query("SELECT SUM(er.totalAmount) FROM ExpenseReimburse er WHERE er.deptId = :deptId AND er.paymentStatus = 1 AND er.submitTime BETWEEN :startDate AND :endDate")
     java.math.BigDecimal sumPaidAmountByDeptIdAndDateRange(@Param("deptId") Long deptId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    
+    // 添加缺失的findByUserId方法
+    List<ExpenseReimburse> findByUserId(Long userId);
 }

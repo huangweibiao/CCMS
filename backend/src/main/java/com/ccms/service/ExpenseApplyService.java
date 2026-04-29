@@ -6,6 +6,7 @@ import com.ccms.entity.expense.ExpenseAttachment;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 费用申请服务接口
@@ -199,13 +200,86 @@ public interface ExpenseApplyService {
         }
     }
     
-    /**
-     * 获取费用申请统计信息
-     * 
-     * @param deptId 部门ID
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 统计信息
-     */
-    ExpenseApplyStatistics getExpenseApplyStatistics(Long deptId, LocalDate startDate, LocalDate endDate);
+/**
+ * 获取费用申请统计信息 (按年份)
+ * 
+ * @param applicantId 申请人ID
+ * @param deptId 部门ID
+ * @param year 年份
+ * @return 统计信息
+ */
+Map<String, Object> getExpenseApplyStatistics(Long applicantId, Long deptId, Integer year);
+
+/**
+ * 获取费用申请统计信息 (按日期范围)
+ * 
+ * @param deptId 部门ID
+ * @param startDate 开始日期
+ * @param endDate 结束日期
+ * @return 统计信息
+ */
+ExpenseApplyStatistics getExpenseApplyStatistics(Long deptId, LocalDate startDate, LocalDate endDate);
+
+// 控制器的额外方法定义
+
+/**
+ * 检查权限
+ */
+boolean checkPermission(String token, String permission);
+
+/**
+ * 获取费用申请分页列表
+ */
+org.springframework.data.domain.Page<ExpenseApply> getExpenseApplyList(int page, int size, Long applicantId, Long deptId, Integer status, Integer year);
+
+/**
+ * 删除费用申请
+ */
+ExpenseApply deleteExpenseApply(Long applyId);
+
+/**
+ * 审批费用申请
+ */
+ExpenseApply approveExpenseApply(Long applyId, Long approverId, Integer status, String comment);
+
+/**
+ * 撤回费用申请（带原因）
+ */
+ExpenseApply withdrawExpenseApply(Long applyId, String reason);
+
+/**
+ * 关联报销单
+ */
+ExpenseApply linkToReimbursement(Long applyId, Long reimburseId);
+
+/**
+ * 批量操作
+ */
+boolean batchOperation(Long[] applyIds, String operation);
+
+/**
+ * 获取审批历史
+ */
+Object getApprovalHistory(Long applyId);
+
+/**
+ * 调整费用金额
+ */
+ExpenseApply adjustExpenseAmount(Long applyId, Double newAmount, String reason);
+
+/**
+ * 导出费用申请
+ */
+Object exportExpenseApplies(java.util.Map<String, Object> exportParams);
+
+/**
+ * 简化版预算检查
+ */
+/**
+ * 检查费用申请预算
+ * 
+ * @param applyId 申请ID
+ * @return 预算检查结果
+ */
+Map<String, Object> checkBudgetAvailability(Long applyId);
 }

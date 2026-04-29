@@ -54,7 +54,7 @@ public class ApprovalInstance extends BaseEntity {
      * 创建人ID
      */
     @Column(name = "create_by", nullable = false)
-    private Long createBy;
+    private String createBy;
     
     /**
      * 完成时间
@@ -111,11 +111,13 @@ public class ApprovalInstance extends BaseEntity {
         this.currentNode = currentNode;
     }
 
-    public Long getCreateBy() {
+    @Override
+    public String getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(Long createBy) {
+    @Override
+    public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
 

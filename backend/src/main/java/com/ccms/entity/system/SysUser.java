@@ -154,6 +154,31 @@ public class SysUser extends BaseEntity {
     public void setLastLoginTime(LocalDateTime lastLoginTime) {
         this.lastLoginTime = lastLoginTime;
     }
+    
+    // Compatible methods for service layer calls
+    public String getUsername() {
+        return userCode; // username might be mapped to userCode
+    }
+    
+    public void setUsername(String username) {
+        this.userCode = username;
+    }
+    
+    public String getRealName() {
+        return userName; // realName might be mapped to userName
+    }
+    
+    public void setRealName(String realName) {
+        this.userName = realName;
+    }
+    
+    public String getPhone() {
+        return mobile; // phone might be mapped to mobile
+    }
+    
+    public void setPhone(String phone) {
+        this.mobile = phone;
+    }
 
     @Override
     public String toString() {

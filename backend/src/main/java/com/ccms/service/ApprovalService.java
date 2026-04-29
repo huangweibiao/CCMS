@@ -26,7 +26,7 @@ public interface ApprovalService {
      * @param approvers 审批人ID列表
      * @return 创建的审批流程
      */
-    ApprovalProcess startApprovalProcess(Integer businessType, Long businessId, Long applicantId, List<Long> approvers);
+    ApprovalProcess startApprovalProcess(String businessType, Long businessId, Long applicantId, List<Long> approvers);
     
     /**
      * 获取审批流程详情
@@ -43,7 +43,7 @@ public interface ApprovalService {
      * @param businessId 业务ID
      * @return 审批流程信息
      */
-    ApprovalProcess getApprovalProcessByBusiness(Integer businessType, Long businessId);
+    ApprovalProcess getApprovalProcessByBusiness(String businessType, Long businessId);
     
     /**
      * 处理审批操作

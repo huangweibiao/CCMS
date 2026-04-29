@@ -1,15 +1,12 @@
 package com.ccms.entity.expense;
 
 import com.ccms.entity.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "expense_detail")
 public class ExpenseDetail extends BaseEntity {
@@ -49,4 +46,101 @@ public class ExpenseDetail extends BaseEntity {
     
     @Column(name = "budget_item_name", length = 200)
     private String budgetItemName;
+
+    // Manual getters and setters
+    public Long getExpenseMainId() {
+        return expenseMainId;
+    }
+
+    public void setExpenseMainId(Long expenseMainId) {
+        this.expenseMainId = expenseMainId;
+    }
+
+    public Integer getItemNo() {
+        return itemNo;
+    }
+
+    public void setItemNo(Integer itemNo) {
+        this.itemNo = itemNo;
+    }
+
+    public Long getExpenseTypeId() {
+        return expenseTypeId;
+    }
+
+    public void setExpenseTypeId(Long expenseTypeId) {
+        this.expenseTypeId = expenseTypeId;
+    }
+
+    public String getExpenseTypeName() {
+        return expenseTypeName;
+    }
+
+    public void setExpenseTypeName(String expenseTypeName) {
+        this.expenseTypeName = expenseTypeName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public LocalDate getOccurDate() {
+        return occurDate;
+    }
+
+    public void setOccurDate(LocalDate occurDate) {
+        this.occurDate = occurDate;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public Boolean getApproved() {
+        return approved;
+    }
+
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
+    }
+
+    public Long getBudgetItemId() {
+        return budgetItemId;
+    }
+
+    public void setBudgetItemId(Long budgetItemId) {
+        this.budgetItemId = budgetItemId;
+    }
+
+    public String getBudgetItemName() {
+        return budgetItemName;
+    }
+
+    public void setBudgetItemName(String budgetItemName) {
+        this.budgetItemName = budgetItemName;
+    }
 }

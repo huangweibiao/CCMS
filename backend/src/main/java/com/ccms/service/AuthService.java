@@ -17,9 +17,9 @@ public interface AuthService {
      * 
      * @param username 用户名
      * @param password 密码
-     * @return 用户信息（登录成功）或 null（登录失败）
+     * @return 登录响应信息
      */
-    SysUser login(String username, String password);
+    Object login(String username, String password);
     
     /**
      * 用户登出
@@ -72,12 +72,12 @@ public interface AuthService {
     /**
      * 修改用户密码
      * 
-     * @param userId 用户ID
+     * @param token 访问令牌
      * @param oldPassword 旧密码
      * @param newPassword 新密码
      * @return 是否修改成功
      */
-    boolean changePassword(Long userId, String oldPassword, String newPassword);
+    boolean changePassword(String token, String oldPassword, String newPassword);
     
     /**
      * 重置用户密码
@@ -122,7 +122,7 @@ public interface AuthService {
      * @param deptId 部门ID（可选）
      * @return 用户分页列表
      */
-    Object getUserList(int page, int size, String username, Long deptId);
+    org.springframework.data.domain.Page<com.ccms.entity.system.SysUser> getUserList(int page, int size, String username, Long deptId);
     
     /**
      * 根据ID获取用户信息
@@ -197,4 +197,28 @@ public interface AuthService {
      * @return 用户名
      */
     String getUsernameFromToken(String token);
+    
+    /**
+     * 刷新令牌
+     * 
+     * @param token 旧令牌
+     * @return 新令牌
+     */
+    String refreshToken(String token);
+    
+    /**
+     * 获取用户权限列表
+     * 
+     * @param token 访问令牌
+     * @return 权限列表
+     */
+    Map<String, Object> getUserPermissions(String token);
+    
+    /**
+     * 获取用户个人信息
+     * 
+     * @param token 访问令牌
+     * @return 用户信息
+     */
+    Map<String, Object> getUserProfileByToken(String token);
 }

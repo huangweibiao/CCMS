@@ -86,6 +86,32 @@ const routes: RouteRecordRaw[] = [
         name: 'ExpenseReport',
         component: () => import('@/views/report/ExpenseReport.vue'),
         meta: { title: '费用统计', icon: 'DataAnalysis' }
+      },
+      // 借款管理
+      {
+        path: 'loan/apply',
+        name: 'LoanApply',
+        component: () => import('@/views/loan/ApplyForm.vue'),
+        meta: { title: '借款申请', icon: 'Money', hidden: true }
+      },
+      {
+        path: 'loan/list',
+        name: 'LoanList',
+        component: () => import('@/views/loan/LoanList.vue'),
+        meta: { title: '我的借款', icon: 'Coin' }
+      },
+      // 还款管理
+      {
+        path: 'repayment/apply',
+        name: 'RepaymentApply',
+        component: () => import('@/views/repayment/RepaymentForm.vue'),
+        meta: { title: '还款申请', icon: 'CreditCard', hidden: true }
+      },
+      {
+        path: 'repayment/list',
+        name: 'RepaymentList',
+        component: () => import('@/views/repayment/RepaymentList.vue'),
+        meta: { title: '还款记录', icon: 'Wallet' }
       }
     ]
   },

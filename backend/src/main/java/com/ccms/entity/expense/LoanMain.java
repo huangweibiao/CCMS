@@ -3,7 +3,7 @@ package com.ccms.entity.expense;
 import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
 
 /**
  * 借款单表实体类
@@ -46,28 +46,28 @@ public class LoanMain extends BaseEntity {
     private BigDecimal loanAmount;
     
     /**
-     * 已核销金额
+     * 已还金额
      */
-    @Column(name = "verified_amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal verifiedAmount;
+    @Column(name = "repaid_amount", precision = 18, scale = 2, nullable = false)
+    private BigDecimal repaidAmount = new BigDecimal("0.00");
     
     /**
-     * 借款余额
+     * 借款余额 - 计算字段，不直接存储
      */
-    @Column(name = "balance_amount", precision = 18, scale = 2, nullable = false)
+    @Transient
     private BigDecimal balanceAmount;
     
     /**
      * 预期还款日期
      */
     @Column(name = "expect_repay_date", nullable = false)
-    private Date expectRepayDate;
+    private LocalDate expectRepayDate;
     
     /**
      * 实际还款日期
      */
     @Column(name = "actual_repay_date")
-    private Date actualRepayDate;
+    private LocalDate actualRepayDate;
     
     /**
      * 状态：1-借款中 2-部分核销 3-已核销 4-逾期 5-作废
@@ -80,6 +80,24 @@ public class LoanMain extends BaseEntity {
      */
     @Column(name = "purpose", length = 512)
     private String purpose;
+    
+    /**
+     * 审批结果
+     */
+    @Column(name = "approval_result", length = 512)
+    private String approvalResult;
+    
+    /**
+     * 银行名称
+     */
+    @Column(name = "bank_name", length = 255)
+    private String bankName;
+    
+    /**
+     * 银行账号
+     */
+    @Column(name = "bank_account", length = 100)
+    private String bankAccount;
 
     // Getters and Setters
     public String getLoanNo() {
@@ -122,35 +140,44 @@ public class LoanMain extends BaseEntity {
         this.loanAmount = loanAmount;
     }
 
-    public BigDecimal getVerifiedAmount() {
-        return verifiedAmount;
+    public BigDecimal getRepaidAmount() {
+        return repaidAmount;
     }
 
-    public void setVerifiedAmount(BigDecimal verifiedAmount) {
-        this.verifiedAmount = verifiedAmount;
+    public void setRepaidAmount(BigDecimal repaidAmount) {
+        this.repaidAmount = repaidAmount;
     }
 
+    /**
+     * 计算借款余额（借款金额 - 已还金额）
+     */
     public BigDecimal getBalanceAmount() {
-        return balanceAmount;
+        if (loanAmount == null) {
+            return BigDecimal.ZERO;
+        }
+        if (repaidAmount == null) {
+            return loanAmount;
+        }
+        return loanAmount.subtract(repaidAmount);
     }
 
     public void setBalanceAmount(BigDecimal balanceAmount) {
-        this.balanceAmount = balanceAmount;
+        // 这是一个计算字段，不需要setter，但为了兼容性保留
     }
 
-    public Date getExpectRepayDate() {
+    public LocalDate getExpectRepayDate() {
         return expectRepayDate;
     }
 
-    public void setExpectRepayDate(Date expectRepayDate) {
+    public void setExpectRepayDate(LocalDate expectRepayDate) {
         this.expectRepayDate = expectRepayDate;
     }
 
-    public Date getActualRepayDate() {
+    public LocalDate getActualRepayDate() {
         return actualRepayDate;
     }
 
-    public void setActualRepayDate(Date actualRepayDate) {
+    public void setActualRepayDate(LocalDate actualRepayDate) {
         this.actualRepayDate = actualRepayDate;
     }
 
@@ -170,6 +197,30 @@ public class LoanMain extends BaseEntity {
         this.purpose = purpose;
     }
 
+    public String getApprovalResult() {
+        return approvalResult;
+    }
+
+    public void setApprovalResult(String approvalResult) {
+        this.approvalResult = approvalResult;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(String bankAccount) {
+        this.bankAccount = bankAccount;
+    }
+
     @Override
     public String toString() {
         return "LoanMain{" +
@@ -179,8 +230,8 @@ public class LoanMain extends BaseEntity {
                 ", loanUserId=" + loanUserId +
                 ", loanDeptId=" + loanDeptId +
                 ", loanAmount=" + loanAmount +
-                ", verifiedAmount=" + verifiedAmount +
-                ", balanceAmount=" + balanceAmount +
+                ", repaidAmount=" + repaidAmount +
+                ", balanceAmount=" + getBalanceAmount() +
                 ", expectRepayDate=" + expectRepayDate +
                 ", actualRepayDate=" + actualRepayDate +
                 ", status=" + status +

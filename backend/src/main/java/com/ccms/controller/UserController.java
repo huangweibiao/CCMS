@@ -47,7 +47,7 @@ public class UserController {
             // 验证权限
             authService.checkPermission(token, "user:list");
             
-            Page<SysUser> users = authService.getUserList(page, size, username, deptId);
+            org.springframework.data.domain.Page<SysUser> users = authService.getUserList(page, size, username, deptId);
             return ResponseEntity.ok(users);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);

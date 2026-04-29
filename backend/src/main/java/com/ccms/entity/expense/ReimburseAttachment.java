@@ -129,4 +129,27 @@ public class ReimburseAttachment extends BaseEntity {
     public void setRemark(String remark) {
         this.remark = remark;
     }
+    
+    // Compatible methods for service layer calls
+    public void setCreateTime(LocalDateTime createTime) {
+        // This might be setting uploadTime as createTime
+        if (uploadTime == null) {
+            uploadTime = createTime;
+        }
+    }
+    
+    public void setAttachmentName(String attachmentName) {
+        // Alias for fileName
+        this.fileName = attachmentName;
+    }
+    
+    public void setAttachmentUrl(String attachmentUrl) {
+        // Alias for filePath
+        this.filePath = attachmentUrl;
+    }
+    
+    public void setAttachmentType(String attachmentType) {
+        // Alias for fileType
+        this.fileType = attachmentType;
+    }
 }

@@ -119,4 +119,7 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
     @org.springframework.data.jpa.repository.Modifying
     @Query(value = "INSERT INTO approval_record (process_id, approver_id, original_approver_id, delegation_comment, create_time) VALUES (:processId, :targetApproverId, :sourceApproverId, :comment, CURRENT_TIMESTAMP)", nativeQuery = true)
     void createDelegationRecord(@Param("processId") Long processId, @Param("sourceApproverId") Long sourceApproverId, @Param("targetApproverId") Long targetApproverId, @Param("comment") String comment);
+    
+    // 添加缺失的方法
+    List<ApprovalRecord> findByProcessIdOrderByApprovalTimeAsc(Long processId);
 }

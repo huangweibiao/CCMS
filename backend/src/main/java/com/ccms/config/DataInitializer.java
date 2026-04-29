@@ -154,7 +154,7 @@ public class DataInitializer {
             logger.info("初始化用户数据...");
             
             // 获取部门
-            SysDept adminDept = sysDeptRepository.findByName("财务部").orElse(null);
+            SysDept adminDept = sysDeptRepository.findByDeptName("财务部").orElse(null);
             
             if (adminDept != null) {
                 // 创建管理员用户
@@ -166,10 +166,8 @@ public class DataInitializer {
                 adminUser.setPhone("13800138000");
                 adminUser.setDeptId(adminDept.getId());
                 adminUser.setStatus(1);
-                adminUser.setCreateTime(LocalDateTime.now());
-                adminUser.setUpdateTime(LocalDateTime.now());
-                adminUser.setCreateUser(1L);
-                adminUser.setUpdateUser(1L);
+                adminUser.setCreateBy("system");
+                adminUser.setUpdateBy("system");
                 
                 sysUserRepository.save(adminUser);
                 logger.info("已初始化管理员用户: {}", adminUser.getUsername());
@@ -183,12 +181,9 @@ public class DataInitializer {
         dept.setDeptCode(code);
         dept.setParentId(parentId);
         dept.setSortOrder(orderNum);
-        dept.setDescription(description);
         dept.setStatus(1);
-        dept.setCreateTime(LocalDateTime.now());
-        dept.setUpdateTime(LocalDateTime.now());
-        dept.setCreateUser(1L);
-        dept.setUpdateUser(1L);
+        dept.setCreateBy("system");
+        dept.setUpdateBy("system");
         return dept;
     }
 
@@ -199,23 +194,20 @@ public class DataInitializer {
         role.setDescription(description);
         role.setCategory(category);
         role.setStatus(1);
-        role.setCreateTime(LocalDateTime.now());
-        role.setUpdateTime(LocalDateTime.now());
-        role.setCreateUser(1L);
-        role.setUpdateUser(1L);
+        role.setCreateBy("system");
+        role.setUpdateBy("system");
         return role;
     }
 
     private BudgetCategory createBudgetCategory(String name, Integer orderNum, String description) {
         BudgetCategory category = new BudgetCategory();
         category.setCategoryName(name);
+        category.setCategoryCode("CATEGORY_" + System.currentTimeMillis() % 1000); // 生成唯一编码
         category.setSortOrder(orderNum);
         category.setDescription(description);
         category.setEnabled(true);
-        category.setCreateTime(LocalDateTime.now());
-        category.setUpdateTime(LocalDateTime.now());
-        category.setCreateUser(1L);
-        category.setUpdateUser(1L);
+        category.setCreateBy("system");
+        category.setUpdateBy("system");
         return category;
     }
 

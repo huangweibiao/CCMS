@@ -1,15 +1,11 @@
 package com.ccms.entity.expense;
 
 import com.ccms.entity.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "expense_item")
 public class ExpenseItem extends BaseEntity {
@@ -64,4 +60,191 @@ public class ExpenseItem extends BaseEntity {
     
     @Column(name = "remark", length = 500)
     private String remark;
+    
+    @Transient
+    private String expenseType;
+    
+    @Transient
+    private Integer quantity;
+    
+    @Transient
+    private Double unitPrice;
+    
+    @Transient
+    private BigDecimal unitPriceAmount; // 用于BigDecimal计算
+    
+    // Getters and Setters
+    public Long getExpenseApplyId() {
+        return expenseApplyId;
+    }
+    
+    public void setExpenseApplyId(Long expenseApplyId) {
+        this.expenseApplyId = expenseApplyId;
+    }
+    
+    public Integer getItemNo() {
+        return itemNo;
+    }
+    
+    public void setItemNo(Integer itemNo) {
+        this.itemNo = itemNo;
+    }
+    
+    public Long getExpenseTypeId() {
+        return expenseTypeId;
+    }
+    
+    public void setExpenseTypeId(Long expenseTypeId) {
+        this.expenseTypeId = expenseTypeId;
+    }
+    
+    public String getExpenseTypeName() {
+        return expenseTypeName;
+    }
+    
+    public void setExpenseTypeName(String expenseTypeName) {
+        this.expenseTypeName = expenseTypeName;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    public BigDecimal getAmount() {
+        return amount;
+    }
+    
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+    
+    public LocalDate getOccurDate() {
+        return occurDate;
+    }
+    
+    public void setOccurDate(LocalDate occurDate) {
+        this.occurDate = occurDate;
+    }
+    
+    public String getProjectCode() {
+        return projectCode;
+    }
+    
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
+    }
+    
+    public String getProjectName() {
+        return projectName;
+    }
+    
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+    
+    public String getCostCenter() {
+        return costCenter;
+    }
+    
+    public void setCostCenter(String costCenter) {
+        this.costCenter = costCenter;
+    }
+    
+    public String getCostCenterName() {
+        return costCenterName;
+    }
+    
+    public void setCostCenterName(String costCenterName) {
+        this.costCenterName = costCenterName;
+    }
+    
+    public Long getBudgetItemId() {
+        return budgetItemId;
+    }
+    
+    public void setBudgetItemId(Long budgetItemId) {
+        this.budgetItemId = budgetItemId;
+    }
+    
+    public String getBudgetItemName() {
+        return budgetItemName;
+    }
+    
+    public void setBudgetItemName(String budgetItemName) {
+        this.budgetItemName = budgetItemName;
+    }
+    
+    public BigDecimal getBudgetAvailableAmount() {
+        return budgetAvailableAmount;
+    }
+    
+    public void setBudgetAvailableAmount(BigDecimal budgetAvailableAmount) {
+        this.budgetAvailableAmount = budgetAvailableAmount;
+    }
+    
+    public String getCurrency() {
+        return currency;
+    }
+    
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+    
+    public Boolean getBudgetChecked() {
+        return budgetChecked;
+    }
+    
+    public void setBudgetChecked(Boolean budgetChecked) {
+        this.budgetChecked = budgetChecked;
+    }
+    
+    public String getRemark() {
+        return remark;
+    }
+    
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+    
+    public String getExpenseType() {
+        return expenseType;
+    }
+    
+    public void setExpenseType(String expenseType) {
+        this.expenseType = expenseType;
+    }
+    
+    public Integer getQuantity() {
+        return quantity;
+    }
+    
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+    
+    public Double getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(Double unitPrice) {
+        this.unitPrice = unitPrice;
+        if (unitPrice != null) {
+            this.unitPriceAmount = BigDecimal.valueOf(unitPrice);
+        }
+    }
+
+    public BigDecimal getUnitPriceAmount() {
+        return unitPriceAmount;
+    }
+
+    public void setUnitPriceAmount(BigDecimal unitPriceAmount) {
+        this.unitPriceAmount = unitPriceAmount;
+        if (unitPriceAmount != null) {
+            this.unitPrice = unitPriceAmount.doubleValue();
+        }
+    }
 }

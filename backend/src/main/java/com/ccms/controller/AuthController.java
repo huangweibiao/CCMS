@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import com.ccms.dto.LoginResponse;
 
 /**
  * 认证控制器
@@ -36,7 +37,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         try {
-            LoginResponse response = authService.login(loginRequest.getUsername(), loginRequest.getPassword());
+            LoginResponse response = convertToLoginResponse(authService.login(loginRequest.getUsername(), loginRequest.getPassword()));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -136,10 +137,28 @@ public class AuthController {
     @GetMapping("/profile")
     public ResponseEntity<Map<String, Object>> getProfile(@RequestHeader("Authorization") String token) {
         try {
-            Map<String, Object> profile = authService.getUserProfile(token);
+            Map<String, Object> profile = authService.getUserProfileByToken(token);
             return ResponseEntity.ok(profile);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "获取用户信息失败"));
         }
+    }
+    
+    /**
+     * 将对象转换为LoginResponse
+     */
+    @SuppressWarnings("unchecked")
+    private LoginResponse convertToLoginResponse(Object obj) {
+        if (obj instanceof LoginResponse) {
+            return (LoginResponse) obj;
+        }
+        LoginResponse response = new LoginResponse();
+        if (obj instanceof Map) {
+            Map<String, Object> map = (Map<String, Object>) obj;
+            response.setAccessToken((String) map.get("accessToken"));
+            response.setRefreshToken((String) map.get("refreshToken"));
+            response.setExpiresIn((Long) map.get("expiresIn"));
+        }
+        return response;
     }
 }

@@ -37,4 +37,7 @@ public interface ApprovalProcessRepository extends BaseRepository<ApprovalProces
     
     @Query("SELECT COUNT(ap) FROM ApprovalProcess ap WHERE ap.active = true AND ap.endTime < :currentTime AND ap.status = 1")
     Long countExpiredProcesses(@Param("currentTime") java.time.LocalDateTime currentTime);
+    
+    // 添加缺失的方法
+    Optional<ApprovalProcess> findByBusinessTypeAndBusinessId(String businessType, Long businessId);
 }

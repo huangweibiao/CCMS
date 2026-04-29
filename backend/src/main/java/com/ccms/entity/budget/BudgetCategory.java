@@ -1,13 +1,10 @@
 package com.ccms.entity.budget;
 
 import com.ccms.entity.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+
 
 import jakarta.persistence.*;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "budget_category")
 public class BudgetCategory extends BaseEntity {
@@ -38,4 +35,77 @@ public class BudgetCategory extends BaseEntity {
     
     @Column(name = "is_system", columnDefinition = "tinyint(1) default 0")
     private Boolean system = false;
+
+    // Manual getters and setters
+    public String getCategoryCode() {
+        return categoryCode;
+    }
+
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
+    }
+
+    public Integer getCategoryLevel() {
+        return categoryLevel;
+    }
+
+    public void setCategoryLevel(Integer categoryLevel) {
+        this.categoryLevel = categoryLevel;
+    }
+
+    public Integer getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getBudgetCycle() {
+        return budgetCycle;
+    }
+
+    public void setBudgetCycle(String budgetCycle) {
+        this.budgetCycle = budgetCycle;
+    }
+
+    public Boolean getSystem() {
+        return system;
+    }
+
+    public void setSystem(Boolean system) {
+        this.system = system;
+    }
 }

@@ -25,7 +25,7 @@ public interface BaseRepository<T extends BaseEntity, ID extends Serializable> e
      * @param id 实体ID
      * @return 未删除的实体
      */
-    default Optional<T> findActiveById(Long id) {
+    default Optional<T> findActiveById(ID id) {
         return findById(id);
     }
 

@@ -3,7 +3,7 @@ package com.ccms.entity.expense;
 import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
 
 /**
  * 还款记录表实体类
@@ -43,7 +43,7 @@ public class RepaymentRecord extends BaseEntity {
      * 还款日期
      */
     @Column(name = "repay_date", nullable = false)
-    private Date repayDate;
+    private LocalDate repayDate;
     
     /**
      * 还款人ID
@@ -52,12 +52,54 @@ public class RepaymentRecord extends BaseEntity {
     private Long repayBy;
     
     /**
+     * 还款单号
+     */
+    @Column(name = "repay_no", length = 50, nullable = false)
+    private String repayNo;
+
+    /**
+     * 银行名称
+     */
+    @Column(name = "bank_name", length = 100)
+    private String bankName;
+
+    /**
+     * 银行账号
+     */
+    @Column(name = "bank_account", length = 50)
+    private String bankAccount;
+
+    /**
      * 还款备注
      */
     @Column(name = "remark", length = 512)
     private String remark;
 
     // Getters and Setters
+    public String getRepayNo() {
+        return repayNo;
+    }
+
+    public void setRepayNo(String repayNo) {
+        this.repayNo = repayNo;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(String bankAccount) {
+        this.bankAccount = bankAccount;
+    }
+
     public Long getLoanId() {
         return loanId;
     }
@@ -90,11 +132,11 @@ public class RepaymentRecord extends BaseEntity {
         this.repayType = repayType;
     }
 
-    public Date getRepayDate() {
+    public LocalDate getRepayDate() {
         return repayDate;
     }
 
-    public void setRepayDate(Date repayDate) {
+    public void setRepayDate(LocalDate repayDate) {
         this.repayDate = repayDate;
     }
 

@@ -3,9 +3,11 @@ package com.ccms.service;
 import com.ccms.entity.expense.ExpenseReimburse;
 import com.ccms.entity.expense.ReimburseItem;
 import com.ccms.entity.expense.ReimburseAttachment;
+import org.springframework.data.domain.Page;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 费用报销服务接口
@@ -229,4 +231,76 @@ public interface ExpenseReimburseService {
      * @return 统计信息
      */
     ExpenseReimburseStatistics getExpenseReimburseStatistics(Long deptId, LocalDate startDate, LocalDate endDate);
+    
+    // ========== Controller需要的额外方法 ==========
+    
+    /**
+     * 检查权限
+     */
+    boolean checkPermission(String token, String permission);
+    
+    /**
+     * 获取费用报销列表
+     */
+    Page<ExpenseReimburse> getExpenseReimburseList(int pageNum, int pageSize, Long userId, Long deptId, Integer status, Integer paymentStatus);
+    
+    /**
+     * 删除费用报销
+     */
+    boolean deleteExpenseReimburse(Long reimburseId);
+    
+    /**
+     * 审批费用报销
+     */
+    boolean approveExpenseReimburse(Long reimburseId, Long approverId, Integer action, String comment);
+    
+    /**
+     * 关联费用申请
+     */
+    boolean linkToExpenseApply(Long reimburseId, Long applyId);
+    
+    /**
+     * 处理付款
+     */
+    boolean processPayment(Long reimburseId, Long payerId, String paymentMethod, String voucherNumber);
+    
+    /**
+     * 获取统计信息
+     */
+    Map<String, Object> getExpenseReimburseStatistics(Long userId, Long deptId, Integer year);
+    
+    /**
+     * 上传凭证
+     */
+    boolean uploadVoucher(Long reimburseId, String voucherType, String fileName, String fileUrl);
+    
+    /**
+     * 获取凭证下载URL
+     */
+    String getVoucherDownloadUrl(Long attachmentId);
+    
+    /**
+     * 处理退款
+     */
+    boolean processRefund(Long reimburseId, Long operatorId, Double refundAmount, String reason);
+    
+    /**
+     * 获取状态跟踪
+     */
+    List<Map<String, Object>> getStatusTracking(Long reimburseId);
+    
+    /**
+     * 导出费用报销
+     */
+    byte[] exportExpenseReimburses(Map<String, Object> exportParams);
+    
+    /**
+     * 分析费用报销
+     */
+    Object analyzeExpenseReimburses(Map<String, Object> analyzeParams);
+    
+    /**
+     * 加急处理
+     */
+    boolean urgentProcessing(Long reimburseId, Long operatorId, String reason);
 }

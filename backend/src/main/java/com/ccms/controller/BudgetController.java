@@ -1,6 +1,6 @@
 package com.ccms.controller;
 
-import com.ccms.entity.budget.Budget;
+import com.ccms.entity.budget.BudgetMain;
 import com.ccms.service.BudgetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 预算管理控制器
@@ -38,7 +39,7 @@ public class BudgetController {
      * @return 预算分页列表
      */
     @GetMapping
-    public ResponseEntity<Page<Budget>> getBudgetList(
+    public ResponseEntity<Page<BudgetMain>> getBudgetList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Integer year,
@@ -49,7 +50,7 @@ public class BudgetController {
             // 验证权限
             budgetService.checkPermission(token, "budget:list");
             
-            Page<Budget> budgets = budgetService.getBudgetList(page, size, year, deptId, status);
+            Page<BudgetMain> budgets = (Page<BudgetMain>) budgetService.getBudgetList(page, size, year, deptId, status);
             return ResponseEntity.ok(budgets);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -64,13 +65,13 @@ public class BudgetController {
      * @return 预算详情
      */
     @GetMapping("/{budgetId}")
-    public ResponseEntity<Budget> getBudgetDetail(@PathVariable Long budgetId,
+    public ResponseEntity<BudgetMain> getBudgetDetail(@PathVariable Long budgetId,
                                                  @RequestHeader("Authorization") String token) {
         try {
             // 验证权限
             budgetService.checkPermission(token, "budget:view");
             
-            Budget budget = budgetService.getBudgetById(budgetId);
+            BudgetMain budget = budgetService.getBudgetById(budgetId);
             return ResponseEntity.ok(budget);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -85,7 +86,7 @@ public class BudgetController {
      * @return 创建结果
      */
     @PostMapping
-    public ResponseEntity<Map<String, String>> createBudget(@RequestBody Budget budget,
+    public ResponseEntity<Map<String, String>> createBudget(@RequestBody BudgetMain budget,
                                                            @RequestHeader("Authorization") String token) {
         try {
             // 验证权限
@@ -108,7 +109,7 @@ public class BudgetController {
      */
     @PutMapping("/{budgetId}")
     public ResponseEntity<Map<String, String>> updateBudget(@PathVariable Long budgetId,
-                                                           @RequestBody Budget budget,
+                                                           @RequestBody BudgetMain budget,
                                                            @RequestHeader("Authorization") String token) {
         try {
             // 验证权限
@@ -257,7 +258,7 @@ public class BudgetController {
             // 验证权限
             budgetService.checkPermission(token, "budget:view");
             
-            Map<String, Object> execution = budgetService.getBudgetExecution(budgetId);
+            Map<String, Object> execution = convertBudgetExecutionToMap(budgetService.getBudgetExecution(budgetId));
             return ResponseEntity.ok(execution);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -279,7 +280,7 @@ public class BudgetController {
             // 验证权限
             budgetService.checkPermission(token, "budget:statistics");
             
-            Map<String, Object> statistics = budgetService.getAnnualBudgetStatistics(year);
+            Map<String, Object> statistics = convertObjectToMap(budgetService.getAnnualBudgetStatistics(year));
             return ResponseEntity.ok(statistics);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -303,7 +304,7 @@ public class BudgetController {
             // 验证权限
             budgetService.checkPermission(token, "budget:statistics");
             
-            Map<String, Object> statistics = budgetService.getDepartmentBudgetStatistics(deptId, year);
+            Map<String, Object> statistics = convertObjectToMap(budgetService.getDepartmentBudgetStatistics(deptId, year));
             return ResponseEntity.ok(statistics);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -334,5 +335,27 @@ public class BudgetController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "预算预警设置失败: " + e.getMessage()));
         }
+    }
+
+    /**
+     * 将预算执行对象转换为Map
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> convertBudgetExecutionToMap(Object execution) {
+        if (execution instanceof Map) {
+            return (Map<String, Object>) execution;
+        }
+        return new HashMap<>();
+    }
+
+    /**
+     * 将对象转换为Map
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> convertObjectToMap(Object obj) {
+        if (obj instanceof Map) {
+            return (Map<String, Object>) obj;
+        }
+        return new HashMap<>();
     }
 }

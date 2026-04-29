@@ -45,4 +45,19 @@ public interface ApprovalNodeRepository extends BaseRepository<ApprovalNode, Lon
     
     @Query("SELECT an FROM ApprovalNode an WHERE an.processId = :processId AND an.approverId = :approverId")
     ApprovalNode findByProcessIdAndApproverId(@Param("processId") Long processId, @Param("approverId") Long approverId);
+    
+    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 0")
+    Long countPendingByApproverId(@Param("approverId") Long approverId);
+    
+    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 1")
+    Long countApprovedByApproverId(@Param("approverId") Long approverId);
+    
+    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 2")
+    Long countRejectedByApproverId(@Param("approverId") Long approverId);
+    
+    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId")
+    Long countTotalByApproverId(@Param("approverId") Long approverId);
+    
+    // 添加缺失的方法
+    ApprovalNode findByProcessIdAndNodeLevel(Long processId, Integer nodeLevel);
 }

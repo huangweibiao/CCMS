@@ -1,10 +1,10 @@
 package com.ccms.entity.expense;
 
 import com.ccms.entity.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "expense_type")
@@ -34,8 +34,8 @@ public class ExpenseType extends BaseEntity {
     @Column(name = "need_approval", columnDefinition = "tinyint(1) default 0")
     private Boolean needApproval = false;
     
-    @Column(name = "approval_threshold", precision = 15, scale = 2)
-    private Double approvalThreshold;
+    @Column(name = "approval_threshold", precision = 10, scale = 2)
+    private BigDecimal approvalThreshold;
     
     @Column(name = "budget_category_id")
     private Long budgetCategoryId;
@@ -117,11 +117,11 @@ public class ExpenseType extends BaseEntity {
         this.needApproval = needApproval;
     }
 
-    public Double getApprovalThreshold() {
+    public BigDecimal getApprovalThreshold() {
         return approvalThreshold;
     }
 
-    public void setApprovalThreshold(Double approvalThreshold) {
+    public void setApprovalThreshold(BigDecimal approvalThreshold) {
         this.approvalThreshold = approvalThreshold;
     }
 

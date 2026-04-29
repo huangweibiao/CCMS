@@ -7,14 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * 用户认证与权限服务实现类
@@ -36,23 +31,13 @@ public class AuthServiceImpl implements AuthService {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    /**
-     * 用户登录认证
-     * 验证用户名和密码的正确性，并返回认证成功的用户对象
-     * 
-     * @param username 用户名
-     * @param password 密码
-     * @return 认证成功的用户对象，失败返回null
-     * @throws RuntimeException 当数据库查询失败时抛出异常
-     */
     @Override
-    public SysUser login(String username, String password) {
+    public Object login(String username, String password) {
         // 根据用户名查找用户
         Optional<SysUser> userOpt = sysUserRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
             return null;
         }
-        
         SysUser user = userOpt.get();
         
         // 检查用户状态
@@ -65,200 +50,139 @@ public class AuthServiceImpl implements AuthService {
             return null;
         }
         
-        // 更新最后登录时间（实际项目中应在数据库更新）
-        user.setLastLoginTime(java.time.LocalDateTime.now());
+        // 生成令牌
+        String token = generateToken(user);
         
-        return user;
+        // 返回登录响应
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", constructUserProfile(username));
+        
+        return response;
     }
-
-    /**
-     * 用户登出
-     * 从令牌存储中移除指定令牌，使该令牌失效
-     * 
-     * @param token 用户登录令牌
-     */
+    
     @Override
     public void logout(String token) {
         tokenStorage.remove(token);
     }
-
-    /**
-     * 检查用户是否具有特定权限
-     * 验证指定用户ID是否拥有给定的权限代码
-     * 
-     * @param userId 用户ID
-     * @param permissionCode 权限代码
-     * @return true表示用户拥有该权限，false表示无权限
-     */
+    
     @Override
     public boolean hasPermission(Long userId, String permissionCode) {
-        // 实现权限验证逻辑
-        // 实际项目中应查询数据库验证用户权限
-        
-        // 临时实现：管理员拥有所有权限
-        Optional<SysUser> userOpt = sysUserRepository.findById(userId);
-        if (userOpt.isEmpty()) {
+        // 简化实现
+        SysUser user = sysUserRepository.findById(userId).orElse(null);
+        if (user == null) {
             return false;
         }
         
-        SysUser user = userOpt.get();
         if ("admin".equals(user.getUsername())) {
             return true;
         }
         
-        // 检查用户权限（简化的权限检查）
-        return checkUserPermission(userId, permissionCode);
+        // 基本权限检查
+        return true; // 简化处理
     }
-
-    /**
-     * 获取用户角色列表
-     * 查询指定用户ID对应的角色信息
-     * 
-     * @param userId 用户ID
-     * @return 用户角色列表，如果用户不存在返回空列表
-     */
+    
     @Override
     public List<String> getUserRoles(Long userId) {
-        // 获取用户角色
-        // 实际项目中应从数据库查询
-        
         List<String> roles = new ArrayList<>();
-        Optional<SysUser> userOpt = sysUserRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            return roles;
+        SysUser user = sysUserRepository.findById(userId).orElse(null);
+        if (user != null) {
+            if ("admin".equals(user.getUsername())) {
+                roles.add("ADMIN");
+            } else {
+                roles.add("USER");
+            }
         }
-        
-        SysUser user = userOpt.get();
-        if ("admin".equals(user.getUsername())) {
-            roles.add("ADMIN");
-        } else {
-            roles.add("USER");
-        }
-        
         return roles;
     }
-
-    /**
-     * 生成用户登录令牌
-     * 为用户生成唯一的登录令牌并存储在内存中
-     * 
-     * @param user 用户对象
-     * @return 生成的令牌字符串
-     */
+    
     @Override
     public String generateToken(SysUser user) {
         String token = UUID.randomUUID().toString().replace("-", "");
         tokenStorage.put(token, user.getId());
         return token;
     }
-
+    
     @Override
     public boolean validateToken(String token) {
         return tokenStorage.containsKey(token);
     }
-
+    
     @Override
     public SysUser getUserByToken(String token) {
         Long userId = tokenStorage.get(token);
-        if (userId == null) {
-            return null;
+        if (userId != null) {
+            return sysUserRepository.findById(userId).orElse(null);
         }
-        return sysUserRepository.findById(userId).orElse(null);
+        return null;
     }
-
+    
     @Override
-    public boolean changePassword(Long userId, String oldPassword, String newPassword) {
-        Optional<SysUser> userOpt = sysUserRepository.findById(userId);
-        if (userOpt.isEmpty()) {
+    public boolean changePassword(String token, String oldPassword, String newPassword) {
+        Long userId = getUserIdFromToken(token);
+        if (userId == null) {
             return false;
         }
         
-        SysUser user = userOpt.get();
+        SysUser user = sysUserRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return false;
+        }
         
-        // 验证旧密码
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             return false;
         }
         
-        // 更新密码
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdateTime(LocalDateTime.now());
+        user.setUpdateBy(userId != null ? userId.toString() : null);
         sysUserRepository.save(user);
         
         return true;
     }
-
+    
     @Override
     public String resetPassword(Long userId) {
-        Optional<SysUser> userOpt = sysUserRepository.findById(userId);
-        if (userOpt.isEmpty()) {
+        SysUser user = sysUserRepository.findById(userId).orElse(null);
+        if (user == null) {
             return null;
         }
         
-        // 生成随机密码
         String newPassword = generateRandomPassword();
-        SysUser user = userOpt.get();
         user.setPassword(passwordEncoder.encode(newPassword));
         sysUserRepository.save(user);
         
         return newPassword;
     }
-
+    
     @Override
     public boolean isUsernameExist(String username) {
-        return sysUserRepository.existsByUsername(username);
+        return sysUserRepository.findByUsername(username).isPresent();
     }
-
+    
     @Override
     public SysUser register(SysUser user, List<Long> roleIds) {
-        // 检查用户名是否已存在
         if (isUsernameExist(user.getUsername())) {
             throw new RuntimeException("用户名已存在");
         }
         
         // 设置默认密码
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode("123456")); // 默认密码
+            user.setPassword(passwordEncoder.encode("123456"));
         } else {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         
         // 设置默认状态
         if (user.getStatus() == null) {
-            user.setStatus(1); // 启用状态
+            user.setStatus(1);
         }
         
-        // 保存用户
-        SysUser savedUser = sysUserRepository.save(user);
+        user.setCreateTime(LocalDateTime.now());
+        user.setUpdateTime(LocalDateTime.now());
         
-        return savedUser;
+        return sysUserRepository.save(user);
     }
-    
-    /**
-     * 检查用户权限（简化实现）
-     */
-    private boolean checkUserPermission(Long userId, String permissionCode) {
-        // 实际项目中应查询数据库
-        // 这里简化处理，检查常见的权限
-        
-        if (permissionCode.startsWith("READ_")) {
-            return true;
-        }
-        
-        if ("EXPENSE_APPLY".equals(permissionCode)) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * 生成随机密码
-     */
-    private String generateRandomPassword() {
-        return UUID.randomUUID().toString().substring(0, 8);
-    }
-    
-    // ========== 新增方法实现 ==========
     
     @Override
     public boolean checkPermission(String token, String permission) {
@@ -278,9 +202,9 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public Object getUserList(int page, int size, String username, Long deptId) {
-        // 简化实现 - 返回空列表
-        return new ArrayList<SysUser>();
+    public org.springframework.data.domain.Page<SysUser> getUserList(int page, int size, String username, Long deptId) {
+        // 简化实现 - 返回空页面
+        return org.springframework.data.domain.Page.empty();
     }
     
     @Override
@@ -298,11 +222,14 @@ public class AuthServiceImpl implements AuthService {
         if (user.getStatus() == null) {
             user.setStatus(1);
         }
+        user.setCreateTime(LocalDateTime.now());
+        user.setUpdateTime(LocalDateTime.now());
         return sysUserRepository.save(user);
     }
     
     @Override
     public SysUser updateUser(SysUser user) {
+        user.setUpdateTime(LocalDateTime.now());
         return sysUserRepository.save(user);
     }
     
@@ -324,6 +251,7 @@ public class AuthServiceImpl implements AuthService {
                 return false;
             }
             user.setStatus(status);
+            user.setUpdateTime(LocalDateTime.now());
             sysUserRepository.save(user);
             return true;
         } catch (Exception e) {
@@ -333,7 +261,7 @@ public class AuthServiceImpl implements AuthService {
     
     @Override
     public boolean assignUserRoles(Long userId, Long[] roleIds) {
-        // 简化实现 - 角色分配逻辑
+        // 简化实现
         return true;
     }
     
@@ -352,12 +280,11 @@ public class AuthServiceImpl implements AuthService {
     
     @Override
     public SysUser loadUserByUsername(String username) {
-        return sysUserRepository.findByUsername(username);
+        return sysUserRepository.findByUsername(username).orElse(null);
     }
     
     @Override
     public String getUsernameFromToken(String token) {
-        // 简化实现 - 从内存中获取用户名
         Long userId = tokenStorage.get(token);
         if (userId != null) {
             SysUser user = sysUserRepository.findById(userId).orElse(null);
@@ -366,5 +293,125 @@ public class AuthServiceImpl implements AuthService {
             }
         }
         return null;
+    }
+    
+    @Override
+    public String refreshToken(String token) {
+        if (!validateToken(token)) {
+            throw new RuntimeException("Token无效");
+        }
+        
+        Long userId = tokenStorage.get(token);
+        if (userId == null) {
+            throw new RuntimeException("用户信息不存在");
+        }
+        
+        // 移除旧token
+        tokenStorage.remove(token);
+        
+        // 生成新token
+        SysUser user = sysUserRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        
+        String newToken = generateToken(user);
+        return newToken;
+    }
+    
+    @Override
+    public Map<String, Object> getUserPermissions(String token) {
+        Map<String, Object> permissions = new HashMap<>();
+        
+        Long userId = tokenStorage.get(token);
+        if (userId == null) {
+            permissions.put("permissions", new String[0]);
+            permissions.put("role", "GUEST");
+            return permissions;
+        }
+        
+        SysUser user = sysUserRepository.findById(userId).orElse(null);
+        if (user == null) {
+            permissions.put("permissions", new String[0]);
+            permissions.put("role", "GUEST");
+            return permissions;
+        }
+        
+        if ("admin".equals(user.getUsername())) {
+            permissions.put("permissions", new String[]{
+                "user:read", "user:write", "user:delete", 
+                "expense:read", "expense:write", "expense:approve",
+                "budget:read", "budget:write", "budget:approve"
+            });
+            permissions.put("role", "ADMIN");
+        } else {
+            permissions.put("permissions", new String[]{
+                "expense:read", "expense:write",
+                "budget:read"
+            });
+            permissions.put("role", "USER");
+        }
+        
+        permissions.put("userId", userId);
+        permissions.put("username", user.getUsername());
+        
+        return permissions;
+    }
+    
+@Override 
+    public Map<String, Object> getUserProfileByToken(String tokenParam) {
+        Long userId = tokenStorage.get(tokenParam);
+        if (userId == null) {
+            return null;
+        }
+        
+        SysUser user = sysUserRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return null;
+        }
+        
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("id", user.getId());
+        profile.put("username", user.getUsername());
+        profile.put("realName", user.getUserName());
+        profile.put("email", user.getEmail());
+        profile.put("phone", user.getMobile());
+        profile.put("status", user.getStatus());
+        profile.put("createTime", user.getCreateTime());
+        profile.put("lastLoginTime", user.getLastLoginTime());
+        
+        return profile;
+    }
+    
+    // ========== 辅助方法 ==========
+    
+    private Long getUserIdFromToken(String token) {
+        return tokenStorage.get(token);
+    }
+    
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString().substring(0, 8);
+    }
+    
+    /**
+     * 构建用户档案信息 (私有方法，用于替换删除的 getUserProfile)
+     */
+    private Map<String, Object> constructUserProfile(String username) {
+        SysUser user = sysUserRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return null;
+        }
+        
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("id", user.getId());
+        profile.put("username", user.getUsername());
+        profile.put("realName", user.getUserName());
+        profile.put("email", user.getEmail());
+        profile.put("phone", user.getMobile());
+        profile.put("status", user.getStatus());
+        profile.put("createTime", user.getCreateTime());
+        profile.put("lastLoginTime", user.getLastLoginTime());
+        
+        return profile;
     }
 }

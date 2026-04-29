@@ -1,0 +1,219 @@
+name: CCMS UI自动化测试
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * *'  # 每天凌晨2点执行
+
+jobs:
+  ui-tests:
+    name: 运行UI自动化测试
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox]
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: ui-tests/package-lock.json
+
+    - name: 安装依赖
+      run: |
+        cd ui-tests
+        npm ci
+
+    - name: 安装浏览器
+      run: |
+        cd ui-tests
+        npx playwright install --with-deps
+
+    - name: 启动测试服务
+      run: |
+        # 这里需要启动前端应用的服务
+        # npm run dev &
+        echo "假设前端服务已启动在 http://localhost:8080"
+
+    - name: 运行UI测试
+      run: |
+        cd ui-tests
+        npm run test:${{ matrix.browser }}
+      env:
+        TEST_BASE_URL: http://localhost:8080
+        TEST_ADMIN_USERNAME: admin
+        TEST_ADMIN_PASSWORD: admin123
+
+    - name: 上传测试报告
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ui-test-results-${{ matrix.browser }}
+        path: |
+          ui-tests/playwright-report/
+          ui-tests/test-results/
+        retention-days: 30
+
+    - name: 上传测试覆盖率
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report-${{ matrix.browser }}
+        path: ui-tests/coverage/
+        retention-days: 30
+
+  test-reports:
+    name: 生成测试报告
+    runs-on: ubuntu-latest
+    needs: ui-tests
+    if: always()
+    
+    steps:
+    - name: 下载测试结果
+      uses: actions/download-artifact@v4
+      with:
+        pattern: ui-test-results-*
+        path: test-results/
+
+    - name: 生成聚合报告
+      run: |
+        # 聚合各浏览器的测试结果
+        mkdir -p aggregated-results
+        find test-results -name "*.json" -exec cp {} aggregated-results/ \;
+        
+        # 生成统一的HTML报告
+        node scripts/generate-aggregated-report.js
+
+    - name: 上传聚合报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: aggregated-ui-test-report
+        path: aggregated-results/
+        retention-days: 90
+
+    - name: 发送通知
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        text: UI自动化测试失败，请检查！
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  quality-gate:
+    name: 质量门禁
+    runs-on: ubuntu-latest
+    needs: ui-tests
+    if: always()
+    
+    steps:
+    - name: 下载测试结果
+      uses: actions/download-artifact@v4
+      with:
+        pattern: ui-test-results-*
+        path: test-results/
+
+    - name: 检查测试通过率
+      run: |
+        # 分析测试结果
+        TOTAL_TESTS=0
+        PASSED_TESTS=0
+        
+        for result_file in test-results/*/test-results.json; do
+          if [ -f "$result_file" ]; then
+            total=$(jq '.total' "$result_file")
+            passed=$(jq '.passed' "$result_file")
+            TOTAL_TESTS=$((TOTAL_TESTS + total))
+            PASSED_TESTS=$((PASSED_TESTS + passed))
+          fi
+        done
+        
+        if [ $TOTAL_TESTS -eq 0 ]; then
+          echo "❌ 没有找到测试结果"
+          exit 1
+        fi
+        
+        PASS_RATE=$((PASSED_TESTS * 100 / TOTAL_TESTS))
+        echo "📊 测试通过率: $PASS_RATE%"
+        
+        # 质量门禁：通过率必须大于90%
+        if [ $PASS_RATE -lt 90 ]; then
+          echo "❌ 测试通过率低于90%，质量门禁失败"
+          exit 1
+        else
+          echo "✅ 质量门禁通过"
+        fi
+
+  performance-test:
+    name: 性能测试
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: 安装依赖
+      run: |
+        cd ui-tests
+        npm ci
+
+    - name: 运行性能测试
+      run: |
+        cd ui-tests
+        npx playwright test tests/performance/ --project=chromium
+
+    - name: 上传性能报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-test-results
+        path: ui-tests/performance-reports/
+
+  security-scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 运行安全扫描
+      run: |
+        # 使用ZAP或其他安全扫描工具
+        echo "安全扫描功能待实现"
+
+  deploy-staging:
+    name: 部署到测试环境
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && needs.ui-tests.result == 'success'
+    needs: [ui-tests, quality-gate]
+    
+    steps:
+    - name: 部署到测试环境
+      run: |
+        echo "部署到测试环境..."
+        # 实际的部署脚本
+
+    - name: 运行冒烟测试
+      run: |
+        cd ui-tests
+        npm run test:smoke
+
+env:
+  NODE_ENV: test
+  CI: true

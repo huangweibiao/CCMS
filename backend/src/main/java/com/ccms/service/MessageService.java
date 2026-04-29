@@ -183,6 +183,15 @@ public interface MessageService {
     boolean isUserSubscribed(Long userId, Integer messageType);
     
     /**
+     * 发送审批消息
+     * 
+     * @param userId 用户ID
+     * @param title 消息标题
+     * @param content 消息内容
+     */
+    void sendApprovalMessage(Long userId, String title, String content);
+    
+    /**
      * 消息统计信息
      */
     class MessageStatistics {

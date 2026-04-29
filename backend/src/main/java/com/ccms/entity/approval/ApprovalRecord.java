@@ -74,6 +74,18 @@ public class ApprovalRecord extends BaseEntity {
     @Transient  // 标记为非持久化字段，因为数据库中可能没有这个字段
     private Long processId;
     
+    @Transient
+    private Long nodeId;
+    
+    @Transient
+    private Boolean approved;
+    
+    @Transient
+    private Boolean skipped;
+    
+    @Transient
+    private String comment;
+    
     /**
      * 审批状态 - 修正业务类型参数
      */
@@ -126,6 +138,38 @@ public class ApprovalRecord extends BaseEntity {
      */
     public void setNodeOrder(Integer nodeOrder) {
         this.nodeOrder = nodeOrder;
+    }
+    
+    public Long getNodeId() {
+        return nodeId;
+    }
+    
+    public void setNodeId(Long nodeId) {
+        this.nodeId = nodeId;
+    }
+    
+    public Boolean getApproved() {
+        return approved;
+    }
+    
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
+    }
+    
+    public Boolean getSkipped() {
+        return skipped;
+    }
+    
+    public void setSkipped(Boolean skipped) {
+        this.skipped = skipped;
+    }
+    
+    public String getComment() {
+        return comment;
+    }
+    
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     // Getters and Setters

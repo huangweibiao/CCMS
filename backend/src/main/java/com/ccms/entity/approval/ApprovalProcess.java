@@ -43,6 +43,12 @@ public class ApprovalProcess extends BaseEntity {
     @Column(name = "process_id")
     private Long processId;
     
+    @Column(name = "business_id")
+    private Long businessId;
+    
+    @Column(name = "start_time")
+    private java.time.LocalDateTime startTime;
+    
     // Getters and Setters
     public String getProcessCode() {
         return processCode;
@@ -138,5 +144,21 @@ public class ApprovalProcess extends BaseEntity {
     
     public void setProcessId(Long processId) {
         this.processId = processId;
+    }
+    
+    public Long getBusinessId() {
+        return businessId;
+    }
+    
+    public void setBusinessId(Long businessId) {
+        this.businessId = businessId;
+    }
+    
+    public java.time.LocalDateTime getStartTime() {
+        return startTime;
+    }
+    
+    public void setStartTime(java.time.LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 }

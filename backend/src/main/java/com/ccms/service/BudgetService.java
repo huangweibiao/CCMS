@@ -148,17 +148,23 @@ public interface BudgetService {
     // 添加BudgetController调用的方法
     boolean checkPermission(String permissionType, String operationType);
     
-    Budget deleteBudget(Long budgetId);
+    BudgetMain deleteBudget(Long budgetId);
     
-    Budget approveBudget(Long budgetId, Long approverId, Integer status, String comment);
+    BudgetMain approveBudget(Long budgetId, Long approverId, Integer status, String comment);
     
-    Budget allocateBudget(Long budgetId, Long allocUserId, Double amount);
+    BudgetMain allocateBudget(Long budgetId, Long allocUserId, Double amount);
     
-    Budget adjustBudgetAmount(Long budgetId, Double newAmount, String reason);
+    BudgetMain adjustBudgetAmount(Long budgetId, Double newAmount, String reason);
     
     BudgetExecution getBudgetExecution(Long budgetId);
     
     BudgetStatistics getAnnualBudgetStatistics(Integer year);
+    
+    Object getBudgetList(int page, int size, Integer year, Long deptId, Integer status);
+    
+    Object getDepartmentBudgetStatistics(Long deptId, Integer year);
+    
+    void setBudgetWarning(Long budgetId, Double warningAmount, String warningMessage);
     
     /**
      * 预算统计信息类

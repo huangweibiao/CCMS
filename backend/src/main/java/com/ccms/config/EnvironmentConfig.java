@@ -259,7 +259,7 @@ public class EnvironmentConfig {
     /**
      * 验证配置是否完整
      */
-    public Map<String, Object> validateConfiguration() {
+    public Map<String, Object> validateConfigurationWithDetails() {
         Map<String, Object> validation = new HashMap<>();
         Map<String, String> errors = new HashMap<>();
         Map<String, String> warnings = new HashMap<>();
