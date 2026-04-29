@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "expense_reimburse")
+@Table(name = "ccms_expense_reimburse")
 public class ExpenseReimburse extends BaseEntity {
     
     @Column(name = "reimburse_no", nullable = false, unique = true, length = 50)
@@ -78,6 +78,12 @@ public class ExpenseReimburse extends BaseEntity {
     
     @Column(name = "payment_method")
     private Integer paymentMethod;
+    
+    @Column(name = "loan_deduction_amount", precision = 15, scale = 2)
+    private BigDecimal loanDeductionAmount = BigDecimal.ZERO;
+    
+    @Column(name = "real_amount", precision = 15, scale = 2)
+    private BigDecimal realAmount = BigDecimal.ZERO;
     
     @Column(name = "payment_doc_number", length = 100)
     private String paymentDocNumber;
@@ -304,5 +310,22 @@ public class ExpenseReimburse extends BaseEntity {
     
     public void setExpectedDate(LocalDate expectedDate) {
         this.reimburseDate = expectedDate;
+    }
+    
+    // LoanDeductionService required methods
+    public BigDecimal getLoanDeductionAmount() {
+        return loanDeductionAmount != null ? loanDeductionAmount : BigDecimal.ZERO;
+    }
+    
+    public void setLoanDeductionAmount(BigDecimal loanDeductionAmount) {
+        this.loanDeductionAmount = loanDeductionAmount;
+    }
+    
+    public BigDecimal getRealAmount() {
+        return realAmount != null ? realAmount : this.totalAmount;
+    }
+    
+    public void setRealAmount(BigDecimal realAmount) {
+        this.realAmount = realAmount;
     }
 }

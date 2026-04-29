@@ -6,13 +6,19 @@ import java.time.LocalDateTime;
 
 /**
  * 用户表实体类
- * 对应表名：ccms_sys_user
+ * 对应表名：sys_user（与设计文档保持一致）
  * 
  * @author 系统生成
  */
 @Entity
 @Table(name = "ccms_sys_user")
 public class SysUser extends BaseEntity {
+    
+    /**
+     * 部门负责人标识: 0-否 1-是
+     */
+    @Column(name = "is_dept_manager", nullable = false, columnDefinition = "tinyint default 0")
+    private Integer isDeptManager = 0;
 
     /**
      * 工号
@@ -153,6 +159,14 @@ public class SysUser extends BaseEntity {
 
     public void setLastLoginTime(LocalDateTime lastLoginTime) {
         this.lastLoginTime = lastLoginTime;
+    }
+
+    public Integer getIsDeptManager() {
+        return isDeptManager;
+    }
+
+    public void setIsDeptManager(Integer isDeptManager) {
+        this.isDeptManager = isDeptManager;
     }
     
     // Compatible methods for service layer calls

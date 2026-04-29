@@ -1,13 +1,14 @@
 package com.ccms.entity.expense;
 
 import com.ccms.entity.BaseEntity;
+import com.ccms.enums.ApplyStatusEnum;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "expense_apply")
+@Table(name = "ccms_expense_apply")
 public class ExpenseApply extends BaseEntity {
     
     @Column(name = "apply_no", nullable = false, unique = true, length = 50)
@@ -38,10 +39,13 @@ public class ExpenseApply extends BaseEntity {
     private String currency = "CNY";
     
     @Column(name = "status", nullable = false)
-    private Integer status; // 0-草稿 1-已提交 2-审批中 3-已批准 4-已拒绝 5-已撤回
+    private Integer status; // 对应设计文档：0-草稿 1-审批中 2-通过 3-驳回 4-作废 5-待支付 6-已支付
     
-    @Column(name = "approval_status", nullable = false)
-    private Integer approvalStatus; // 0-待提交 1-审批中 2-已通过 3-已拒绝
+    @Column(name = "approval_status")
+    private Integer approvalStatus; // 审批状态（设计文档中有定义）
+    
+    @Column(name = "fee_type_id")
+    private Long feeTypeId; // 费用类型ID
     
     @Column(name = "current_approver_id")
     private Long currentApproverId;
@@ -301,5 +305,97 @@ public class ExpenseApply extends BaseEntity {
 
     public void setReimburseId(Long reimburseId) {
         this.reimburseId = reimburseId;
+    }
+
+    // 状态管理相关方法
+    
+    /**
+     * 获取状态枚举描述
+     */
+    public String getStatusDescription() {
+        ApplyStatusEnum statusEnum = ApplyStatusEnum.getByCode(this.status);
+        return statusEnum != null ? statusEnum.getDescription() : "未知状态";
+    }
+    
+    /**
+     * 检查是否允许变更为目标状态
+     */
+    public boolean canTransitionTo(Integer targetStatus) {
+        return ApplyStatusEnum.isTransitionAllowed(this.status, targetStatus);
+    }
+    
+    /**
+     * 检查是否处于可编辑状态（草稿或已驳回）
+     */
+    public boolean isEditable() {
+        return status != null && (status.equals(ApplyStatusEnum.DRAFT.getCode()) || 
+                                 status.equals(ApplyStatusEnum.REJECTED.getCode()));
+    }
+    
+    /**
+     * 检查是否处于审批流程中
+     */
+    public boolean isInApprovalProcess() {
+        return status != null && status.equals(ApplyStatusEnum.APPROVING.getCode());
+    }
+    
+    /**
+     * 检查是否已完成审批
+     */
+    public boolean isApprovalCompleted() {
+        return status != null && 
+               (status.equals(ApplyStatusEnum.APPROVED.getCode()) || 
+                status.equals(ApplyStatusEnum.REJECTED.getCode()) ||
+                status.equals(ApplyStatusEnum.CANCELLED.getCode()));
+    }
+    
+    /**
+     * 检查是否处于支付相关状态
+     */
+    public boolean isPaymentRelated() {
+        return status != null && 
+               (status.equals(ApplyStatusEnum.TO_BE_PAID.getCode()) || 
+                status.equals(ApplyStatusEnum.PAID.getCode()));
+    }
+    
+    /**
+     * 获取费用类型ID
+     */
+    public Long getFeeTypeId() {
+        return feeTypeId;
+    }
+    
+    /**
+     * 设置费用类型ID
+     */
+    public void setFeeTypeId(Long feeTypeId) {
+        this.feeTypeId = feeTypeId;
+    }
+
+    @Override
+    public String toString() {
+        return "ExpenseApply{" +
+                "id=" + getId() +
+                ", applyNo='" + applyNo + '\'' +
+                ", title='" + title + '\'' +
+                ", applyUserId=" + applyUserId +
+                ", applyUserName='" + applyUserName + '\'' +
+                ", deptId=" + deptId +
+                ", deptName='" + deptName + '\'' +
+                ", applyDate=" + applyDate +
+                ", totalAmount=" + totalAmount +
+                ", status=" + status +
+                ", statusDescription='" + getStatusDescription() + '\'' +
+                ", approvalStatus=" + approvalStatus +
+                ", currentApproverId=" + currentApproverId +
+                ", currentApproverName='" + currentApproverName + '\'' +
+                ", submitTime=" + submitTime +
+                ", approveTime=" + approveTime +
+                ", rejectTime=" + rejectTime +
+                ", rejectReason='" + rejectReason + '\'' +
+                ", createTime=" + getCreateTime() +
+                ", updateTime=" + getUpdateTime() +
+                ", version=" + getVersion() +
+                '}';
     }
 }

@@ -1,6 +1,7 @@
 package com.ccms.entity.expense;
 
 import com.ccms.entity.BaseEntity;
+import com.ccms.enums.ApplyStatusEnum;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -12,7 +13,7 @@ import java.sql.Date;
  * @author 系统生成
  */
 @Entity
-@Table(name = "ccms_expense_apply_main")
+@Table(name = "expense_apply_main")
 public class ExpenseApplyMain extends BaseEntity {
 
     /**
@@ -80,6 +81,12 @@ public class ExpenseApplyMain extends BaseEntity {
      */
     @Column(name = "current_node", length = 64)
     private String currentNode;
+    
+    /**
+     * 成本中心ID
+     */
+    @Column(name = "cost_center_id")
+    private Long costCenterId;
     
     /**
      * 审批流实例ID
@@ -184,6 +191,65 @@ public class ExpenseApplyMain extends BaseEntity {
         this.approvalInstanceId = approvalInstanceId;
     }
 
+    public Long getCostCenterId() {
+        return costCenterId;
+    }
+
+    public void setCostCenterId(Long costCenterId) {
+        this.costCenterId = costCenterId;
+    }
+
+    // 状态管理相关方法
+    
+    /**
+     * 获取状态枚举描述
+     */
+    public String getStatusDescription() {
+        ApplyStatusEnum statusEnum = ApplyStatusEnum.getByCode(this.status);
+        return statusEnum != null ? statusEnum.getDescription() : "未知状态";
+    }
+    
+    /**
+     * 检查是否允许变更为目标状态
+     */
+    public boolean canTransitionTo(Integer targetStatus) {
+        return ApplyStatusEnum.isTransitionAllowed(this.status, targetStatus);
+    }
+    
+    /**
+     * 检查是否处于可编辑状态（草稿或已驳回）
+     */
+    public boolean isEditable() {
+        return status != null && (status.equals(ApplyStatusEnum.DRAFT.getCode()) || 
+                                 status.equals(ApplyStatusEnum.REJECTED.getCode()));
+    }
+    
+    /**
+     * 检查是否处于审批流程中
+     */
+    public boolean isInApprovalProcess() {
+        return status != null && status.equals(ApplyStatusEnum.APPROVING.getCode());
+    }
+    
+    /**
+     * 检查是否已完成审批
+     */
+    public boolean isApprovalCompleted() {
+        return status != null && 
+               (status.equals(ApplyStatusEnum.APPROVED.getCode()) || 
+                status.equals(ApplyStatusEnum.REJECTED.getCode()) ||
+                status.equals(ApplyStatusEnum.CANCELLED.getCode()));
+    }
+    
+    /**
+     * 检查是否处于支付相关状态
+     */
+    public boolean isPaymentRelated() {
+        return status != null && 
+               (status.equals(ApplyStatusEnum.TO_BE_PAID.getCode()) || 
+                status.equals(ApplyStatusEnum.PAID.getCode()));
+    }
+
     @Override
     public String toString() {
         return "ExpenseApplyMain{" +
@@ -197,9 +263,11 @@ public class ExpenseApplyMain extends BaseEntity {
                 ", reason='" + reason + '\'' +
                 ", expectedDate=" + expectedDate +
                 ", status=" + status +
+                ", statusDescription='" + getStatusDescription() + '\'' +
                 ", approvalStatus=" + approvalStatus +
                 ", currentNode='" + currentNode + '\'' +
                 ", approvalInstanceId=" + approvalInstanceId +
+                ", costCenterId=" + costCenterId +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
                 ", version=" + getVersion() +

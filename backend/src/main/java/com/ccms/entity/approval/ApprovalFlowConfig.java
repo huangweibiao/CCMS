@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  * @author 系统生成
  */
 @Entity
-@Table(name = "ccms_approval_flow_config")
+@Table(name = "approval_flow_config")
 public class ApprovalFlowConfig extends BaseEntity {
 
     /**

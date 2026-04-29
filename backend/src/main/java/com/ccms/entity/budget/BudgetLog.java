@@ -16,34 +16,34 @@ import java.time.LocalDateTime;
 public class BudgetLog extends BaseEntity {
 
     /**
-     * 预算ID
+     * 预算明细ID
      */
-    @Column(name = "budget_id", nullable = false)
-    private Long budgetId;
+    @Column(name = "budget_detail_id", nullable = false)
+    private Long budgetDetailId;
     
     /**
-     * 操作类型：扣减/释放/冻结/解冻
+     * 业务单据类型：1-费用申请 2-费用报销 3-预算调整
      */
-    @Column(name = "operate_type", length = 32, nullable = false)
-    private String operateType;
+    @Column(name = "biz_type", nullable = false)
+    private Integer bizType;
+    
+    /**
+     * 业务单据ID
+     */
+    @Column(name = "biz_id", nullable = false)
+    private Long bizId;
+    
+    /**
+     * 操作类型：1-冻结 2-解冻 3-扣减 4-释放 5-调整
+     */
+    @Column(name = "oper_type", nullable = false)
+    private Integer operType;
     
     /**
      * 操作金额
      */
-    @Column(name = "amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal amount;
-    
-    /**
-     * 关联业务单ID（申请/报销单）
-     */
-    @Column(name = "business_id")
-    private Long businessId;
-    
-    /**
-     * 业务类型：APPLY/REIMBURSE
-     */
-    @Column(name = "business_type", length = 32)
-    private String businessType;
+    @Column(name = "oper_amount", precision = 15, scale = 2, nullable = false)
+    private BigDecimal operAmount;
     
     /**
      * 操作人ID
@@ -64,44 +64,44 @@ public class BudgetLog extends BaseEntity {
     private String remark;
 
     // Getters and Setters
-    public Long getBudgetId() {
-        return budgetId;
+    public Long getBudgetDetailId() {
+        return budgetDetailId;
     }
 
-    public void setBudgetId(Long budgetId) {
-        this.budgetId = budgetId;
+    public void setBudgetDetailId(Long budgetDetailId) {
+        this.budgetDetailId = budgetDetailId;
     }
 
-    public String getOperateType() {
-        return operateType;
+    public Integer getBizType() {
+        return bizType;
     }
 
-    public void setOperateType(String operateType) {
-        this.operateType = operateType;
+    public void setBizType(Integer bizType) {
+        this.bizType = bizType;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public Long getBizId() {
+        return bizId;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setBizId(Long bizId) {
+        this.bizId = bizId;
     }
 
-    public Long getBusinessId() {
-        return businessId;
+    public Integer getOperType() {
+        return operType;
     }
 
-    public void setBusinessId(Long businessId) {
-        this.businessId = businessId;
+    public void setOperType(Integer operType) {
+        this.operType = operType;
     }
 
-    public String getBusinessType() {
-        return businessType;
+    public BigDecimal getOperAmount() {
+        return operAmount;
     }
 
-    public void setBusinessType(String businessType) {
-        this.businessType = businessType;
+    public void setOperAmount(BigDecimal operAmount) {
+        this.operAmount = operAmount;
     }
 
     public Long getOperateBy() {
@@ -132,11 +132,11 @@ public class BudgetLog extends BaseEntity {
     public String toString() {
         return "BudgetLog{" +
                 "id=" + getId() +
-                ", budgetId=" + budgetId +
-                ", operateType='" + operateType + '\'' +
-                ", amount=" + amount +
-                ", businessId=" + businessId +
-                ", businessType='" + businessType + '\'' +
+                ", budgetDetailId=" + budgetDetailId +
+                ", bizType=" + bizType +
+                ", bizId=" + bizId +
+                ", operType=" + operType +
+                ", operAmount=" + operAmount +
                 ", operateBy=" + operateBy +
                 ", operateTime=" + operateTime +
                 ", remark='" + remark + '\'' +
