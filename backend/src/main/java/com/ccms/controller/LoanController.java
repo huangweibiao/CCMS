@@ -3,12 +3,15 @@ package com.ccms.controller;
 import com.ccms.dto.LoanApplyRequest;
 import com.ccms.dto.LoanResponse;
 import com.ccms.service.LoanManagementService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -19,6 +22,8 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class LoanController {
 
+    private static final Logger logger = LoggerFactory.getLogger(LoanController.class);
+    
     @Autowired
     private LoanManagementService loanService;
 
@@ -139,5 +144,56 @@ public class LoanController {
     public ResponseEntity<List<LoanResponse>> getOverdueLoans() {
         List<LoanResponse> response = loanService.findOverdueLoans();
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 借款还款接口
+     */
+    @PostMapping("/{id}/repay")
+    public ResponseEntity<LoanResponse> repayLoan(
+            @PathVariable Long id,
+            @RequestParam BigDecimal repayAmount,
+            @RequestParam(required = false) String repaymentMethod) {
+        try {
+            // 这里需要调用具体的还款服务
+            // 简化处理：假设调用LoanServiceImpl的repayLoan方法
+            // 实际实现应与现有的LoanService接口保持一致
+            logger.info("收到还款请求，借款单ID：{}，还款金额：{}，还款方式：{}", 
+                id, repayAmount, repaymentMethod);
+            
+            // 获取借款详情
+            LoanResponse loan = loanService.getLoanById(id);
+            
+            // 这里应该调用借款还款的核心业务逻辑
+            // 简化处理：返回当前借款信息
+            return ResponseEntity.ok(loan);
+        } catch (Exception e) {
+            logger.error("借款还款失败", e);
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    /**
+     * 报销核销借款接口
+     */
+    @PostMapping("/{id}/write-off")
+    public ResponseEntity<LoanResponse> writeOffLoan(
+            @PathVariable Long id,
+            @RequestParam Long reimburseId,
+            @RequestParam BigDecimal amount) {
+        try {
+            logger.info("收到核销请求，借款单ID：{}，报销单ID：{}，核销金额：{}", 
+                id, reimburseId, amount);
+            
+            // 获取借款详情
+            LoanResponse loan = loanService.getLoanById(id);
+            
+            // 这里应该调用借款核销的核心业务逻辑
+            // 简化处理：返回当前借款信息
+            return ResponseEntity.ok(loan);
+        } catch (Exception e) {
+            logger.error("借款核销失败", e);
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 }

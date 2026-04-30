@@ -2,7 +2,7 @@ package com.ccms.service.impl;
 
 import com.ccms.entity.expense.ExpenseReimburse;
 import com.ccms.entity.expense.LoanRepayment;
-import com.ccms.repository.ExpenseReimburseRepository;
+import com.ccms.repository.expense.ExpenseReimburseRepository;
 import com.ccms.repository.LoanRepaymentRepository;
 import com.ccms.service.LoanSettlementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +108,7 @@ public class LoanSettlementServiceImpl implements LoanSettlementService {
             
             // 7. 如果报销金额全部用于核销，则报销单状态变更为已支付
             if (remainingSettleAmount.compareTo(BigDecimal.ZERO) <= 0) {
-                reimburse.setStatus("PAID");
+                reimburse.setStatus(3); // 3-已批准/已支付
                 reimburse.setPaymentTime(LocalDateTime.now());
             }
             
@@ -193,7 +193,7 @@ public class LoanSettlementServiceImpl implements LoanSettlementService {
             
             // 如果报销金额全部用于核销，则报销单状态变更为已支付
             if (totalSettleAmount.compareTo(reimburse.getReimburseAmount()) >= 0) {
-                reimburse.setStatus("PAID");
+                reimburse.setStatus(3); // 3-已批准/已支付
                 reimburse.setPaymentTime(LocalDateTime.now());
             }
             
@@ -324,19 +324,14 @@ public class LoanSettlementServiceImpl implements LoanSettlementService {
         repayment.setLoanId(loanId);
         repayment.setReimburseId(reimburseId);
         repayment.setRepaymentAmount(amount);
-        repayment.setRepaymentType(type);
-        repayment.setStatus("COMPLETED");
+        repayment.setRepaymentType(3); // 报销核销类型
+        repayment.setStatus(LoanRepayment.STATUS_CONFIRMED);
         repayment.setRepaymentTime(LocalDateTime.now());
-        repayment.setCreatedBy(userId);
-        repayment.setCreatedTime(LocalDateTime.now());
-        repayment.setUpdatedBy(userId);
-        repayment.setUpdatedTime(LocalDateTime.now());
-        repayment.setRemarks("报销核销还款");
+        repayment.setRepaymentUserId(userId);
+        repayment.setReceiverUserId(userId);
+        repayment.setRemark("报销核销还款");
         
-        // 设置乐观锁版本（如果实体有的话）
-        if (repayment.getVersion() == null) {
-            repayment.setVersion(0L);
-        }
+        // LoanRepayment实体类没有version字段，移除版本设置
         
         return repayment;
     }

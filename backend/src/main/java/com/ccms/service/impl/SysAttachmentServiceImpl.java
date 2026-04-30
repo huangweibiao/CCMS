@@ -1,10 +1,12 @@
 package com.ccms.service.impl;
 
 import com.ccms.entity.system.SysAttachment;
-import com.ccms.repository.SysAttachmentRepository;
+import com.ccms.repository.system.SysAttachmentRepository;
 import com.ccms.service.SysAttachmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +17,7 @@ import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Predicate;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,9 +34,17 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SysAttachmentServiceImpl implements SysAttachmentService {
     
+    private static final Logger log = LoggerFactory.getLogger(SysAttachmentServiceImpl.class);
+    
     private final SysAttachmentRepository attachmentRepository;
+
+    // 构造函数注入，解决Lombok @RequiredArgsConstructor不生效的问题
+    public SysAttachmentServiceImpl(SysAttachmentRepository attachmentRepository) {
+        this.attachmentRepository = attachmentRepository;
+    }
     
     @Value("${file.upload.path:/uploads}")
     private String uploadPath;
@@ -323,10 +333,10 @@ public class SysAttachmentServiceImpl implements SysAttachmentService {
             String fileMd5 = DigestUtils.md5DigestAsHex(file.getInputStream());
             
             // 查找相同MD5的文件
-            Optional<SysAttachment> existingAttachment = attachmentRepository.findByFileMd5(fileMd5);
+            List<SysAttachment> existingAttachments = attachmentRepository.findByFileMd5(fileMd5);
             
-            if (existingAttachment.isPresent()) {
-                SysAttachment attachment = existingAttachment.get();
+            if (!existingAttachments.isEmpty()) {
+                SysAttachment attachment = existingAttachments.get(0);
                 result.setDuplicate(true);
                 result.setDuplicateId(attachment.getId());
                 result.setFileMd5(fileMd5);

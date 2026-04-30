@@ -5,15 +5,30 @@ import com.ccms.repository.TodoItemRepository;
 import com.ccms.service.MessageNotifyService;
 import com.ccms.service.TodoReminderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+// 辅助方法和缺失方法实现
+class TodoOperationResult {
+    private boolean success;
+    private String message;
+    
+    public TodoOperationResult(boolean success, String message) {
+        this.success = success;
+        this.message = message;
+    }
+    
+    public boolean isSuccess() { return success; }
+    public String getMessage() { return message; }
+}
 
 /**
  * 待办提醒服务实现类
@@ -31,33 +46,22 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     private MessageNotifyService messageNotifyService;
     
     @Override
-    public TodoOperationResult createTodo(com.ccms.service.TodoReminderService.TodoItem todoItem) {
+    public TodoOperationResult createTodo(TodoItem serviceTodo) {
         try {
-            // 校验待办项
-            if (!todoItem.isValid()) {
+            // 校验待办项（简化版本）
+            if (!isValidTodo(serviceTodo)) {
                 return new TodoOperationResult(false, "待办项信息不完整");
             }
             
-            // 设置默认值
-            if (todoItem.getStatus() == null) {
-                todoItem.setStatus(TodoStatus.PENDING);
-            }
-            if (todoItem.getCreatedTime() == null) {
-                todoItem.setCreatedTime(LocalDateTime.now());
-            }
-            if (todoItem.getPriority() == null) {
-                todoItem.setPriority(Priority.NORMAL);
-            }
-            
             // 转换为实体并保存
-            TodoItem entity = new TodoItem();
-            entity.fromServiceItem(todoItem);
+            com.ccms.entity.system.TodoItem entity = new com.ccms.entity.system.TodoItem();
+            copyTodoProperties(serviceTodo, entity);
             entity.setCreatedTime(LocalDateTime.now());
             
-            TodoItem savedTodo = todoItemRepository.save(entity);
+            com.ccms.entity.system.TodoItem savedTodo = todoItemRepository.save(entity);
             
             // 发送待办提醒
-            if (savedTodo.getStatus() == "PENDING") {
+            if (savedTodo.getStatus().equals("PENDING")) {
                 sendTodoReminder(savedTodo.toServiceItem());
             }
             
@@ -72,38 +76,29 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     }
     
     @Override
-    public TodoOperationResult updateTodo(com.ccms.service.TodoReminderService.TodoItem todoItem) {
+    public TodoOperationResult updateTodo(TodoItem serviceTodo) {
         try {
-            if (todoItem.getTodoId() == null) {
+            if (serviceTodo.getTodoId() == null) {
                 return new TodoOperationResult(false, "待办项ID不能为空");
             }
             
-            TodoItem existingTodo = todoItemRepository.findById(todoItem.getTodoId())
-                    .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoItem.getTodoId()));
+            com.ccms.entity.system.TodoItem existingTodo = todoItemRepository.findById(serviceTodo.getTodoId())
+                    .orElseThrow(() -> new RuntimeException("待办项不存在: " + serviceTodo.getTodoId()));
             
-            // 更新字段
-            existingTodo.setTitle(todoItem.getTitle());
-            existingTodo.setContent(todoItem.getContent());
-            existingTodo.setTodoType(todoItem.getTodoType());
-            existingTodo.setPriority(todoItem.getPriority() != null ? todoItem.getPriority().toString() : "NORMAL");
-            existingTodo.setDeadline(todoItem.getDeadline());
-            existingTodo.setActionUrl(todoItem.getActionUrl());
-            existingTodo.setBizType(todoItem.getBizType());
-            existingTodo.setBizId(todoItem.getBizId());
-            existingTodo.setEstimatedMinutes(todoItem.getEstimatedMinutes());
-            existingTodo.setRemarks(todoItem.getRemarks());
+            // 转换并更新字段
+            existingTodo.fromServiceItem(serviceTodo);
             existingTodo.setUpdatedTime(LocalDateTime.now());
             
             // 如果是状态变更，发送相应通知
-            if (todoItem.getStatus() != null && !todoItem.getStatus().toString().equals(existingTodo.getStatus())) {
-                existingTodo.setStatus(todoItem.getStatus().toString());
-                if (todoItem.getStatus() == TodoStatus.COMPLETED) {
+            if (serviceTodo.getStatus() != null && !serviceTodo.getStatus().toString().equals(existingTodo.getStatus())) {
+                existingTodo.setStatus(convertStatusToString(serviceTodo.getStatus()));
+                if (serviceTodo.getStatus() == TodoStatus.COMPLETED) {
                     existingTodo.setCompletedTime(LocalDateTime.now());
                     sendTodoCompletionNotification(existingTodo.toServiceItem());
                 }
             }
             
-            TodoItem updatedTodo = todoItemRepository.save(existingTodo);
+            com.ccms.entity.system.TodoItem updatedTodo = todoItemRepository.save(existingTodo);
             
             TodoOperationResult result = new TodoOperationResult(true, "更新待办项成功");
             result.setTodoItem(updatedTodo.toServiceItem());
@@ -117,7 +112,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     @Override
     public TodoOperationResult completeTodo(Long todoId, Long userId, String remarks) {
         try {
-            TodoItem todo = todoItemRepository.findById(todoId)
+            com.ccms.entity.system.TodoItem todo = todoItemRepository.findById(todoId)
                     .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoId));
             
             // 检查权限：只能完成分配给自己的待办项
@@ -130,7 +125,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
             todo.setUpdatedTime(LocalDateTime.now());
             todo.setUpdatedBy(userId);
             
-            TodoItem completedTodo = todoItemRepository.save(todo);
+            com.ccms.entity.system.TodoItem completedTodo = todoItemRepository.save(todo);
             
             // 发送完成通知
             sendTodoCompletionNotification(completedTodo.toServiceItem());
@@ -147,7 +142,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     @Override
     public TodoOperationResult cancelTodo(Long todoId, Long userId, String reason) {
         try {
-            TodoItem todo = todoItemRepository.findById(todoId)
+            com.ccms.entity.system.TodoItem todo = todoItemRepository.findById(todoId)
                     .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoId));
             
             // 检查权限：只能取消自己创建的或分配给的待办项
@@ -161,7 +156,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
             todo.setUpdatedTime(LocalDateTime.now());
             todo.setUpdatedBy(userId);
             
-            TodoItem cancelledTodo = todoItemRepository.save(todo);
+            com.ccms.entity.system.TodoItem cancelledTodo = todoItemRepository.save(todo);
             
             TodoOperationResult result = new TodoOperationResult(true, "取消待办项成功");
             result.setTodoItem(cancelledTodo.toServiceItem());
@@ -175,7 +170,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     @Override
     public TodoOperationResult deleteTodo(Long todoId, Long userId) {
         try {
-            TodoItem todo = todoItemRepository.findById(todoId)
+            com.ccms.entity.system.TodoItem todo = todoItemRepository.findById(todoId)
                     .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoId));
             
             // 检查权限：只能删除自己创建的待办项
@@ -184,7 +179,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
             }
             
             // 只能删除已完成或已取消的待办项
-            if (todo.getStatus() != TodoStatus.COMPLETED && todo.getStatus() != TodoStatus.CANCELLED) {
+            if (!"COMPLETED".equals(todo.getStatus()) && !"CANCELLED".equals(todo.getStatus())) {
                 return new TodoOperationResult(false, "只能删除已完成或已取消的待办项");
             }
             
@@ -201,31 +196,29 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     }
     
     @Override
-    public List<com.ccms.service.TodoReminderService.TodoItem> getUserTodos(Long userId, TodoStatus status, Priority priority) {
-        return todoItemRepository.findByAssigneeIdAndStatusAndPriorityAndDeleted(userId, 
-                status != null ? status.toString() : null, 
-                priority != null ? priority.toString() : null, 
-                0)
+    public List<TodoItem> getUserTodos(Long userId, TodoStatus status, Priority priority) {
+        return todoItemRepository.findByAssigneeIdAndDeleted(userId, 0)
                 .stream()
-                .map(TodoItem::toServiceItem)
+                .filter(todo -> status == null || todo.getStatus().equals(convertStatusToString(status)))
+                .filter(todo -> priority == null || todo.getPriority().equals(convertPriorityToString(priority)))
+                .map(com.ccms.entity.system.TodoItem::toServiceItem)
                 .collect(Collectors.toList());
     }
     
     @Override
-    public com.ccms.service.TodoReminderService.TodoItem getTodoDetail(Long todoId) {
-        TodoItem todo = todoItemRepository.findById(todoId)
+    public TodoItem getTodoDetail(Long todoId) {
+        com.ccms.entity.system.TodoItem todo = todoItemRepository.findById(todoId)
                 .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoId));
         return todo.toServiceItem();
     }
     
     @Override
-    @Scheduled(cron = "0 0 0 * * ?") // 每天凌晨执行
     public void checkAndMarkExpiredTodos() {
         try {
             LocalDateTime now = LocalDateTime.now();
-            List<TodoItem> expiredTodos = todoItemRepository.findExpiredTodos(now, "PENDING");
+            List<com.ccms.entity.system.TodoItem> expiredTodos = todoItemRepository.findByDeadlineBeforeAndStatusAndDeleted(now, "PENDING", 0);
             
-            for (TodoItem todo : expiredTodos) {
+            for (com.ccms.entity.system.TodoItem todo : expiredTodos) {
                 todo.markAsExpired();
                 todo.setUpdatedTime(now);
                 todoItemRepository.save(todo);
@@ -242,31 +235,45 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     }
     
     @Override
-    public MessageNotifyService.NotifyResult sendTodoReminder(com.ccms.service.TodoReminderService.TodoItem todoItem) {
+    public MessageNotifyService.NotifyResult sendTodoReminder(TodoItem serviceTodo) {
         try {
-            MessageNotifyService.TodoMessage todoMessage = new MessageNotifyService.TodoMessage(
-                todoItem.getTitle(), 
-                generateTodoContent(todoItem), 
-                todoItem.getAssigneeId().toString()
+            // 创建Receiver列表
+            List<MessageNotifyService.Receiver> receivers = Collections.singletonList(
+                new MessageNotifyService.Receiver(
+                    serviceTodo.getAssigneeId(),
+                    serviceTodo.getAssigneeName(),
+                    null, // email
+                    null, // phone
+                    null  // chatUserId
+                )
             );
             
-            todoMessage.setTodoType(todoItem.getTodoType());
-            todoMessage.setDeadline(todoItem.getDeadline());
-            todoMessage.setActionUrl(todoItem.getActionUrl());
-            todoMessage.setPriority(getPriorityLevel(todoItem.getPriority()));
-            todoMessage.setBizType(todoItem.getBizType());
-            todoMessage.setBizId(todoItem.getBizId());
-            todoMessage.setSourceType(todoItem.getSourceType());
-            todoMessage.setSourceId(todoItem.getSourceId());
-            todoMessage.setCreatedBy(todoItem.getCreatorId());
+            MessageNotifyService.TodoMessage todoMessage = new MessageNotifyService.TodoMessage(
+                serviceTodo.getTitle(), 
+                generateTodoContent(serviceTodo), 
+                receivers
+            );
+            
+            // 设置额外属性
+            todoMessage.setBizType(serviceTodo.getBizType());
+            todoMessage.setBizId(serviceTodo.getBizId());
+            todoMessage.setSourceType(serviceTodo.getSourceType());
+            todoMessage.setSourceId(serviceTodo.getSourceId());
+            todoMessage.setCreatedBy(serviceTodo.getCreatorId());
+            
+            // 设置TodoMessage特有属性
+            if (serviceTodo.getDeadline() != null) {
+                todoMessage.setDeadline(serviceTodo.getDeadline());
+            }
+            if (serviceTodo.getActionUrl() != null) {
+                todoMessage.setActionUrl(serviceTodo.getActionUrl());
+            }
+            todoMessage.setPriority(convertPriorityToString(serviceTodo.getPriority()));
             
             return messageNotifyService.sendTodoReminder(todoMessage);
             
         } catch (Exception e) {
-            MessageNotifyService.NotifyResult result = new MessageNotifyService.NotifyResult();
-            result.setSuccess(false);
-            result.setMessage("发送待办提醒失败: " + e.getMessage());
-            return result;
+            return new MessageNotifyService.NotifyResult(false, "发送待办提醒失败: " + e.getMessage(), null, "TODO");
         }
     }
     
@@ -274,7 +281,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     public TodoStatistics getTodoStatistics(Long userId) {
         TodoStatistics stats = new TodoStatistics();
         
-        List<TodoItem> userTodos = todoItemRepository.findByAssigneeIdAndDeleted(userId, 0);
+        List<com.ccms.entity.system.TodoItem> userTodos = todoItemRepository.findByAssigneeIdAndDeleted(userId, 0);
         
         stats.setTotalCount(userTodos.size());
         stats.setPendingCount((int) userTodos.stream()
@@ -316,14 +323,14 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     }
     
     @Override
-    public BatchTodoOperationResult batchCreateTodos(List<com.ccms.service.TodoReminderService.TodoItem> todoItems) {
+    public BatchTodoOperationResult batchCreateTodos(List<TodoItem> serviceTodos) {
         BatchTodoOperationResult result = new BatchTodoOperationResult();
         int successCount = 0;
         int failureCount = 0;
         List<String> errorMessages = new ArrayList<>();
         
-        for (int i = 0; i < todoItems.size(); i++) {
-            com.ccms.service.TodoReminderService.TodoItem todo = todoItems.get(i);
+        for (int i = 0; i < serviceTodos.size(); i++) {
+            TodoItem todo = serviceTodos.get(i);
             try {
                 TodoOperationResult singleResult = createTodo(todo);
                 if (singleResult.isSuccess()) {
@@ -348,105 +355,6 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     }
     
     // ========== 私有方法 ==========
-    
-    private String getPriorityLevel(Priority priority) {
-        if (priority == null) return "NORMAL";
-        
-        switch (priority) {
-            case LOW: return "LOW";
-            case NORMAL: return "NORMAL";
-            case HIGH: return "HIGH";
-            case URGENT: return "URGENT";
-            default: return "NORMAL";
-        }
-    }
-    
-    private String generateTodoContent(com.ccms.service.TodoReminderService.TodoItem todo) {
-        StringBuilder content = new StringBuilder();
-        content.append(todo.getContent()).append("\n\n");
-        
-        if (todo.getDeadline() != null) {
-            long daysLeft = ChronoUnit.DAYS.between(LocalDateTime.now(), todo.getDeadline());
-            if (daysLeft < 0) {
-                content.append("⚠️ 已超期: ").append(Math.abs(daysLeft)).append("天\n");
-            } else if (daysLeft == 0) {
-                content.append("⏰ 今日到期\n");
-            } else {
-                content.append("📅 剩余: ").append(daysLeft).append("天\n");
-            }
-        }
-        
-        if (todo.getEstimatedMinutes() != null && todo.getEstimatedMinutes() > 0) {
-            content.append("⏱️ 预计耗时: ").append(todo.getEstimatedMinutes()).append("分钟\n");
-        }
-        
-        if (todo.getActionUrl() != null && !todo.getActionUrl().isEmpty()) {
-            content.append("🔗 操作链接: ").append(todo.getActionUrl()).append("\n");
-        }
-        
-        return content.toString();
-    }
-    
-    private void sendTodoCompletionNotification(com.ccms.service.TodoReminderService.TodoItem todo) {
-        try {
-            if (todo.getCreatorId() != null && !todo.getCreatorId().equals(todo.getAssigneeId())) {
-                MessageNotifyService.InnerMessage message = new MessageNotifyService.InnerMessage(
-                    "待办项已完成通知",
-                    String.format("待办项 [%s] 已被处理人 [%s] 完成\n备注: %s", 
-                        todo.getTitle(), 
-                        todo.getAssigneeName() != null ? todo.getAssigneeName() : "",
-                        todo.getRemarks() != null ? todo.getRemarks() : "无"),
-                    todo.getCreatorId().toString()
-                );
-                
-                message.setMsgType("TODO_COMPLETED");
-                message.setMsgLevel("INFO");
-                message.setBizType(todo.getBizType());
-                message.setBizId(todo.getBizId());
-                message.setSourceType("TODO");
-                message.setSourceId(todo.getTodoId());
-                message.setCreatedBy(todo.getAssigneeId());
-                
-                messageNotifyService.sendInnerMessage(message);
-            }
-        } catch (Exception e) {
-            System.err.println("发送待办完成通知失败: " + e.getMessage());
-        }
-    }
-    
-    private void sendTodoExpirationNotification(com.ccms.service.TodoReminderService.TodoItem todo) {
-        try {
-            MessageNotifyService.InnerMessage message = new MessageNotifyService.InnerMessage(
-                "待办项已过期通知",
-                String.format("待办项 [%s] 已超期，系统已自动标记为已过期", todo.getTitle()),
-                todo.getAssigneeId().toString()
-            );
-            
-            message.setMsgType("TODO_EXPIRED");
-            message.setMsgLevel("WARNING");
-            message.setBizType(todo.getBizType());
-            message.setBizId(todo.getBizId());
-            message.setSourceType("TODO");
-            message.setSourceId(todo.getTodoId());
-            
-            messageNotifyService.sendInnerMessage(message);
-            
-        } catch (Exception e) {
-            System.err.println("发送待办过期通知失败: " + e.getMessage());
-        }
-    }
-    
-    private String getPriorityLevel(Priority priority) {
-        if (priority == null) return "NORMAL";
-        
-        switch (priority) {
-            case LOW: return "LOW";
-            case NORMAL: return "NORMAL";
-            case HIGH: return "HIGH";
-            case URGENT: return "URGENT";
-            default: return "NORMAL";
-        }
-    }
     
     private String generateTodoContent(TodoItem todo) {
         StringBuilder content = new StringBuilder();
@@ -474,25 +382,35 @@ public class TodoReminderServiceImpl implements TodoReminderService {
         return content.toString();
     }
     
-    private void sendTodoCompletionNotification(TodoItem todo) {
+    private void sendTodoCompletionNotification(TodoItem serviceTodo) {
         try {
-            if (todo.getCreatorId() != null && !todo.getCreatorId().equals(todo.getAssigneeId())) {
-                MessageNotifyService.InnerMessage message = new MessageNotifyService.InnerMessage(
-                    "待办项已完成通知",
-                    String.format("待办项 [%s] 已被处理人 [%s] 完成\n备注: %s", 
-                        todo.getTitle(), 
-                        todo.getAssigneeName() != null ? todo.getAssigneeName() : "",
-                        todo.getRemarks() != null ? todo.getRemarks() : "无"),
-                    todo.getCreatorId().toString()
+            if (serviceTodo.getCreatorId() != null && !serviceTodo.getCreatorId().equals(serviceTodo.getAssigneeId())) {
+                List<MessageNotifyService.Receiver> receivers = Collections.singletonList(
+                    new MessageNotifyService.Receiver(
+                        serviceTodo.getCreatorId(),
+                        serviceTodo.getCreatorName(),
+                        null, // email
+                        null, // phone
+                        null  // chatUserId
+                    )
                 );
                 
-                message.setMsgType("TODO_COMPLETED");
+                MessageNotifyService.InnerMessage message = new MessageNotifyService.InnerMessage(
+                    "待办项已完成通知",
+                    String.format("待办项 [%s] 已被处理人 [%s] 完成\\n备注: %s", 
+                        serviceTodo.getTitle(), 
+                        serviceTodo.getAssigneeName() != null ? serviceTodo.getAssigneeName() : "",
+                        serviceTodo.getRemarks() != null ? serviceTodo.getRemarks() : "无"),
+                    receivers
+                );
+                
+                message.setMessageType("TODO_COMPLETED");
                 message.setMsgLevel("INFO");
-                message.setBizType(todo.getBizType());
-                message.setBizId(todo.getBizId());
+                message.setBizType(serviceTodo.getBizType());
+                message.setBizId(serviceTodo.getBizId());
                 message.setSourceType("TODO");
-                message.setSourceId(todo.getTodoId());
-                message.setCreatedBy(todo.getAssigneeId());
+                message.setSourceId(serviceTodo.getTodoId());
+                message.setCreatedBy(serviceTodo.getCreatorId());
                 
                 messageNotifyService.sendInnerMessage(message);
             }
@@ -501,20 +419,31 @@ public class TodoReminderServiceImpl implements TodoReminderService {
         }
     }
     
-    private void sendTodoExpirationNotification(TodoItem todo) {
+    private void sendTodoExpirationNotification(TodoItem serviceTodo) {
         try {
-            MessageNotifyService.InnerMessage message = new MessageNotifyService.InnerMessage(
-                "待办项已过期通知",
-                String.format("待办项 [%s] 已超期，系统已自动标记为已过期", todo.getTitle()),
-                todo.getAssigneeId().toString()
+            List<MessageNotifyService.Receiver> receivers = Collections.singletonList(
+                new MessageNotifyService.Receiver(
+                    serviceTodo.getAssigneeId(),
+                    serviceTodo.getAssigneeName(),
+                    null, // email
+                    null, // phone
+                    null  // chatUserId
+                )
             );
             
-            message.setMsgType("TODO_EXPIRED");
+            MessageNotifyService.InnerMessage message = new MessageNotifyService.InnerMessage(
+                "待办项已过期通知",
+                String.format("待办项 [%s] 已超期，系统已自动标记为已过期", serviceTodo.getTitle()),
+                receivers
+            );
+            
+            message.setMessageType("TODO_EXPIRED");
             message.setMsgLevel("WARNING");
-            message.setBizType(todo.getBizType());
-            message.setBizId(todo.getBizId());
+            message.setBizType(serviceTodo.getBizType());
+            message.setBizId(serviceTodo.getBizId());
             message.setSourceType("TODO");
-            message.setSourceId(todo.getTodoId());
+            message.setSourceId(serviceTodo.getTodoId());
+            message.setCreatedBy(serviceTodo.getCreatorId());
             
             messageNotifyService.sendInnerMessage(message);
             
@@ -522,4 +451,49 @@ public class TodoReminderServiceImpl implements TodoReminderService {
             System.err.println("发送待办过期通知失败: " + e.getMessage());
         }
     }
+    
+    // 辅助转换方法
+    private String convertStatusToString(TodoStatus status) {
+        if (status == null) return "PENDING";
+        
+        switch (status) {
+            case PROCESSING: return "PROCESSING";
+            case COMPLETED: return "COMPLETED";
+            case CANCELLED: return "CANCELLED";
+            case EXPIRED: return "EXPIRED";
+            default: return "PENDING";
+        }
+    }
+    
+    private String convertPriorityToString(Priority priority) {
+        if (priority == null) return "NORMAL";
+        
+        switch (priority) {
+            case LOW: return "LOW";
+            case HIGH: return "HIGH";
+            case URGENT: return "URGENT";
+            default: return "NORMAL";
+        }
+    }
+    
+    // 添加缺失的辅助方法
+    private boolean isValidTodo(TodoItem todo) {
+        return todo != null && 
+               todo.getContent() != null && 
+               !todo.getContent().trim().isEmpty() &&
+               todo.getAssigneeId() != null;
+    }
+    
+    private void copyTodoProperties(TodoItem source, com.ccms.entity.system.TodoItem target) {
+        if (source.getContent() != null) target.setContent(source.getContent());
+        if (source.getAssigneeId() != null) target.setAssigneeId(source.getAssigneeId());
+        if (source.getPriority() != null) target.setPriority(source.getPriority().toString());
+        if (source.getDeadline() != null) target.setDeadline(source.getDeadline());
+        if (source.getBizType() != null) target.setBizType(source.getBizType());
+        if (source.getBizId() != null) target.setBizId(source.getBizId());
+        if (source.getActionUrl() != null) target.setActionUrl(source.getActionUrl());
+        target.setStatus("PENDING"); // 默认状态
+    }
+    
+
 }

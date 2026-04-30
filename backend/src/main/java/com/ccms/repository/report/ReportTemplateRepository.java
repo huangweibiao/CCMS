@@ -27,6 +27,11 @@ public interface ReportTemplateRepository extends JpaRepository<ReportTemplate, 
     List<ReportTemplate> findByStatus(Integer status);
 
     /**
+     * 根据状态分页查询模板
+     */
+    Page<ReportTemplate> findByStatus(Integer status, Pageable pageable);
+
+    /**
      * 根据模板类型查询
      */
     List<ReportTemplate> findByTemplateTypeAndStatus(String templateType, Integer status);

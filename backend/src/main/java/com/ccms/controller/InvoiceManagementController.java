@@ -3,6 +3,8 @@ package com.ccms.controller;
 import com.ccms.entity.expense.ExpenseInvoice;
 import com.ccms.service.InvoiceOcrService;
 import com.ccms.service.InvoiceVerifyService;
+import com.ccms.service.VerifyResult;
+import com.ccms.service.VerifyServiceStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -137,7 +139,7 @@ public class InvoiceManagementController {
             String invoiceAmount = verifyRequest.get("invoiceAmount");
             
             // 执行验真
-            InvoiceVerifyService.VerifyResult result = invoiceVerifyService.verifyInvoice(
+            VerifyResult result = invoiceVerifyService.verifyInvoice(
                 invoiceCode, invoiceNo, invoiceDate, checkCode, invoiceAmount);
             
             response.put("success", result.isSuccess());
@@ -165,7 +167,7 @@ public class InvoiceManagementController {
             // OCR服务状态
             InvoiceOcrService.OcrServiceStatus ocrStatus = invoiceOcrService.getServiceStatus();
             // 验真服务状态
-            InvoiceVerifyService.VerifyServiceStatus verifyStatus = invoiceVerifyService.getServiceStatus();
+            VerifyServiceStatus verifyStatus = invoiceVerifyService.getServiceStatus();
             
             Map<String, Object> statusData = new HashMap<>();
             statusData.put("ocrService", ocrStatus);

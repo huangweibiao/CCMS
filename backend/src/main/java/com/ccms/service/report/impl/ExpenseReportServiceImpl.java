@@ -2,7 +2,7 @@ package com.ccms.service.report.impl;
 
 import com.ccms.entity.expense.ExpenseReimburse;
 import com.ccms.entity.budget.Budget;
-import com.ccms.repository.ExpenseReimburseRepository;
+import com.ccms.repository.expense.ExpenseReimburseRepository;
 import com.ccms.repository.BudgetRepository;
 import com.ccms.service.report.ExpenseReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,16 +155,16 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
             }
             
             BudgetExecution execution = new BudgetExecution(
-                budget.getName(),
-                budget.getAmount(),
+                budget.getBudgetName(),
+                budget.getBudgetAmount(),
                 usedAmount
             );
             execution.setBudgetId(budget.getId());
             
             // 计算执行率
-            if (budget.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+            if (budget.getBudgetAmount().compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal rate = usedAmount
-                        .divide(budget.getAmount(), 4, RoundingMode.HALF_UP)
+                        .divide(budget.getBudgetAmount(), 4, RoundingMode.HALF_UP)
                         .multiply(BigDecimal.valueOf(100));
                 execution.setExecutionRate(rate);
             }

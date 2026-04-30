@@ -16,6 +16,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> implements Serializable {
+    
+    // 手动添加 getter 方法确保 Lombok 生成正确的方法
+    public Integer getCode() { return code; }
+    public String getMessage() { return message; }
+    public T getData() { return data; }
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public String getPath() { return path; }
+    public Long getDuration() { return duration; }
 
     /**
      * 响应状态码
@@ -52,6 +60,16 @@ public class ApiResponse<T> implements Serializable {
      */
     public static <T> ApiResponse<T> success() {
         return success(null);
+    }
+
+    // 自定义构造函数 - 解决Lombok @AllArgsConstructor参数不匹配问题
+    public ApiResponse(Integer code, String message, T data, LocalDateTime timestamp, String path, Long duration) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+        this.timestamp = timestamp;
+        this.path = path;
+        this.duration = duration;
     }
 
     /**

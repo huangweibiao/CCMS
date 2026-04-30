@@ -337,6 +337,22 @@ public class ExpenseReimburse extends BaseEntity {
     }
     
     // Added missing methods
+    public Long getApplicantUserId() {
+        return applyUserId;
+    }
+    
+    public void setApplicantUserId(Long applicantUserId) {
+        this.applyUserId = applicantUserId;
+    }
+    
+    public BigDecimal getReimburseAmount() {
+        return totalAmount;
+    }
+    
+    public void setReimburseAmount(BigDecimal reimburseAmount) {
+        this.totalAmount = reimburseAmount;
+    }
+    
     public boolean isUrgentFlag() {
         // Check if urgent based on some business logic
         return totalAmount.compareTo(new BigDecimal("10000")) > 0; // Amount > 10000 is urgent

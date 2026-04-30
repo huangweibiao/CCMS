@@ -58,12 +58,11 @@ public interface ReportExportService {
      * 批量导出报表
      */
     void batchExport(String[] templateCodes, Map<String, Object> params, String format, HttpServletResponse response);
-}
-
-/**
- * 导出配置
- */
-class ExportConfig {
+    
+    /**
+     * 导出配置
+     */
+    class ExportConfig {
     private Integer expireHours = 24; // 过期时间（小时）
     private Boolean allowDownload = true; // 是否允许下载
     private Boolean secureShare = false; // 是否加密分享
@@ -97,7 +96,8 @@ class ExportConfig {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+        public void setPassword(String password) {
+            this.password = password;
+        }
     }
 }

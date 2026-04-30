@@ -196,7 +196,7 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     @Override
-    public String generateShareLink(ReportTemplate template, Map<String, Object> data, ExportConfig config) {
+    public String generateShareLink(ReportTemplate template, Map<String, Object> data, ReportExportService.ExportConfig config) {
         try {
             // 生成分享令牌
             String shareToken = UUID.randomUUID().toString().replace("-", "");

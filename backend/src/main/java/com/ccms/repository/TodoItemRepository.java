@@ -206,6 +206,16 @@ public interface TodoItemRepository extends JpaRepository<TodoItem, Long>, JpaSp
                                    @Param("deleted") Integer deleted);
     
     /**
+     * 查询截止日期在之前且未删除的待办项
+     * 
+     * @param deadline 截止日期
+     * @param status 状态
+     * @param deleted 删除标记
+     * @return 待办项列表
+     */
+    List<TodoItem> findByDeadlineBeforeAndStatusAndDeleted(LocalDateTime deadline, String status, Integer deleted);
+    
+    /**
      * 查找用户最近创建的N个待办项
      * 
      * @param assigneeId 分配人ID

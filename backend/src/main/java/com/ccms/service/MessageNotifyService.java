@@ -4,6 +4,7 @@ import com.ccms.entity.SysMessage;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
 
 /**
  * 消息通知服务接口
@@ -265,16 +266,37 @@ public interface MessageNotifyService {
         protected Long createdBy;
         
         public String getTitle() { return title; }
+        public void setTitle(String title) { this.title = title; }
+        
         public String getContent() { return content; }
+        public void setContent(String content) { this.content = content; }
+        
         public String getMessageType() { return messageType; }
+        public void setMessageType(String messageType) { this.messageType = messageType; }
+        
         public String getMsgLevel() { return msgLevel; }
+        public void setMsgLevel(String msgLevel) { this.msgLevel = msgLevel; }
+        
         public List<Receiver> getReceivers() { return receivers; }
+        public void setReceivers(List<Receiver> receivers) { this.receivers = receivers; }
+        
         public String getBizType() { return bizType; }
+        public void setBizType(String bizType) { this.bizType = bizType; }
+        
         public Long getBizId() { return bizId; }
+        public void setBizId(Long bizId) { this.bizId = bizId; }
+        
         public Map<String, Object> getBizData() { return bizData; }
+        public void setBizData(Map<String, Object> bizData) { this.bizData = bizData; }
+        
         public String getSourceType() { return sourceType; }
+        public void setSourceType(String sourceType) { this.sourceType = sourceType; }
+        
         public Long getSourceId() { return sourceId; }
+        public void setSourceId(Long sourceId) { this.sourceId = sourceId; }
+        
         public Long getCreatedBy() { return createdBy; }
+        public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
     }
     
     /**

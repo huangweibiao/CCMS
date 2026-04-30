@@ -93,6 +93,30 @@ public class ExpenseInvoice extends BaseEntity {
     @Column(name = "file_path", length = 256)
     private String filePath;
 
+    /**
+     * 校验码
+     */
+    @Column(name = "check_code", length = 32)
+    private String checkCode;
+
+    /**
+     * 验真备注
+     */
+    @Column(name = "verify_comment", length = 256)
+    private String verifyComment;
+
+    /**
+     * 验真数据
+     */
+    @Column(name = "verify_data", length = 500)
+    private String verifyData;
+
+    /**
+     * 验真错误码
+     */
+    @Column(name = "verify_error_code", length = 32)
+    private String verifyErrorCode;
+
     // Getters and Setters
     public Long getReimburseDetailId() {
         return reimburseDetailId;
@@ -198,6 +222,38 @@ public class ExpenseInvoice extends BaseEntity {
         this.filePath = filePath;
     }
 
+    public String getCheckCode() {
+        return checkCode;
+    }
+
+    public void setCheckCode(String checkCode) {
+        this.checkCode = checkCode;
+    }
+
+    public String getVerifyComment() {
+        return verifyComment;
+    }
+
+    public void setVerifyComment(String verifyComment) {
+        this.verifyComment = verifyComment;
+    }
+
+    public String getVerifyData() {
+        return verifyData;
+    }
+
+    public void setVerifyData(String verifyData) {
+        this.verifyData = verifyData;
+    }
+
+    public String getVerifyErrorCode() {
+        return verifyErrorCode;
+    }
+
+    public void setVerifyErrorCode(String verifyErrorCode) {
+        this.verifyErrorCode = verifyErrorCode;
+    }
+
     @Override
     public String toString() {
         return "ExpenseInvoice{" +
@@ -214,7 +270,7 @@ public class ExpenseInvoice extends BaseEntity {
                 ", verifyStatus=" + verifyStatus +
                 ", verifyResult='" + verifyResult + '\'' +
                 ", verifyTime=" + verifyTime +
-                ", filePath='" + filePath + '\'' +
+                ", filePath=" + filePath + '\'' +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
                 ", version=" + getVersion() +

@@ -248,7 +248,7 @@ public class MessageNotifyController {
             message.setUpdatedBy(userId);
             sysMessageRepository.save(message);
             
-            return Result.success(null, "删除消息成功");
+            return Result.<Void>success("删除消息成功", null);
         } catch (Exception e) {
             return Result.error(500, "删除消息失败: " + e.getMessage());
         }
@@ -276,7 +276,7 @@ public class MessageNotifyController {
                 }
             }
             
-            return Result.success(null, String.format("成功删除%d条消息", deletedCount));
+            return Result.<Void>success(String.format("成功删除%d条消息", deletedCount), null);
         } catch (Exception e) {
             return Result.error(500, "批量删除消息失败: " + e.getMessage());
         }
@@ -306,7 +306,7 @@ public class MessageNotifyController {
             message.confirm(method);
             sysMessageRepository.save(message);
             
-            return Result.success(null, "消息确认成功");
+            return Result.<Void>success("消息确认成功", null);
         } catch (Exception e) {
             return Result.error(500, "消息确认失败: " + e.getMessage());
         }

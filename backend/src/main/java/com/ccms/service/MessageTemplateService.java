@@ -1,8 +1,10 @@
 package com.ccms.service;
 
+import com.ccms.entity.message.MessageTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 消息模板管理服务接口
@@ -76,6 +78,154 @@ public interface MessageTemplateService {
     }
     
     /**
+     * 模板导入/导出查询请求
+     */
+    class TemplateQuery {
+        private String templateCode;
+        private String templateName;
+        private String templateType;
+        private Integer status;
+        private String creatorId;
+        private String channel;
+        private Boolean isActive;
+        private LocalDateTime createdTimeBegin;
+        private LocalDateTime createdTimeEnd;
+        
+        public String getTemplateCode() { return templateCode; }
+        public void setTemplateCode(String templateCode) { this.templateCode = templateCode; }
+        
+        public String getTemplateName() { return templateName; }
+        public void setTemplateName(String templateName) { this.templateName = templateName; }
+        
+        public String getTemplateType() { return templateType; }
+        public void setTemplateType(String templateType) { this.templateType = templateType; }
+        
+        public Integer getStatus() { return status; }
+        public void setStatus(Integer status) { this.status = status; }
+        
+        public String getCreatorId() { return creatorId; }
+        public void setCreatorId(String creatorId) { this.creatorId = creatorId; }
+        
+        public String getChannel() { return channel; }
+        public void setChannel(String channel) { this.channel = channel; }
+        
+        public Boolean getIsActive() { return isActive; }
+        public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+        
+        public LocalDateTime getCreatedTimeBegin() { return createdTimeBegin; }
+        public void setCreatedTimeBegin(LocalDateTime createdTimeBegin) { this.createdTimeBegin = createdTimeBegin; }
+        
+        public LocalDateTime getCreatedTimeEnd() { return createdTimeEnd; }
+        public void setCreatedTimeEnd(LocalDateTime createdTimeEnd) { this.createdTimeEnd = createdTimeEnd; }
+    }
+    
+    /**
+     * 模板创建/更新请求
+     */
+    class TemplateRequest {
+        private String templateCode;
+        private String templateName;
+        private String templateType;
+        private String content;
+        private String description;
+        private List<TemplateVariable> variables;
+        private String channels;
+        private Boolean isActive = true;
+        private Long createdBy;
+        private Long updatedBy;
+        
+        public String getTemplateCode() { return templateCode; }
+        public void setTemplateCode(String templateCode) { this.templateCode = templateCode; }
+        
+        public String getTemplateName() { return templateName; }
+        public void setTemplateName(String templateName) { this.templateName = templateName; }
+        
+        public String getTemplateType() { return templateType; }
+        public void setTemplateType(String templateType) { this.templateType = templateType; }
+        
+        public String getContent() { return content; }
+        public void setContent(String content) { this.content = content; }
+        
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+        
+        public List<TemplateVariable> getVariables() { return variables; }
+        public void setVariables(List<TemplateVariable> variables) { this.variables = variables; }
+        
+        public String getChannels() { return channels; }
+        public void setChannels(String channels) { this.channels = channels; }
+        
+        public Boolean getIsActive() { return isActive; }
+        public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+        
+        public Long getCreatedBy() { return createdBy; }
+        public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
+        
+        public Long getUpdatedBy() { return updatedBy; }
+        public void setUpdatedBy(Long updatedBy) { this.updatedBy = updatedBy; }
+    }
+    
+    /**
+     * 批量导入结果
+     */
+    class BatchImportResult {
+        private int totalCount;
+        private int successCount;
+        private int failCount;
+        private List<String> errorMessages;
+        
+        public BatchImportResult() {}
+        
+        public BatchImportResult(int totalCount, int successCount, int failCount) {
+            this.totalCount = totalCount;
+            this.successCount = successCount;
+            this.failCount = failCount;
+        }
+        
+        public int getTotalCount() { return totalCount; }
+        public void setTotalCount(int totalCount) { this.totalCount = totalCount; }
+        
+        public int getSuccessCount() { return successCount; }
+        public void setSuccessCount(int successCount) { this.successCount = successCount; }
+        
+        public int getFailCount() { return failCount; }
+        public void setFailCount(int failCount) { this.failCount = failCount; }
+        
+        public List<String> getErrorMessages() { return errorMessages; }
+        public void setErrorMessages(List<String> errorMessages) { this.errorMessages = errorMessages; }
+    }
+    
+    /**
+     * 模板导出项
+     */
+    class TemplateExportItem {
+        private String templateCode;
+        private String templateName;
+        private String templateType;
+        private String content;
+        private String description;
+        private List<TemplateVariable> variables;
+        
+        public String getTemplateCode() { return templateCode; }
+        public void setTemplateCode(String templateCode) { this.templateCode = templateCode; }
+        
+        public String getTemplateName() { return templateName; }
+        public void setTemplateName(String templateName) { this.templateName = templateName; }
+        
+        public String getTemplateType() { return templateType; }
+        public void setTemplateType(String templateType) { this.templateType = templateType; }
+        
+        public String getContent() { return content; }
+        public void setContent(String content) { this.content = content; }
+        
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+        
+        public List<TemplateVariable> getVariables() { return variables; }
+        public void setVariables(List<TemplateVariable> variables) { this.variables = variables; }
+    }
+    
+    /**
      * 模板变量定义
      */
     class TemplateVariable {
@@ -119,225 +269,6 @@ public interface MessageTemplateService {
     }
     
     /**
-     * 消息模板
-     */
-    class MessageTemplate {
-        private Long templateId;
-        private String templateCode;
-        private String templateName;
-        private TemplateType templateType;
-        private String subjectTemplate;
-        private String contentTemplate;
-        private String description;
-        private TemplateStatus status;
-        private String bizType;
-        private String version;
-        private List<TemplateVariable> variables;
-        private Long createdBy;
-        private String createdByName;
-        private LocalDateTime createdTime;
-        private Long updatedBy;
-        private LocalDateTime updatedTime;
-        private Integer usageCount;
-        private LocalDateTime lastUsedTime;
-        
-        public MessageTemplate() {}
-        
-        public MessageTemplate(String templateCode, String templateName, TemplateType templateType) {
-            this.templateCode = templateCode;
-            this.templateName = templateName;
-            this.templateType = templateType;
-            this.status = TemplateStatus.DRAFT;
-            this.createdTime = LocalDateTime.now();
-            this.usageCount = 0;
-        }
-        
-        public Long getTemplateId() { return templateId; }
-        public void setTemplateId(Long templateId) { this.templateId = templateId; }
-        
-        public String getTemplateCode() { return templateCode; }
-        public void setTemplateCode(String templateCode) { this.templateCode = templateCode; }
-        
-        public String getTemplateName() { return templateName; }
-        public void setTemplateName(String templateName) { this.templateName = templateName; }
-        
-        public TemplateType getTemplateType() { return templateType; }
-        public void setTemplateType(TemplateType templateType) { this.templateType = templateType; }
-        
-        public String getSubjectTemplate() { return subjectTemplate; }
-        public void setSubjectTemplate(String subjectTemplate) { this.subjectTemplate = subjectTemplate; }
-        
-        public String getContentTemplate() { return contentTemplate; }
-        public void setContentTemplate(String contentTemplate) { this.contentTemplate = contentTemplate; }
-        
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-        
-        public TemplateStatus getStatus() { return status; }
-        public void setStatus(TemplateStatus status) { this.status = status; }
-        
-        public String getBizType() { return bizType; }
-        public void setBizType(String bizType) { this.bizType = bizType; }
-        
-        public String getVersion() { return version; }
-        public void setVersion(String version) { this.version = version; }
-        
-        public List<TemplateVariable> getVariables() { return variables; }
-        public void setVariables(List<TemplateVariable> variables) { this.variables = variables; }
-        
-        public Long getCreatedBy() { return createdBy; }
-        public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
-        
-        public String getCreatedByName() { return createdByName; }
-        public void setCreatedByName(String createdByName) { this.createdByName = createdByName; }
-        
-        public LocalDateTime getCreatedTime() { return createdTime; }
-        public void setCreatedTime(LocalDateTime createdTime) { this.createdTime = createdTime; }
-        
-        public Long getUpdatedBy() { return updatedBy; }
-        public void setUpdatedBy(Long updatedBy) { this.updatedBy = updatedBy; }
-        
-        public LocalDateTime getUpdatedTime() { return updatedTime; }
-        public void setUpdatedTime(LocalDateTime updatedTime) { this.updatedTime = updatedTime; }
-        
-        public Integer getUsageCount() { return usageCount; }
-        public void setUsageCount(Integer usageCount) { this.usageCount = usageCount; }
-        
-        public LocalDateTime getLastUsedTime() { return lastUsedTime; }
-        public void setLastUsedTime(LocalDateTime lastUsedTime) { this.lastUsedTime = lastUsedTime; }
-        
-        // 校验模板是否有效
-        public boolean isValid() {
-            return templateCode != null && !templateCode.trim().isEmpty()
-                    && templateName != null && !templateName.trim().isEmpty()
-                    && templateType != null
-                    && status != null;
-        }
-        
-        // 检查是否启用
-        public boolean isActive() {
-            return status == TemplateStatus.ACTIVE;
-        }
-        
-        // 增加使用次数
-        public void incrementUsageCount() {
-            this.usageCount = (this.usageCount == null ? 0 : this.usageCount) + 1;
-            this.lastUsedTime = LocalDateTime.now();
-        }
-    }
-    
-    /**
-     * 创建消息模板
-     * 
-     * @param template 模板信息
-     * @return 创建结果
-     */
-    TemplateOperationResult createTemplate(MessageTemplate template);
-    
-    /**
-     * 更新消息模板
-     * 
-     * @param template 模板信息
-     * @return 更新结果
-     */
-    TemplateOperationResult updateTemplate(MessageTemplate template);
-    
-    /**
-     * 根据模板代码获取模板
-     * 
-     * @param templateCode 模板代码
-     * @return 模板信息
-     */
-    MessageTemplate getTemplateByCode(String templateCode);
-    
-    /**
-     * 根据模板ID获取模板
-     * 
-     * @param templateId 模板ID
-     * @return 模板信息
-     */
-    MessageTemplate getTemplateById(Long templateId);
-    
-    /**
-     * 删除模板
-     * 
-     * @param templateId 模板ID
-     * @param userId 用户ID
-     * @return 删除结果
-     */
-    TemplateOperationResult deleteTemplate(Long templateId, Long userId);
-    
-    /**
-     * 禁用模板
-     * 
-     * @param templateId 模板ID
-     * @param userId 用户ID
-     * @return 操作结果
-     */
-    TemplateOperationResult disableTemplate(Long templateId, Long userId);
-    
-    /**
-     * 启用模板
-     * 
-     * @param templateId 模板ID
-     * @param userId 用户ID
-     * @return 操作结果
-     */
-    TemplateOperationResult enableTemplate(Long templateId, Long userId);
-    
-    /**
-     * 获取模板列表
-     * 
-     * @param templateType 模板类型筛选
-     * @param status 状态筛选
-     * @param bizType 业务类型筛选
-     * @return 模板列表
-     */
-    List<MessageTemplate> getTemplateList(TemplateType templateType, TemplateStatus status, String bizType);
-    
-    /**
-     * 渲染模板
-     * 
-     * @param templateCode 模板代码
-     * @param params 参数映射
-     * @return 渲染结果
-     */
-    TemplateRenderResult renderTemplate(String templateCode, Map<String, Object> params);
-    
-    /**
-     * 校验模板变量
-     * 
-     * @param templateCode 模板代码
-     * @param params 参数映射
-     * @return 校验结果
-     */
-    TemplateValidationResult validateParameters(String templateCode, Map<String, Object> params);
-    
-    /**
-     * 导出模板数据
-     * 
-     * @param templateIds 模板ID列表
-     * @return 导出数据
-     */
-    TemplateExportResult exportTemplates(List<Long> templateIds);
-    
-    /**
-     * 导入模板数据
-     * 
-     * @param importData 导入数据
-     * @param userId 用户ID
-     * @return 导入结果
-     */
-    TemplateImportResult importTemplates(TemplateExportResult importData, Long userId);
-    
-    /**
-     * 获取模板统计信息
-     * 
-     * @return 模板统计
-     */
-    TemplateStatistics getTemplateStatistics();
-    
-    /**
      * 模板操作结果
      */
     class TemplateOperationResult {
@@ -370,145 +301,67 @@ public interface MessageTemplateService {
      * 模板渲染结果
      */
     class TemplateRenderResult {
-        private boolean success;
-        private String message;
-        private String renderedSubject;
         private String renderedContent;
-        private List<String> missingVariables;
-        private List<String> invalidVariables;
+        private Map<String, Object> usedParams;
+        private List<String> warnings;
         
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
+        public TemplateRenderResult() {}
         
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-        
-        public String getRenderedSubject() { return renderedSubject; }
-        public void setRenderedSubject(String renderedSubject) { this.renderedSubject = renderedSubject; }
+        public TemplateRenderResult(String renderedContent, Map<String, Object> usedParams) {
+            this.renderedContent = renderedContent;
+            this.usedParams = usedParams;
+        }
         
         public String getRenderedContent() { return renderedContent; }
         public void setRenderedContent(String renderedContent) { this.renderedContent = renderedContent; }
         
-        public List<String> getMissingVariables() { return missingVariables; }
-        public void setMissingVariables(List<String> missingVariables) { this.missingVariables = missingVariables; }
+        public Map<String, Object> getUsedParams() { return usedParams; }
+        public void setUsedParams(Map<String, Object> usedParams) { this.usedParams = usedParams; }
         
-        public List<String> getInvalidVariables() { return invalidVariables; }
-        public void setInvalidVariables(List<String> invalidVariables) { this.invalidVariables = invalidVariables; }
+        public List<String> getWarnings() { return warnings; }
+        public void setWarnings(List<String> warnings) { this.warnings = warnings; }
     }
     
     /**
-     * 模板校验结果
-     */
-    class TemplateValidationResult {
-        private boolean valid;
-        private String message;
-        private List<String> missingVariables;
-        private List<String> invalidVariables;
-        private List<String> typeMismatchVariables;
-        
-        public boolean isValid() { return valid; }
-        public void setValid(boolean valid) { this.valid = valid; }
-        
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-        
-        public List<String> getMissingVariables() { return missingVariables; }
-        public void setMissingVariables(List<String> missingVariables) { this.missingVariables = missingVariables; }
-        
-        public List<String> getInvalidVariables() { return invalidVariables; }
-        public void setInvalidVariables(List<String> invalidVariables) { this.invalidVariables = invalidVariables; }
-        
-        public List<String> getTypeMismatchVariables() { return typeMismatchVariables; }
-        public void setTypeMismatchVariables(List<String> typeMismatchVariables) { this.typeMismatchVariables = typeMismatchVariables; }
-    }
-    
-    /**
-     * 模板导出结果
-     */
-    class TemplateExportResult {
-        private String exportVersion;
-        private LocalDateTime exportTime;
-        private Long exportedBy;
-        private List<MessageTemplate> templates;
-        
-        public String getExportVersion() { return exportVersion; }
-        public void setExportVersion(String exportVersion) { this.exportVersion = exportVersion; }
-        
-        public LocalDateTime getExportTime() { return exportTime; }
-        public void setExportTime(LocalDateTime exportTime) { this.exportTime = exportTime; }
-        
-        public Long getExportedBy() { return exportedBy; }
-        public void setExportedBy(Long exportedBy) { this.exportedBy = exportedBy; }
-        
-        public List<MessageTemplate> getTemplates() { return templates; }
-        public void setTemplates(List<MessageTemplate> templates) { this.templates = templates; }
-    }
-    
-    /**
-     * 模板导入结果
-     */
-    class TemplateImportResult {
-        private boolean success;
-        private String message;
-        private int importedCount;
-        private int skippedCount;
-        private int errorCount;
-        private List<String> importErrors;
-        
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
-        
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-        
-        public int getImportedCount() { return importedCount; }
-        public void setImportedCount(int importedCount) { this.importedCount = importedCount; }
-        
-        public int getSkippedCount() { return skippedCount; }
-        public void setSkippedCount(int skippedCount) { this.skippedCount = skippedCount; }
-        
-        public int getErrorCount() { return errorCount; }
-        public void setErrorCount(int errorCount) { this.errorCount = errorCount; }
-        
-        public List<String> getImportErrors() { return importErrors; }
-        public void setImportErrors(List<String> importErrors) { this.importErrors = importErrors; }
-    }
-    
-    /**
-     * 模板统计信息
+     * 模板统计数据
      */
     class TemplateStatistics {
-        private int totalTemplates;
-        private int activeTemplates;
-        private int emailTemplates;
-        private int smsTemplates;
-        private int innerMessageTemplates;
-        private double averageUsageRate;
-        private int mostUsedTemplateId;
-        private String mostUsedTemplateName;
+        private Long templateId;
+        private String templateName;
+        private Integer totalSendCount;
+        private Integer successCount;
+        private Double successRate;
+        private LocalDateTime lastSendTime;
         
-        public int getTotalTemplates() { return totalTemplates; }
-        public void setTotalTemplates(int totalTemplates) { this.totalTemplates = totalTemplates; }
+        public TemplateStatistics() {}
         
-        public int getActiveTemplates() { return activeTemplates; }
-        public void setActiveTemplates(int activeTemplates) { this.activeTemplates = activeTemplates; }
+        public Long getTemplateId() { return templateId; }
+        public void setTemplateId(Long templateId) { this.templateId = templateId; }
         
-        public int getEmailTemplates() { return emailTemplates; }
-        public void setEmailTemplates(int emailTemplates) { this.emailTemplates = emailTemplates; }
+        public String getTemplateName() { return templateName; }
+        public void setTemplateName(String templateName) { this.templateName = templateName; }
         
-        public int getSmsTemplates() { return smsTemplates; }
-        public void setSmsTemplates(int smsTemplates) { this.smsTemplates = smsTemplates; }
+        public Integer getTotalSendCount() { return totalSendCount; }
+        public void setTotalSendCount(Integer totalSendCount) { this.totalSendCount = totalSendCount; }
         
-        public int getInnerMessageTemplates() { return innerMessageTemplates; }
-        public void setInnerMessageTemplates(int innerMessageTemplates) { this.innerMessageTemplates = innerMessageTemplates; }
+        public Integer getSuccessCount() { return successCount; }
+        public void setSuccessCount(Integer successCount) { this.successCount = successCount; }
         
-        public double getAverageUsageRate() { return averageUsageRate; }
-        public void setAverageUsageRate(double averageUsageRate) { this.averageUsageRate = averageUsageRate; }
+        public Double getSuccessRate() { return successRate; }
+        public void setSuccessRate(Double successRate) { this.successRate = successRate; }
         
-        public int getMostUsedTemplateId() { return mostUsedTemplateId; }
-        public void setMostUsedTemplateId(int mostUsedTemplateId) { this.mostUsedTemplateId = mostUsedTemplateId; }
-        
-        public String getMostUsedTemplateName() { return mostUsedTemplateName; }
-        public void setMostUsedTemplateName(String mostUsedTemplateName) { this.mostUsedTemplateName = mostUsedTemplateName; }
+        public LocalDateTime getLastSendTime() { return lastSendTime; }
+        public void setLastSendTime(LocalDateTime lastSendTime) { this.lastSendTime = lastSendTime; }
     }
+    
+    // 基本模板管理方法
+    Optional<MessageTemplate> getTemplateByCode(String templateCode);
+    
+    TemplateOperationResult createTemplate(TemplateRequest request);
+    
+    TemplateOperationResult updateTemplate(Long templateId, TemplateRequest request);
+    
+    boolean deleteTemplate(String templateCode);
+    
+    List<MessageTemplate> getAllTemplates();
 }

@@ -3,6 +3,7 @@ package com.ccms.controller;
 import com.ccms.entity.expense.ExpenseInvoice;
 import com.ccms.service.InvoiceComplianceService;
 import com.ccms.service.InvoiceVerifyService;
+import com.ccms.service.VerifyResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -208,11 +209,11 @@ public class InvoiceInfoController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            List<InvoiceVerifyService.VerifyResult> results = 
+            List<VerifyResult> results = 
                 invoiceVerifyService.verifyInvoicesBatch(invoices);
             
             int successCount = (int) results.stream()
-                .filter(InvoiceVerifyService.VerifyResult::isSuccess)
+                .filter(VerifyResult::isSuccess)
                 .count();
             
             response.put("success", true);

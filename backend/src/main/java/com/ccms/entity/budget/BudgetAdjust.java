@@ -21,6 +21,12 @@ public class BudgetAdjust extends BaseEntity {
     private Long budgetId;
     
     /**
+     * 预算明细ID
+     */
+    @Column(name = "budget_detail_id")
+    private Long budgetDetailId;
+    
+    /**
      * 调整单号
      */
     @Column(name = "adjust_no", length = 64, nullable = false)
@@ -61,6 +67,60 @@ public class BudgetAdjust extends BaseEntity {
      */
     @Column(name = "adjust_by", nullable = false)
     private Long adjustBy;
+    
+    /**
+     * 审批状态：0-待提交 1-审批中 2-已通过 3-已驳回 4-已撤销
+     */
+    @Column(name = "approval_status", nullable = false)
+    private Integer approvalStatus = 0;
+    
+    /**
+     * 当前审批人ID
+     */
+    @Column(name = "current_approver_id")
+    private Long currentApproverId;
+    
+    /**
+     * 当前审批人姓名
+     */
+    @Column(name = "current_approver_name", length = 50)
+    private String currentApproverName;
+    
+    /**
+     * 审批时间
+     */
+    @Column(name = "approval_time")
+    private java.time.LocalDateTime approvalTime;
+    
+    /**
+     * 执行状态：0-未执行 1-执行中 2-执行成功 3-执行失败
+     */
+    @Column(name = "execute_status", nullable = false)
+    private Integer executeStatus = 0;
+    
+    /**
+     * 执行时间
+     */
+    @Column(name = "execute_time")
+    private java.time.LocalDateTime executeTime;
+    
+    /**
+     * 执行消息
+     */
+    @Column(name = "execute_msg", length = 500)
+    private String executeMsg;
+    
+    /**
+     * 原始金额
+     */
+    @Column(name = "ori_amount", precision = 18, scale = 2)
+    private BigDecimal oriAmount;
+    
+    /**
+     * 调整后金额
+     */
+    @Column(name = "after_amount", precision = 18, scale = 2)
+    private BigDecimal afterAmount;
 
     // Getters and Setters - 添加缺失的方法
     public Long getBudgetMainId() {
@@ -95,9 +155,7 @@ public class BudgetAdjust extends BaseEntity {
         this.reason = comment; // 审批意见对应reason
     }
 
-    public void setApprovalTime(java.time.LocalDateTime approvalTime) {
-        // 简化处理，使用基类的创建时间
-    }
+
 
     public Long getBudgetId() {
         return budgetId;
@@ -106,7 +164,15 @@ public class BudgetAdjust extends BaseEntity {
     public void setBudgetId(Long budgetId) {
         this.budgetId = budgetId;
     }
-
+    
+    public Long getBudgetDetailId() {
+        return budgetDetailId;
+    }
+    
+    public void setBudgetDetailId(Long budgetDetailId) {
+        this.budgetDetailId = budgetDetailId;
+    }
+    
     public String getAdjustNo() {
         return adjustNo;
     }
@@ -161,6 +227,78 @@ public class BudgetAdjust extends BaseEntity {
 
     public void setAdjustBy(Long adjustBy) {
         this.adjustBy = adjustBy;
+    }
+    
+    public Integer getApprovalStatus() {
+        return approvalStatus;
+    }
+    
+    public void setApprovalStatus(Integer approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+    
+    public Long getCurrentApproverId() {
+        return currentApproverId;
+    }
+    
+    public void setCurrentApproverId(Long currentApproverId) {
+        this.currentApproverId = currentApproverId;
+    }
+    
+    public String getCurrentApproverName() {
+        return currentApproverName;
+    }
+    
+    public void setCurrentApproverName(String currentApproverName) {
+        this.currentApproverName = currentApproverName;
+    }
+    
+    public java.time.LocalDateTime getApprovalTime() {
+        return approvalTime;
+    }
+    
+    public void setApprovalTime(java.time.LocalDateTime approvalTime) {
+        this.approvalTime = approvalTime;
+    }
+    
+    public Integer getExecuteStatus() {
+        return executeStatus;
+    }
+    
+    public void setExecuteStatus(Integer executeStatus) {
+        this.executeStatus = executeStatus;
+    }
+    
+    public java.time.LocalDateTime getExecuteTime() {
+        return executeTime;
+    }
+    
+    public void setExecuteTime(java.time.LocalDateTime executeTime) {
+        this.executeTime = executeTime;
+    }
+    
+    public String getExecuteMsg() {
+        return executeMsg;
+    }
+    
+    public void setExecuteMsg(String executeMsg) {
+        this.executeMsg = executeMsg;
+    }
+    
+    public BigDecimal getOriAmount() {
+        return oriAmount;
+    }
+    
+    public void setOriAmount(BigDecimal oriAmount) {
+        this.oriAmount = oriAmount;
+    }
+    
+    public BigDecimal getAfterAmount() {
+        return afterAmount;
+    }
+    
+    public void setAfterAmount(BigDecimal afterAmount) {
+        this.afterAmount = afterAmount;
     }
 
     @Override

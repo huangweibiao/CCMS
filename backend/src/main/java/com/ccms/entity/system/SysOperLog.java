@@ -73,6 +73,12 @@ public class SysOperLog extends BaseEntity {
      */
     @Column(name = "oper_type", length = 32, nullable = false)
     private String operType;
+
+    /**
+     * 操作内容
+     */
+    @Column(name = "oper_content", length = 512)
+    private String operContent;
     
     /**
      * 请求URL
