@@ -197,7 +197,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { showSuccess, showError } from '@/components/common/Message.vue'
+import { showSuccess, showError } from '@/utils/message''
 
 // 表单引用
 const budgetFormRef = ref<FormInstance>()

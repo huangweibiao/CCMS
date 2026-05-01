@@ -99,7 +99,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { Clock, Check } from '@element-plus/icons-vue'
-import { showSuccess, showError } from '@/components/common/Message.vue'
+import { showSuccess, showError } from '@/utils/message'
 
 // Props定义
 interface Props {

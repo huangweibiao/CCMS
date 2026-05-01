@@ -192,7 +192,7 @@ import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { Search, Refresh, Download, TrendCharts, Money, Coin, DataAnalysis, WarningFilled, Warning, InfoFilled } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import DataTable from '@/components/common/DataTable.vue'
-import { showSuccess } from '@/components/common/Message.vue'
+import { showSuccess } from '@/utils/message''
 
 // ECharts实例引用
 const pieChartRef = ref<HTMLElement>()

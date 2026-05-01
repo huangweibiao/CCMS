@@ -6,12 +6,12 @@ import java.math.BigDecimal;
 
 /**
  * 预算明细表实体类
- * 对应表名：ccms_budget_detail
+ * 对应设计文档中的budget_detail表
  * 
- * @author 系统生成
+ * @author CCMS系统
  */
 @Entity
-@Table(name = "ccms_budget_detail")
+@Table(name = "budget_detail")
 public class BudgetDetail extends BaseEntity {
 
     /**
@@ -30,53 +30,39 @@ public class BudgetDetail extends BaseEntity {
      * 预算金额
      */
     @Column(name = "budget_amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal budgetAmount;
+    private BigDecimal budgetAmount = BigDecimal.ZERO;
     
     /**
      * 已用金额
      */
     @Column(name = "used_amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal usedAmount;
+    private BigDecimal usedAmount = BigDecimal.ZERO;
     
     /**
      * 冻结金额
      */
     @Column(name = "frozen_amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal frozenAmount;
+    private BigDecimal frozenAmount = BigDecimal.ZERO;
     
     /**
      * 上期结转
      */
     @Column(name = "carry_over", precision = 18, scale = 2)
-    private BigDecimal carryOver;
+    private BigDecimal carryOver = BigDecimal.ZERO;
 
-    // Getters and Setters - 添加缺失的方法
-    public Long getBudgetMainId() {
-        return this.budgetId; // budgetMainId对应budgetId
-    }
-
-    public void setBudgetMainId(Long budgetMainId) {
-        this.budgetId = budgetMainId;
-    }
-
-    public BigDecimal getRemainingAmount() {
-        return this.budgetAmount.subtract(this.usedAmount).subtract(this.frozenAmount);
-    }
-
-    public void setRemainingAmount(BigDecimal remainingAmount) {
-        // remainingAmount的计算逻辑，这里简化处理
-        this.usedAmount = this.budgetAmount.subtract(remainingAmount).max(BigDecimal.ZERO);
-    }
-
-    public String getDescription() {
-        return "预算明细 - " + this.feeTypeId; // 简化处理
+    // Constructors
+    public BudgetDetail() {
+        // 默认构造函数
     }
     
-    public void setDescription(String description) {
-        // description字段可能用于存储其他信息，这个实体类目前没有description字段
-        // 这个方法只是用于兼容性，实际实现可能需要添加description字段
+    public BudgetDetail(Long budgetId, Long feeTypeId, BigDecimal budgetAmount, BigDecimal carryOver) {
+        this.budgetId = budgetId;
+        this.feeTypeId = feeTypeId;
+        this.budgetAmount = budgetAmount != null ? budgetAmount : BigDecimal.ZERO;
+        this.carryOver = carryOver != null ? carryOver : BigDecimal.ZERO;
     }
 
+    // Getters and Setters
     public Long getBudgetId() {
         return budgetId;
     }
@@ -98,7 +84,7 @@ public class BudgetDetail extends BaseEntity {
     }
 
     public void setBudgetAmount(BigDecimal budgetAmount) {
-        this.budgetAmount = budgetAmount;
+        this.budgetAmount = budgetAmount != null ? budgetAmount : BigDecimal.ZERO;
     }
 
     public BigDecimal getUsedAmount() {
@@ -106,7 +92,7 @@ public class BudgetDetail extends BaseEntity {
     }
 
     public void setUsedAmount(BigDecimal usedAmount) {
-        this.usedAmount = usedAmount;
+        this.usedAmount = usedAmount != null ? usedAmount : BigDecimal.ZERO;
     }
 
     public BigDecimal getFrozenAmount() {
@@ -114,7 +100,7 @@ public class BudgetDetail extends BaseEntity {
     }
 
     public void setFrozenAmount(BigDecimal frozenAmount) {
-        this.frozenAmount = frozenAmount;
+        this.frozenAmount = frozenAmount != null ? frozenAmount : BigDecimal.ZERO;
     }
 
     public BigDecimal getCarryOver() {
@@ -122,7 +108,73 @@ public class BudgetDetail extends BaseEntity {
     }
 
     public void setCarryOver(BigDecimal carryOver) {
-        this.carryOver = carryOver;
+        this.carryOver = carryOver != null ? carryOver : BigDecimal.ZERO;
+    }
+
+    // Business logic methods
+    /**
+     * 获取预算余额
+     */
+    @Transient
+    public BigDecimal getRemainingAmount() {
+        return budgetAmount.add(carryOver).subtract(usedAmount).subtract(frozenAmount);
+    }
+    
+    /**
+     * 检查预算是否足够
+     */
+    @Transient
+    public boolean isBudgetSufficient(BigDecimal requiredAmount) {
+        if (requiredAmount == null || requiredAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return true;
+        }
+        return getRemainingAmount().compareTo(requiredAmount) >= 0;
+    }
+    
+    /**
+     * 冻结预算金额
+     */
+    public void freezeAmount(BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            this.frozenAmount = this.frozenAmount.add(amount);
+        }
+    }
+    
+    /**
+     * 释放冻结金额
+     */
+    public void releaseFrozenAmount(BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            this.frozenAmount = this.frozenAmount.subtract(amount).max(BigDecimal.ZERO);
+        }
+    }
+    
+    /**
+     * 扣减预算金额
+     */
+    public void deductAmount(BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            this.usedAmount = this.usedAmount.add(amount);
+            // 同步释放冻结金额
+            releaseFrozenAmount(amount);
+        }
+    }
+    
+    /**
+     * 退回预算金额
+     */
+    public void refundAmount(BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            this.usedAmount = this.usedAmount.subtract(amount).max(BigDecimal.ZERO);
+        }
+    }
+    
+    /**
+     * 总预算（包含上期结转）
+     */
+    @Transient
+    public BigDecimal getTotalBudgetAmount() {
+        return budgetAmount.add(carryOver);
     }
 
     @Override

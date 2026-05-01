@@ -239,7 +239,7 @@ import {
   OfficeBuilding
 } from '@element-plus/icons-vue'
 import CustomModal from '@/components/common/CustomModal.vue'
-import { showSuccess, showError, showConfirm } from '@/components/common/Message.vue'
+import { showSuccess, showError, showConfirm } from '@/utils/message''
 
 // 响应式数据
 const loading = ref(false)

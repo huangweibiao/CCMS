@@ -178,7 +178,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, Refresh, View, Check, Close, Share, Bell, Warning, Clock, ArrowDown } from '@element-plus/icons-vue'
-import { showSuccess, showError, showConfirm } from '@/components/common/Message.vue'
+import { showSuccess, showError, showConfirm } from '@/utils/message''
 
 // 路由管理
 const router = useRouter()

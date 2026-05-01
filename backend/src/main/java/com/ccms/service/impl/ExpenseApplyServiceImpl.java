@@ -3,10 +3,14 @@ package com.ccms.service.impl;
 import com.ccms.entity.expense.ExpenseApply;
 import com.ccms.entity.expense.ExpenseItem;
 import com.ccms.entity.expense.ExpenseAttachment;
+import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.repository.expense.ExpenseApplyRepository;
 import com.ccms.repository.expense.ExpenseItemRepository;
 import com.ccms.repository.expense.ExpenseAttachmentRepository;
+import com.ccms.repository.approval.ApprovalInstanceRepository;
 import com.ccms.service.ExpenseApplyService;
+import com.ccms.service.approval.ApprovalFlowEngine;
+import com.ccms.service.approval.ApprovalRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 费用申请服务实现类
@@ -31,14 +37,25 @@ public class ExpenseApplyServiceImpl implements ExpenseApplyService {
     private final ExpenseApplyRepository expenseApplyRepository;
     private final ExpenseItemRepository expenseItemRepository;
     private final ExpenseAttachmentRepository expenseAttachmentRepository;
+    private final ApprovalFlowEngine approvalFlowEngine;
+    private final ApprovalRecordService approvalRecordService;
+    private final ApprovalInstanceRepository approvalInstanceRepository;
+    
+    private static final Logger logger = LoggerFactory.getLogger(ExpenseApplyServiceImpl.class);
 
     @Autowired
     public ExpenseApplyServiceImpl(ExpenseApplyRepository expenseApplyRepository,
                                  ExpenseItemRepository expenseItemRepository,
-                                 ExpenseAttachmentRepository expenseAttachmentRepository) {
+                                 ExpenseAttachmentRepository expenseAttachmentRepository,
+                                 ApprovalFlowEngine approvalFlowEngine,
+                                 ApprovalRecordService approvalRecordService,
+                                 ApprovalInstanceRepository approvalInstanceRepository) {
         this.expenseApplyRepository = expenseApplyRepository;
         this.expenseItemRepository = expenseItemRepository;
         this.expenseAttachmentRepository = expenseAttachmentRepository;
+        this.approvalFlowEngine = approvalFlowEngine;
+        this.approvalRecordService = approvalRecordService;
+        this.approvalInstanceRepository = approvalInstanceRepository;
     }
 
     @Override
@@ -112,6 +129,29 @@ public class ExpenseApplyServiceImpl implements ExpenseApplyService {
         apply.setStatus(1); // 审批中
         apply.setApprovalStatus(1); // 审批中
         apply.setSubmitTime(LocalDateTime.now());
+        
+        // 启动审批流程
+        boolean approvalStarted = approvalFlowEngine.startApprovalFlow(
+            "EXPENSE_APPLY", 
+            applyId, 
+            apply.getApplyUserId(), 
+            apply.getSubmitTime()
+        );
+        
+        if (approvalStarted) {
+            // 获取审批实例ID并更新到申请单
+            Optional<ApprovalInstance> approvalInstanceOpt = approvalInstanceRepository
+                .findTopByBusinessTypeAndBusinessIdOrderByCreateTimeDesc("EXPENSE_APPLY", applyId);
+            
+            if (approvalInstanceOpt.isPresent()) {
+                apply.setApprovalInstanceId(approvalInstanceOpt.get().getId());
+            }
+        } else {
+            // 审批流启动失败，可能需要手动处理或自动通过
+            logger.warn("费用申请单{}的审批流启动失败，考虑自动通过审批", applyId);
+            apply.setStatus(2); // 直接通过（自动审批）
+            apply.setApprovalStatus(2); // 已通过
+        }
         
         expenseApplyRepository.save(apply);
     }

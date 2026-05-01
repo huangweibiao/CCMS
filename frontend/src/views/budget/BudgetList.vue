@@ -245,7 +245,7 @@ import { Plus, Search, RefreshRight, Download, Refresh } from '@element-plus/ico
 // 引入通用组件
 import DataTable from '@/components/common/DataTable.vue'
 import CustomModal from '@/components/common/CustomModal.vue'
-import { showSuccess, showConfirm } from '@/components/common/Message.vue'
+import { showSuccess, showConfirm } from '@/utils/message''
 
 /**
  * 数据表格组件引用

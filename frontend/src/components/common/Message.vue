@@ -25,7 +25,7 @@ interface ConfirmOptions {
 }
 
 // 提示消息
-const showMessage = (
+export const showMessage = (
   message: string,
   type: MessageType = 'info',
   duration: number = 3000
@@ -40,27 +40,27 @@ const showMessage = (
 }
 
 // 成功消息
-const showSuccess = (message: string, duration: number = 3000) => {
+export const showSuccess = (message: string, duration: number = 3000) => {
   return showMessage(message, 'success', duration)
 }
 
 // 警告消息
-const showWarning = (message: string, duration: number = 5000) => {
+export const showWarning = (message: string, duration: number = 5000) => {
   return showMessage(message, 'warning', duration)
 }
 
 // 错误消息
-const showError = (message: string, duration: number = 5000) => {
+export const showError = (message: string, duration: number = 5000) => {
   return showMessage(message, 'error', duration)
 }
 
 // 信息消息
-const showInfo = (message: string, duration: number = 3000) => {
+export const showInfo = (message: string, duration: number = 3000) => {
   return showMessage(message, 'info', duration)
 }
 
 // 通知提示
-const showNotification = (
+export const showNotification = (
   title: string,
   message: string,
   type: MessageType = 'info',
@@ -80,7 +80,7 @@ const showNotification = (
 }
 
 // 确认对话框
-const showConfirm = (options: ConfirmOptions): Promise<boolean> => {
+export const showConfirm = (options: ConfirmOptions): Promise<boolean> => {
   return new Promise((resolve) => {
     const {
       title = '提示',
@@ -115,7 +115,7 @@ const showConfirm = (options: ConfirmOptions): Promise<boolean> => {
 }
 
 // 输入对话框
-const showPrompt = (
+export const showPrompt = (
   message: string,
   title: string = '输入',
   inputType: 'text' | 'textarea' = 'text',
@@ -141,7 +141,7 @@ const showPrompt = (
 }
 
 // 消息加载
-const showLoading = (message: string = '加载中...'): () => void => {
+export const showLoading = (message: string = '加载中...'): () => void => {
   const loading = ElMessage({
     message,
     type: 'info',
@@ -186,7 +186,7 @@ class MessageQueue {
 const messageQueue = new MessageQueue()
 
 // 队列化消息（避免连续消息重叠）
-const queuedMessage = (
+export const queuedMessage = (
   message: string,
   type: MessageType = 'info',
   duration: number = 3000
@@ -197,7 +197,7 @@ const queuedMessage = (
 }
 
 // 全局消息配置
-const configureGlobalMessages = (config: {
+export const configureGlobalMessages = (config: {
   maxCount?: number
   zIndex?: number
 }): void => {

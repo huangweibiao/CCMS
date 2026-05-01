@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ccms_expense_reimburse")
+@Table(name = "expense_reimburse")
 public class ExpenseReimburse extends BaseEntity {
     
     @Column(name = "reimburse_no", nullable = false, unique = true, length = 50)

@@ -234,7 +234,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { Plus, Upload, Document, Refresh, Check, Delete } from '@element-plus/icons-vue'
-import { showSuccess, showWarning, showError } from '@/components/common/Message.vue'
+import { showSuccess, showWarning, showError } from '@/utils/message''
 
 // 表单引用
 const basicFormRef = ref()

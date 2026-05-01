@@ -7,18 +7,18 @@ import java.time.LocalDateTime;
 
 /**
  * 预算主表实体类
- * 对应表名：ccms_budget_main
+ * 对应设计文档中的budget_main表
  * 
- * @author 系统生成
+ * @author CCMS系统
  */
 @Entity
-@Table(name = "ccms_budget_main")
+@Table(name = "budget_main")
 public class BudgetMain extends BaseEntity {
 
     /**
      * 预算单号
      */
-    @Column(name = "budget_no", length = 64, nullable = false)
+    @Column(name = "budget_no", length = 64, nullable = false, unique = true)
     private String budgetNo;
     
     /**
@@ -40,64 +40,62 @@ public class BudgetMain extends BaseEntity {
     private Long deptId;
     
     /**
+     * 成本中心ID
+     */
+    @Column(name = "cost_center_id", nullable = false)
+    private Long costCenterId;
+    
+    /**
      * 预算总额
      */
     @Column(name = "total_amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal totalAmount;
-    
-    /**
-     * 可用金额
-     */
-    @Column(name = "available_amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal availableAmount;
-    
-    /**
-     * 冻结金额
-     */
-    @Column(name = "frozen_amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal frozenAmount;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
     
     /**
      * 已用金额
      */
     @Column(name = "used_amount", precision = 18, scale = 2, nullable = false)
-    private BigDecimal usedAmount;
+    private BigDecimal usedAmount = BigDecimal.ZERO;
     
     /**
-     * 预算状态：1-草稿 2-审批中 3-已生效 4-已过期 5-已作废
+     * 冻结金额
      */
-    @Column(name = "budget_status", nullable = false)
-    private Integer budgetStatus;
+    @Column(name = "frozen_amount", precision = 18, scale = 2, nullable = false)
+    private BigDecimal frozenAmount = BigDecimal.ZERO;
     
     /**
-     * 生效时间
+     * 状态：0-草稿 1-生效 2-冻结 3-作废
      */
-    @Column(name = "effective_date")
-    private java.sql.Date effectiveDate;
+    @Column(name = "status", nullable = false)
+    private Integer status = 0;
     
     /**
-     * 失效时间
+     * 创建人ID
      */
-    @Column(name = "expire_date")
-    private java.sql.Date expireDate;
+    @Column(name = "create_by", nullable = false)
+    private Long createBy;
     
     /**
-     * 备注
+     * 更新人ID
      */
-    @Column(name = "remark", length = 512)
-    private String remark;
+    @Column(name = "update_by")
+    private Long updateBy;
+
+    // Constructors
+    public BudgetMain() {
+        // 默认构造函数
+    }
     
-    /**
-     * 审批人ID
-     */
-    @Column(name = "approver_id")
-    private Long approverId;
-    
-    /**
-     * 审批时间
-     */
-    @Column(name = "approve_time")
-    private LocalDateTime approveTime;
+    public BudgetMain(String budgetNo, Integer budgetYear, String budgetPeriod, 
+                     Long deptId, Long costCenterId, BigDecimal totalAmount, Long createBy) {
+        this.budgetNo = budgetNo;
+        this.budgetYear = budgetYear;
+        this.budgetPeriod = budgetPeriod;
+        this.deptId = deptId;
+        this.costCenterId = costCenterId;
+        this.totalAmount = totalAmount != null ? totalAmount : BigDecimal.ZERO;
+        this.createBy = createBy;
+    }
 
     // Getters and Setters
     public String getBudgetNo() {
@@ -132,28 +130,20 @@ public class BudgetMain extends BaseEntity {
         this.deptId = deptId;
     }
 
+    public Long getCostCenterId() {
+        return costCenterId;
+    }
+
+    public void setCostCenterId(Long costCenterId) {
+        this.costCenterId = costCenterId;
+    }
+
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
 
     public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public BigDecimal getAvailableAmount() {
-        return availableAmount;
-    }
-
-    public void setAvailableAmount(BigDecimal availableAmount) {
-        this.availableAmount = availableAmount;
-    }
-
-    public BigDecimal getFrozenAmount() {
-        return frozenAmount;
-    }
-
-    public void setFrozenAmount(BigDecimal frozenAmount) {
-        this.frozenAmount = frozenAmount;
+        this.totalAmount = totalAmount != null ? totalAmount : BigDecimal.ZERO;
     }
 
     public BigDecimal getUsedAmount() {
@@ -161,105 +151,95 @@ public class BudgetMain extends BaseEntity {
     }
 
     public void setUsedAmount(BigDecimal usedAmount) {
-        this.usedAmount = usedAmount;
+        this.usedAmount = usedAmount != null ? usedAmount : BigDecimal.ZERO;
     }
 
-    public Integer getBudgetStatus() {
-        return budgetStatus;
+    public BigDecimal getFrozenAmount() {
+        return frozenAmount;
     }
 
-    public void setBudgetStatus(Integer budgetStatus) {
-        this.budgetStatus = budgetStatus;
+    public void setFrozenAmount(BigDecimal frozenAmount) {
+        this.frozenAmount = frozenAmount != null ? frozenAmount : BigDecimal.ZERO;
     }
 
-    public java.sql.Date getEffectiveDate() {
-        return effectiveDate;
-    }
-
-    public void setEffectiveDate(java.sql.Date effectiveDate) {
-        this.effectiveDate = effectiveDate;
-    }
-
-    public java.sql.Date getExpireDate() {
-        return expireDate;
-    }
-
-    public void setExpireDate(java.sql.Date expireDate) {
-        this.expireDate = expireDate;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public Long getApproverId() {
-        return approverId;
-    }
-
-    public void setApproverId(Long approverId) {
-        this.approverId = approverId;
-    }
-
-    public LocalDateTime getApproveTime() {
-        return approveTime;
-    }
-
-    public void setApproveTime(LocalDateTime approveTime) {
-        this.approveTime = approveTime;
-    }
-
-    // 为缺失的方法添加实现
     public Integer getStatus() {
-        return this.budgetStatus; // status对应budgetStatus
+        return status;
     }
 
     public void setStatus(Integer status) {
-        this.budgetStatus = status;
+        this.status = status;
     }
 
-    public Integer getApprovalStatus() {
-        return 2; // 返回默认的审批状态
+    public Long getCreateBy() {
+        return createBy;
     }
 
-    public void setApprovalStatus(Integer approvalStatus) {
-        // 这个方法可能会被调用但无对应字段，保持空实现
+    public void setCreateBy(Long createBy) {
+        this.createBy = createBy;
     }
 
-    public String getBudgetCode() {
-        return this.budgetNo; // budgetCode对应budgetNo
+    public Long getUpdateBy() {
+        return updateBy;
     }
 
-    public void setBudgetCode(String budgetCode) {
-        this.budgetNo = budgetCode;
+    public void setUpdateBy(Long updateBy) {
+        this.updateBy = updateBy;
     }
 
-    public String getBudgetName() {
-        return this.budgetNo; // budgetName默认返回预算单号
+    // Business logic methods
+    /**
+     * 获取预算余额
+     */
+    @Transient
+    public BigDecimal getAvailableAmount() {
+        return totalAmount.subtract(usedAmount).subtract(frozenAmount);
     }
-
-    public String getBudgetCycle() {
-        return this.budgetPeriod; // budgetCycle对应budgetPeriod
+    
+    /**
+     * 检查预算是否足够
+     */
+    @Transient
+    public boolean isBudgetSufficient(BigDecimal requiredAmount) {
+        if (requiredAmount == null || requiredAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return true;
+        }
+        return getAvailableAmount().compareTo(requiredAmount) >= 0;
     }
-
-    public String getDescription() {
-        return this.remark; // description对应remark
+    
+    /**
+     * 冻结预算金额
+     */
+    public void freezeAmount(BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            this.frozenAmount = this.frozenAmount.add(amount);
+        }
     }
-
-    // 添加缺失的方法
-    public void setBudgetName(String budgetName) {
-        this.budgetNo = budgetName; // budgetName对应budgetNo
+    
+    /**
+     * 释放冻结金额
+     */
+    public void releaseFrozenAmount(BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            this.frozenAmount = this.frozenAmount.subtract(amount).max(BigDecimal.ZERO);
+        }
     }
-
-    public void setBudgetCycle(String budgetCycle) {
-        this.budgetPeriod = budgetCycle; // budgetCycle对应budgetPeriod
+    
+    /**
+     * 扣减预算金额
+     */
+    public void deductAmount(BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            this.usedAmount = this.usedAmount.add(amount);
+        }
     }
-
-    public void setDescription(String description) {
-        this.remark = description; // description对应remark
+    
+    /**
+     * 退回预算金额
+     */
+    public void refundAmount(BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            this.usedAmount = this.usedAmount.subtract(amount).max(BigDecimal.ZERO);
+        }
     }
 
     @Override
@@ -270,16 +250,11 @@ public class BudgetMain extends BaseEntity {
                 ", budgetYear=" + budgetYear +
                 ", budgetPeriod='" + budgetPeriod + '\'' +
                 ", deptId=" + deptId +
+                ", costCenterId=" + costCenterId +
                 ", totalAmount=" + totalAmount +
-                ", availableAmount=" + availableAmount +
-                ", frozenAmount=" + frozenAmount +
                 ", usedAmount=" + usedAmount +
-                ", budgetStatus=" + budgetStatus +
-                ", effectiveDate=" + effectiveDate +
-                ", expireDate=" + expireDate +
-                ", remark='" + remark + '\'' +
-                ", approverId=" + approverId +
-                ", approveTime=" + approveTime +
+                ", frozenAmount=" + frozenAmount +
+                ", status=" + status +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
                 ", version=" + getVersion() +

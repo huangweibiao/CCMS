@@ -12,7 +12,7 @@ import java.time.LocalDate;
  * @author 系统生成
  */
 @Entity
-@Table(name = "ccms_loan_main")
+@Table(name = "loan_main")
 public class LoanMain extends BaseEntity {
 
     /**

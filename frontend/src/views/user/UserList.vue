@@ -193,7 +193,7 @@ import CustomModal from '@/components/common/CustomModal.vue'
 import CustomDrawer from '@/components/common/CustomDrawer.vue'
 import UserForm from './components/UserForm.vue'
 import { userApi } from '@/api/user'
-import messageApi from '@/components/common/Message.vue'
+import messageApi from '@/utils/message'
 
 // 表格列配置
 const tableColumns = [

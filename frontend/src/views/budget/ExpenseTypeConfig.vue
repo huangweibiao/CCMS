@@ -206,7 +206,7 @@
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { Plus, Search, Expand, Fold, Edit, Delete, FolderAdd } from '@element-plus/icons-vue'
 import CustomModal from '@/components/common/CustomModal.vue'
-import { showSuccess, showWarning, showError } from '@/components/common/Message.vue'
+import { showSuccess, showWarning, showError } from '@/utils/message''
 
 // 响应式数据
 const typeTreeRef = ref()

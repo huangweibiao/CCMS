@@ -274,7 +274,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Plus, Upload, Refresh, Document, Send, Delete } from '@element-plus/icons-vue'
-import { showSuccess, showWarning, showError } from '@/components/common/Message.vue'
+import { showSuccess, showWarning, showError } from '@/utils/message''
 import InvoiceUpload from '@/components/reimburse/InvoiceUpload.vue'
 
 // 路由和状态管理

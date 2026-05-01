@@ -224,7 +224,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Picture, Document, DocumentCopy } from '@element-plus/icons-vue'
-import { showSuccess, showError, showConfirm } from '@/components/common/Message.vue'
+import { showSuccess, showError, showConfirm } from '@/utils/message''
 import ApprovalActions from '@/components/approval/ApprovalActions.vue'
 
 // 路由管理

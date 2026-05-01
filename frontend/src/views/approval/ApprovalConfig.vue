@@ -217,7 +217,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, Search, Refresh, Edit, View, Check, Delete, Play, User } from '@element-plus/icons-vue'
-import { showSuccess, showError, showConfirm } from '@/components/common/Message.vue'
+import { showSuccess, showError, showConfirm } from '@/utils/message''
 
 // 路由管理
 const router = useRouter()

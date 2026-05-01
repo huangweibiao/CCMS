@@ -1,37 +1,69 @@
 package com.ccms.entity;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * 基础实体类
+ * 为所有实体类提供统一的基础字段和管理
+ */
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
 public abstract class BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    protected Long id;
     
+    /**
+     * 乐观锁版本号
+     */
+    @Version
+    protected Integer version;
+    
+    /**
+     * 删除标记 (0-正常, 1-已删除)
+     */
+    @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
+    protected Boolean deleted = false;
+    
+    /**
+     * 创建时间
+     */
     @CreationTimestamp
     @Column(name = "create_time", updatable = false)
-    private LocalDateTime createTime;
+    protected LocalDateTime createTime;
     
+    /**
+     * 更新时间
+     */
     @UpdateTimestamp
     @Column(name = "update_time")
-    private LocalDateTime updateTime;
+    protected LocalDateTime updateTime;
     
+    /**
+     * 创建人ID
+     */
+    @CreatedBy
     @Column(name = "create_by")
-    private String createBy;
+    protected Long createBy;
     
+    /**
+     * 更新人ID
+     */
+    @LastModifiedBy
     @Column(name = "update_by")
-    private String updateBy;
-    
-    @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
-    private Boolean deleted = false;
-    
-    @Version
-    private Integer version;
+    protected Long updateBy;
 
     // Getter and Setter methods
     public Long getId() {

@@ -276,7 +276,7 @@ import {
 import CustomModal from '@/components/common/CustomModal.vue'
 import FileUpload from '@/components/common/FileUpload.vue'
 import { useUserStore } from '@/stores/user'
-import { showSuccess, showError } from '@/components/common/Message.vue'
+import { showSuccess, showError } from '@/utils/message''
 
 // Store
 const userStore = useUserStore()

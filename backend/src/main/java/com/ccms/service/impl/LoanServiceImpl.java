@@ -268,13 +268,7 @@ public class LoanServiceImpl implements LoanService {
         return convertToResponse(loan);
     }
     
-    /**
-     * 内部获取借款详情方法，避免命名冲突
-     */
-    private LoanMain getLoanById_internal(Long id) {
-        return loanMainRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("借款单不存在"));
-    }
+
 
     /**
      * 更新借款信息（DTO接口）

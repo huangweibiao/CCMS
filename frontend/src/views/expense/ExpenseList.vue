@@ -144,7 +144,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import DataTable from '@/components/common/DataTable.vue'
-import { showSuccess, showWarning, showError } from '@/components/common/Message.vue'
+import { showSuccess, showWarning, showError } from '@/utils/message''
 
 // 响应式数据
 const loading = ref(false)

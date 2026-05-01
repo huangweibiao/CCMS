@@ -252,7 +252,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { CircleCheck, Warning, InfoFilled, WarningFilled } from '@element-plus/icons-vue'
 import CustomModal from '@/components/common/CustomModal.vue'
-import { showSuccess, showConfirm, showError } from '@/components/common/Message.vue'
+import { showSuccess, showConfirm, showError } from '@/utils/message''
 
 // 表单引用
 const adjustFormRef = ref<FormInstance>()

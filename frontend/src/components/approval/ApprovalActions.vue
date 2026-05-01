@@ -323,7 +323,7 @@ import { ref, reactive, computed } from 'vue'
 import { 
   Check, Close, Share, ArrowDown, Bell, Star, Printer, Download, Upload, Warning 
 } from '@element-plus/icons-vue'
-import { showSuccess, showError, showConfirm } from '@/components/common/Message.vue'
+import { showSuccess, showError, showConfirm } from '@/utils/message''
 import type { FormInstance, FormRules, UploadFile } from 'element-plus'
 
 // 组件属性

@@ -148,7 +148,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { Plus, MagicStick } from '@element-plus/icons-vue'
 import type { UploadInstance, UploadRawFile, UploadFile, UploadUserFile } from 'element-plus'
-import { showSuccess, showError, showConfirm } from '@/components/common/Message.vue'
+import { showSuccess, showError, showConfirm } from '@/utils/message''
 
 // 上传组件实例
 const uploadRef = ref<UploadInstance>()

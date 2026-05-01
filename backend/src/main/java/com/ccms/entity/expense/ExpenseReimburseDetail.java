@@ -7,12 +7,12 @@ import java.sql.Date;
 
 /**
  * 报销单明细表实体类
- * 对应表名：ccms_expense_reimburse_detail
+ * 对应表名：expense_reimburse_detail
  * 
  * @author 系统生成
  */
 @Entity
-@Table(name = "ccms_expense_reimburse_detail")
+@Table(name = "expense_reimburse_detail")
 public class ExpenseReimburseDetail extends BaseEntity {
 
     /**

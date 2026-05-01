@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  * @author 系统生成
  */
 @Entity
-@Table(name = "ccms_loan_repayment")
+@Table(name = "loan_repayment")
 public class LoanRepayment extends BaseEntity {
 
     /**

@@ -252,7 +252,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Plus, Upload, Refresh, Document, Check, Send, Delete } from '@element-plus/icons-vue'
-import { showSuccess, showWarning, showError } from '@/components/common/Message.vue'
+import { showSuccess, showWarning, showError } from '@/utils/message''
 import { ElMessageBox } from 'element-plus'
 import ExpenseSubmitModal from './components/ExpenseSubmitModal.vue'
 

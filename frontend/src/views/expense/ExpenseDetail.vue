@@ -152,7 +152,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Edit, Check, Close, Printer, Document, Picture, VideoCamera, File } from '@element-plus/icons-vue'
-import { showSuccess, showWarning, showError } from '@/components/common/Message.vue'
+import { showSuccess, showWarning, showError } from '@/utils/message''
 
 // 路由和状态管理
 const route = useRoute()
