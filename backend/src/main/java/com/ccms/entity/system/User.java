@@ -201,8 +201,17 @@ public class User {
      */
     public Set<String> getPermissions() {
         Set<String> permissions = new HashSet<>();
-        for (Role role : roles) {
-            permissions.addAll(role.getPermissions());
+        if (roles != null && !roles.isEmpty()) {
+            for (Role role : roles) {
+                String rolePermissions = role.getPermissions();
+                if (rolePermissions != null && !rolePermissions.isEmpty()) {
+                    // 假设权限字符串以逗号分隔
+                    String[] permissionArray = rolePermissions.split(",");
+                    for (String permission : permissionArray) {
+                        permissions.add(permission.trim());
+                    }
+                }
+            }
         }
         return permissions;
     }

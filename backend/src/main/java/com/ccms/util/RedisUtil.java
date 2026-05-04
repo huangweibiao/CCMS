@@ -1,7 +1,7 @@
 package com.ccms.util;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
@@ -13,11 +13,14 @@ import java.util.concurrent.TimeUnit;
  * 提供常用的Redis操作方法
  */
 @Component
-@Slf4j
-@RequiredArgsConstructor
 public class RedisUtil {
 
+    private static final Logger log = LoggerFactory.getLogger(RedisUtil.class);
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public RedisUtil(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     /**
      * 设置缓存值

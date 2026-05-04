@@ -4,9 +4,11 @@ import com.ccms.entity.audit.AuditLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -108,12 +110,10 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     /**
      * 获取用户成功率统计
      */
-    @Query("SELECT COUNT(a), SUM(CASE WHEN a.success = true THEN 1 ELSE 0 END), 
-
-    /**
-     * 删除指定时间之前的审计日志（数据归档）
-     */
-    void deleteByCreatedTimeBefore(LocalDateTime cutoffTime);
+    @Query("SELECT COUNT(a), SUM(CASE WHEN a.success = true THEN 1 ELSE 0 END) FROM AuditLog a WHERE a.userId = :userId AND a.createdTime BETWEEN :startTime AND :endTime")
+    List<Object[]> getUserSuccessRate(@Param("userId") Long userId,
+                                     @Param("startTime") LocalDateTime startTime,
+                                     @Param("endTime") LocalDateTime endTime);
 
     /**
      * 统计指定时间段的平均响应时间
@@ -123,24 +123,12 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
                                  @Param("endTime") LocalDateTime endTime);
 
     /**
-     * 获取用户操作统计
-     */
-    @Query("SELECT a.operation, COUNT(a) FROM AuditLog a WHERE a.userId = :userId AND a.createdTime BETWEEN :startTime AND :endTime GROUP BY a.operation")
-    List<Object[]> getOperationStatsByUser(@Param("userId") Long userId,
-                                         @Param("startTime") LocalDateTime startTime,
-                                         @Param("endTime") LocalDateTime endTime);
-
-    /**
      * 获取用户操作成功率统计
      */
-    @Query("SELECT COUNT(a),
-                   SUM(CASE WHEN a.success = true THEN 1 ELSE 0 END),
-                   CAST(SUM(CASE WHEN a.success = true THEN 1 ELSE 0 END) AS DOUBLE) / COUNT(a) * 100 
-            FROM AuditLog a 
-            WHERE a.userId = :userId AND a.createdTime BETWEEN :startTime AND :endTime")
-    List<Object[]> getUserSuccessRate(@Param("userId") Long userId,
-                                      @Param("startTime") LocalDateTime startTime,
-                                      @Param("endTime") LocalDateTime endTime);
+    @Query("SELECT COUNT(a),\n                   SUM(CASE WHEN a.success = true THEN 1 ELSE 0 END),\n                   CAST(SUM(CASE WHEN a.success = true THEN 1 ELSE 0 END) AS DOUBLE) / COUNT(a) * 100 \n            FROM AuditLog a \n            WHERE a.userId = :userId AND a.createdTime BETWEEN :startTime AND :endTime")
+    List<Object[]> getUserDetailedSuccessRate(@Param("userId") Long userId,
+                                             @Param("startTime") LocalDateTime startTime,
+                                             @Param("endTime") LocalDateTime endTime);
 
     /**
      * 获取用户模块操作统计
@@ -170,14 +158,6 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     @Query("SELECT a.module, a.operation, COUNT(a) FROM AuditLog a WHERE a.success = false AND a.createdTime BETWEEN :startTime AND :endTime GROUP BY a.module, a.operation ORDER BY COUNT(a) DESC")
     List<Object[]> getCommonErrorOperations(@Param("startTime") LocalDateTime startTime,
                                            @Param("endTime") LocalDateTime endTime);
-
-    /**
-     * 获取活跃用户排名
-     */
-    @Query("SELECT a.username, COUNT(a) FROM AuditLog a WHERE a.createdTime BETWEEN :startTime AND :endTime GROUP BY a.username ORDER BY COUNT(a) DESC")
-    List<Object[]> getTopActiveUsers(@Param("startTime") LocalDateTime startTime,
-                                    @Param("endTime") LocalDateTime endTime,
-                                    org.springframework.data.domain.Pageable pageable);
 
     /**
      * 删除过期审计日志

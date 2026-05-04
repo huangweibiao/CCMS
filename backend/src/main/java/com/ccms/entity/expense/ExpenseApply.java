@@ -73,6 +73,9 @@ public class ExpenseApply extends BaseEntity {
     
     @Column(name = "budget_checked", columnDefinition = "tinyint(1) default 0")
     private Boolean budgetChecked = false;
+    
+    @Column(name = "approval_instance_id")
+    private Long approvalInstanceId;
 
     // Getters and Setters
     public String getApplyNo() {
@@ -239,6 +242,14 @@ public class ExpenseApply extends BaseEntity {
         this.budgetChecked = budgetChecked;
     }
 
+    public Long getApprovalInstanceId() {
+        return approvalInstanceId;
+    }
+
+    public void setApprovalInstanceId(Long approvalInstanceId) {
+        this.approvalInstanceId = approvalInstanceId;
+    }
+
     // 为缺失的方法添加实现
     public String getApplyCode() {
         return this.applyNo; // applyCode对应applyNo
@@ -393,6 +404,7 @@ public class ExpenseApply extends BaseEntity {
                 ", approveTime=" + approveTime +
                 ", rejectTime=" + rejectTime +
                 ", rejectReason='" + rejectReason + '\'' +
+                ", approvalInstanceId=" + approvalInstanceId +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
                 ", version=" + getVersion() +

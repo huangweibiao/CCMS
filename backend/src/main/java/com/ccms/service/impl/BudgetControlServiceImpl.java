@@ -246,4 +246,25 @@ public class BudgetControlServiceImpl implements BudgetControlService {
             return false;
         }
     }
+    
+    /**
+     * 预算验证结果内部类
+     */
+    public static class BudgetValidationResult {
+        private final boolean valid;
+        private final String message;
+        
+        public BudgetValidationResult(boolean valid, String message) {
+            this.valid = valid;
+            this.message = message;
+        }
+        
+        public boolean isValid() {
+            return valid;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
+    }
 }

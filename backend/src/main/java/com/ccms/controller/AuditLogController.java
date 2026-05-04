@@ -2,7 +2,6 @@ package com.ccms.controller;
 
 import com.ccms.entity.audit.AuditLog;
 import com.ccms.service.audit.AuditLogService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,10 +19,13 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/audit-logs")
-@RequiredArgsConstructor
 public class AuditLogController {
 
     private final AuditLogService auditLogService;
+    
+    public AuditLogController(AuditLogService auditLogService) {
+        this.auditLogService = auditLogService;
+    }
 
     /**
      * 查询审计日志列表
@@ -182,7 +184,7 @@ public class AuditLogController {
                 "status", "healthy",
                 "last24hRecordCount", latestLogs.getTotalElements(),
                 "lastOperationTime", latestLogs.hasContent() ? 
-                    latestLogs.getContent().get(0).getCreatedTime() : "无记录",
+                    latestLogs.getContent().get(0).getCreateTime() : "无记录",
                 "timestamp", LocalDateTime.now()
         );
         

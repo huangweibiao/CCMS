@@ -166,8 +166,8 @@ public class DataInitializer {
                 adminUser.setPhone("13800138000");
                 adminUser.setDeptId(adminDept.getId());
                 adminUser.setStatus(1);
-                adminUser.setCreateBy("system");
-                adminUser.setUpdateBy("system");
+                adminUser.setCreateBy(1L);
+                adminUser.setUpdateBy(1L);
                 
                 sysUserRepository.save(adminUser);
                 logger.info("已初始化管理员用户: {}", adminUser.getUsername());
@@ -182,8 +182,8 @@ public class DataInitializer {
         dept.setParentId(parentId);
         dept.setSortOrder(orderNum);
         dept.setStatus(1);
-        dept.setCreateBy("system");
-        dept.setUpdateBy("system");
+        dept.setCreateBy(1L);
+        dept.setUpdateBy(1L);
         return dept;
     }
 
@@ -194,8 +194,8 @@ public class DataInitializer {
         role.setDescription(description);
         role.setCategory(category);
         role.setStatus(1);
-        role.setCreateBy("system");
-        role.setUpdateBy("system");
+        role.setCreateBy(1L);
+        role.setUpdateBy(1L);
         return role;
     }
 
@@ -206,8 +206,8 @@ public class DataInitializer {
         category.setSortOrder(orderNum);
         category.setDescription(description);
         category.setEnabled(true);
-        category.setCreateBy("system");
-        category.setUpdateBy("system");
+        category.setCreateBy(1L);
+        category.setUpdateBy(1L);
         return category;
     }
 

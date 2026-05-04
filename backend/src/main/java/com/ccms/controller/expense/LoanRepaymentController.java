@@ -164,21 +164,30 @@ public class LoanRepaymentController {
                 @Override
                 public Long getLoanId() { return loanId; }
                 @Override
-                public BigDecimal getRepaymentAmount() { return amount; }
+                public BigDecimal getRepayAmount() { return amount; }
                 @Override
-                public Integer getRepaymentType() { return 2; } // 报销抵扣
+                public Integer getRepayType() { return 2; } // 报销抵扣
                 @Override
                 public String getRemark() { return "报销单号：" + reimbursementNo + " 自动核销"; }
                 // 其他方法需要默认实现
-                @Override public java.time.LocalDate getDueDate() { return java.time.LocalDate.now().plusDays(30); }
+                @Override public java.time.LocalDate getRepayDate() { return java.time.LocalDate.now().plusDays(30); }
                 // 添加缺少的方法实现
                 @Override public Long getId() { return null; }
                 @Override public void setId(Long id) {}
                 @Override public void setLoanId(Long loanId) {}
-                @Override public void setRepaymentAmount(BigDecimal repaymentAmount) {}
-                @Override public void setRepaymentType(Integer repaymentType) {}
-                @Override public void setDueDate(java.time.LocalDate dueDate) {}
+                @Override public void setRepayAmount(BigDecimal repayAmount) {}
+                @Override public void setRepayType(Integer repayType) {}
+                @Override public void setRepayDate(java.time.LocalDate repayDate) {}
                 @Override public void setRemark(String remark) {}
+                // 添加其他方法实现
+                @Override public String getRepayNo() { return "AUTO_REPAY_" + System.currentTimeMillis(); }
+                @Override public void setRepayNo(String repayNo) {}
+                @Override public Long getRepayBy() { return null; }
+                @Override public void setRepayBy(Long repayBy) {}
+                @Override public String getBankName() { return ""; }
+                @Override public void setBankName(String bankName) {}
+                @Override public String getBankAccount() { return ""; }
+                @Override public void setBankAccount(String bankAccount) {}
             });
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
@@ -199,21 +208,30 @@ public class LoanRepaymentController {
                 @Override
                 public Long getLoanId() { return loanId; }
                 @Override
-                public BigDecimal getRepaymentAmount() { return amount; }
+                public BigDecimal getRepayAmount() { return amount; }
                 @Override
-                public Integer getRepaymentType() { return 3; } // 系统强制还款
+                public Integer getRepayType() { return 3; } // 系统强制还款
                 @Override
                 public String getRemark() { return "系统强制还款：" + (remark != null ? remark : ""); }
                 // 其他方法需要默认实现
-                @Override public java.time.LocalDate getDueDate() { return java.time.LocalDate.now(); }
+                @Override public java.time.LocalDate getRepayDate() { return java.time.LocalDate.now(); }
                 // 添加缺少的方法实现
                 @Override public Long getId() { return null; }
                 @Override public void setId(Long id) {}
                 @Override public void setLoanId(Long loanId) {}
-                @Override public void setRepaymentAmount(BigDecimal repaymentAmount) {}
-                @Override public void setRepaymentType(Integer repaymentType) {}
-                @Override public void setDueDate(java.time.LocalDate dueDate) {}
+                @Override public void setRepayAmount(BigDecimal repayAmount) {}
+                @Override public void setRepayType(Integer repayType) {}
+                @Override public void setRepayDate(java.time.LocalDate repayDate) {}
                 @Override public void setRemark(String remark) {}
+                // 添加其他方法实现
+                @Override public String getRepayNo() { return "FORCE_REPAY_" + System.currentTimeMillis(); }
+                @Override public void setRepayNo(String repayNo) {}
+                @Override public Long getRepayBy() { return null; }
+                @Override public void setRepayBy(Long repayBy) {}
+                @Override public String getBankName() { return ""; }
+                @Override public void setBankName(String bankName) {}
+                @Override public String getBankAccount() { return ""; }
+                @Override public void setBankAccount(String bankAccount) {}
             });
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

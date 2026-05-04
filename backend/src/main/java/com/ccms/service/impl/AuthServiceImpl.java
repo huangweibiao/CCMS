@@ -135,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
         
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setUpdateTime(LocalDateTime.now());
-        user.setUpdateBy(userId != null ? userId.toString() : null);
+        user.setUpdateBy(userId);
         sysUserRepository.save(user);
         
         return true;

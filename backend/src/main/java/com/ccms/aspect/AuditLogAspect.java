@@ -1,19 +1,19 @@
 package com.ccms.aspect;
 
 import com.ccms.service.audit.AuditLogService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -25,11 +25,14 @@ import java.util.stream.Collectors;
  */
 @Aspect
 @Component
-@Slf4j
-@RequiredArgsConstructor
 public class AuditLogAspect {
 
+    private static final Logger log = LoggerFactory.getLogger(AuditLogAspect.class);
     private final AuditLogService auditLogService;
+
+    public AuditLogAspect(AuditLogService auditLogService) {
+        this.auditLogService = auditLogService;
+    }
 
     /**
      * 记录Controller层方法调用的审计日志

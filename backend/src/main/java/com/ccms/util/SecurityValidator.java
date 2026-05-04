@@ -1,9 +1,10 @@
 package com.ccms.util;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.regex.Pattern;
 
 /**
@@ -11,8 +12,8 @@ import java.util.regex.Pattern;
  * 提供输入校验、SQL注入防护、XSS防护等安全检查功能
  */
 @Component
-@Slf4j
 public class SecurityValidator {
+    private static final Logger log = LoggerFactory.getLogger(SecurityValidator.class);
 
     // SQL注入检测正则表达式
     private static final Pattern SQL_INJECTION_PATTERN = Pattern.compile(
@@ -198,7 +199,7 @@ public class SecurityValidator {
         if (password.matches(".*[A-Z].*")) score++;
         
         // 包含特殊字符
-        if (password.matches(".*[!@#$%^&*()_+\-=\\[\\]{};':\"\\\\|,.<>/?].*")) score++;
+        if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) score++;
         
         if (score >= 5) return PasswordStrength.STRONG;
         if (score >= 3) return PasswordStrength.MEDIUM;

@@ -181,13 +181,13 @@ public class MessageTemplate extends BaseEntity {
     }
     
     public void setCreatedBy(Long createdBy) {
-        // 调用基类的setCreateBy方法，将Long转换为String
-        setCreateBy(createdBy != null ? createdBy.toString() : null);
+        // 设置创建人ID
+        setCreateBy(createdBy);
     }
     
     public void setUpdatedBy(Long updatedBy) {
-        // 调用基类的setUpdateBy方法，将Long转换为String
-        setUpdateBy(updatedBy != null ? updatedBy.toString() : null);
+        // 设置更新人ID
+        setUpdateBy(updatedBy);
     }
     
     public void setUpdatedTime(java.time.LocalDateTime updatedTime) {

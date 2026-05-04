@@ -47,7 +47,7 @@ public class SystemConfigServiceImpl implements SystemConfigService {
         }
         
         Optional<SystemConfig> config = systemConfigRepository.findByConfigKey(configKey);
-        if (config.isPresent() && config.get().getEnabled()) {
+        if (config.isPresent() && config.get().isEnabled()) {
             String configValue = config.get().getConfigValue();
             configCache.put(configKey, configValue);
             return configValue;
@@ -109,7 +109,7 @@ public class SystemConfigServiceImpl implements SystemConfigService {
         SystemConfig savedConfig = systemConfigRepository.save(config);
         
         // 更新缓存
-        if (savedConfig.getEnabled()) {
+        if (savedConfig.isEnabled()) {
             configCache.put(savedConfig.getConfigKey(), savedConfig.getConfigValue());
         } else {
             configCache.remove(savedConfig.getConfigKey());
@@ -134,7 +134,7 @@ public class SystemConfigServiceImpl implements SystemConfigService {
             SystemConfig updatedConfig = systemConfigRepository.save(config);
             
             // 更新缓存
-            if (updatedConfig.getEnabled()) {
+            if (updatedConfig.isEnabled()) {
                 configCache.put(configKey, configValue);
             }
             
@@ -204,7 +204,7 @@ public class SystemConfigServiceImpl implements SystemConfigService {
                     systemConfigRepository.save(existingConfig);
                     
                     // 更新缓存
-                    if (existingConfig.getEnabled()) {
+                    if (existingConfig.isEnabled()) {
                         configCache.put(entry.getKey(), entry.getValue());
                     }
                 }

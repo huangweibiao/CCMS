@@ -49,6 +49,12 @@ public class BudgetDetail extends BaseEntity {
      */
     @Column(name = "carry_over", precision = 18, scale = 2)
     private BigDecimal carryOver = BigDecimal.ZERO;
+    
+    /**
+     * 明细描述/备注
+     */
+    @Column(name = "description", length = 500)
+    private String description;
 
     // Constructors
     public BudgetDetail() {
@@ -175,6 +181,63 @@ public class BudgetDetail extends BaseEntity {
     @Transient
     public BigDecimal getTotalBudgetAmount() {
         return budgetAmount.add(carryOver);
+    }
+
+    /**
+     * 设置剩余金额（计算逻辑设置，实际是调整预算金额或结转金额）
+     */
+    @Transient
+    public void setRemainingAmount(BigDecimal remainingAmount) {
+        // 基于现有预算和结转计算需要调整的数量
+        BigDecimal currentTotal = budgetAmount.add(carryOver);
+        BigDecimal currentUsedFrozen = usedAmount.add(frozenAmount);
+        
+        // 计算需要调整的预算金额
+        BigDecimal targetTotal = remainingAmount.add(currentUsedFrozen);
+        
+        // 简单的调整策略：优先调整预算金额
+        budgetAmount = targetTotal.subtract(carryOver);
+    }
+
+    /**
+     * 获取预算主表ID
+     * 兼容已有代码调用的getBudgetMainId()方法
+     */
+    public Long getBudgetMainId() {
+        return budgetId;
+    }
+
+    /**
+     * 设置预算主表ID
+     */
+    public void setBudgetMainId(Long budgetMainId) {
+        this.budgetId = budgetMainId;
+    }
+
+    /**
+     * 获取费用类型名称
+     * 兼容已有代码调用的getExpenseTypeName()方法
+     */
+    @Transient
+    public String getExpenseTypeName() {
+        // 默认返回空字符串，实际应该通过关联查询获取
+        return "";
+    }
+
+    /**
+     * 设置费用类型名称
+     */
+    @Transient
+    public void setExpenseTypeName(String expenseTypeName) {
+        // 临时字段存储费用类型名称，实际应通过关联查询设置
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

@@ -54,9 +54,18 @@ public class AuthServiceImpl implements AuthService {
         Set<String> permissions = new HashSet<>();
         
         // 从用户角色中获取所有权限
-        user.getRoles().forEach(role -> {
-            permissions.addAll(role.getPermissions());
-        });
+        if (user.getRoles() != null) {
+            user.getRoles().forEach(role -> {
+                String rolePermissions = role.getPermissions();
+                if (rolePermissions != null && !rolePermissions.isEmpty()) {
+                    // 假设权限字符串以逗号分隔
+                    String[] permissionArray = rolePermissions.split(",");
+                    for (String permission : permissionArray) {
+                        permissions.add(permission.trim());
+                    }
+                }
+            });
+        }
         
         return permissions;
     }

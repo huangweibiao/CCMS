@@ -42,6 +42,12 @@ public class Role extends BaseEntity {
      */
     @Column(name = "data_scope", nullable = false, columnDefinition = "tinyint default 2")
     private Integer dataScope = 2;
+    
+    /**
+     * 权限列表（逗号分隔的权限编码）
+     */
+    @Column(name = "permissions", length = 2000)
+    private String permissions;
 
     // Getters and Setters
     public String getRoleCode() {
@@ -84,6 +90,14 @@ public class Role extends BaseEntity {
         this.dataScope = dataScope;
     }
 
+    public String getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(String permissions) {
+        this.permissions = permissions;
+    }
+
     @Override
     public String toString() {
         return "Role{" +
@@ -93,6 +107,7 @@ public class Role extends BaseEntity {
                 ", roleDesc='" + roleDesc + '\'' +
                 ", status=" + status +
                 ", dataScope=" + dataScope +
+                ", permissions='" + permissions + '\'' +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
                 '}';

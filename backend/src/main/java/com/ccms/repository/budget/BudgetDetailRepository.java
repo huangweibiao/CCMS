@@ -118,4 +118,15 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
            "WHERE bm.deptId = :deptId AND bm.budgetYear = :year AND bm.status >= 2 " +
            "GROUP BY bd.expenseType")
     List<Object[]> findUsedAmountSummaryByDeptAndYear(@Param("deptId") Long deptId, @Param("year") Integer year);
+    
+    /**
+     * 查找可用的预算，预算金额大于已使用金额且状态有效的预算明细
+     * 
+     * @param deptId 部门ID
+     * @return 可用的预算明细列表
+     */
+    @Query("SELECT bd FROM BudgetDetail bd " +
+           "JOIN BudgetMain bm ON bd.budgetMainId = bm.id " +
+           "WHERE bm.deptId = :deptId AND bm.status >= 2 AND bd.budgetAmount > bd.usedAmount")
+    List<BudgetDetail> findAvailableBudget(@Param("deptId") Long deptId);
 }

@@ -246,4 +246,3 @@ public class FeeTypeService {
         return feeTypeRepository.save(feeType);
     }
 }
-}

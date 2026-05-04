@@ -70,6 +70,42 @@ public class BudgetMain extends BaseEntity {
     private Integer status = 0;
     
     /**
+     * 审批状态：0-未提交 1-审批中 2-审批通过 3-审批驳回
+     */
+    @Column(name = "approval_status")
+    private Integer approvalStatus = 0;
+    
+    /**
+     * 预算名称
+     */
+    @Column(name = "budget_name", length = 200)
+    private String budgetName;
+    
+    /**
+     * 预算周期描述
+     */
+    @Column(name = "budget_cycle", length = 100)
+    private String budgetCycle;
+    
+    /**
+     * 预算描述
+     */
+    @Column(name = "description", length = 500)
+    private String description;
+    
+    /**
+     * 审批人ID
+     */
+    @Column(name = "approver_id")
+    private Long approverId;
+    
+    /**
+     * 审批时间
+     */
+    @Column(name = "approve_time")
+    private LocalDateTime approveTime;
+    
+    /**
      * 创建人ID
      */
     @Column(name = "create_by", nullable = false)
@@ -184,6 +220,84 @@ public class BudgetMain extends BaseEntity {
 
     public void setUpdateBy(Long updateBy) {
         this.updateBy = updateBy;
+    }
+
+    public Integer getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(Integer approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public String getBudgetName() {
+        return budgetName;
+    }
+
+    public void setBudgetName(String budgetName) {
+        this.budgetName = budgetName;
+    }
+
+    public String getBudgetCycle() {
+        return budgetCycle;
+    }
+
+    public void setBudgetCycle(String budgetCycle) {
+        this.budgetCycle = budgetCycle;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Long getApproverId() {
+        return approverId;
+    }
+
+    public void setApproverId(Long approverId) {
+        this.approverId = approverId;
+    }
+
+    public LocalDateTime getApproveTime() {
+        return approveTime;
+    }
+
+    public void setApproveTime(LocalDateTime approveTime) {
+        this.approveTime = approveTime;
+    }
+
+    /**
+     * 获取预算状态
+     * 兼容已有代码调用的getBudgetStatus()方法
+     */
+    public Integer getBudgetStatus() {
+        return status;
+    }
+
+    /**
+     * 设置预算状态
+     */
+    public void setBudgetStatus(Integer budgetStatus) {
+        this.status = budgetStatus;
+    }
+
+    /**
+     * 获取预算编码
+     * 兼容已有代码调用的getBudgetCode()方法
+     */
+    public String getBudgetCode() {
+        return budgetNo;
+    }
+
+    /**
+     * 设置预算编码
+     */
+    public void setBudgetCode(String budgetCode) {
+        this.budgetNo = budgetCode;
     }
 
     // Business logic methods

@@ -111,13 +111,11 @@ public class ApprovalInstance extends BaseEntity {
         this.currentNode = currentNode;
     }
 
-    @Override
-    public String getCreateBy() {
+    public String getApprovalCreateBy() {
         return createBy;
     }
 
-    @Override
-    public void setCreateBy(String createBy) {
+    public void setApprovalCreateBy(String createBy) {
         this.createBy = createBy;
     }
 

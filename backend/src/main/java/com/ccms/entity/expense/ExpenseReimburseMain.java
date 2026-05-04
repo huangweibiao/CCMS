@@ -4,6 +4,7 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 /**
  * 报销单主表实体类
@@ -128,6 +129,36 @@ public class ExpenseReimburseMain extends BaseEntity {
      */
     @Column(name = "payment_time")
     private Date paymentTime;
+    
+    /**
+     * 提交人用户ID
+     */
+    @Column(name = "submit_user_id")
+    private Long submitUserId;
+    
+    /**
+     * 提交时间
+     */
+    @Column(name = "submit_time")
+    private LocalDateTime submitTime;
+    
+    /**
+     * 审批人用户ID
+     */
+    @Column(name = "approved_user_id")
+    private Long approvedUserId;
+    
+    /**
+     * 审批时间
+     */
+    @Column(name = "approved_time")
+    private LocalDateTime approvedTime;
+    
+    /**
+     * 审批备注
+     */
+    @Column(name = "approval_comment", length = 512)
+    private String approvalComment;
 
     // Getters and Setters
     public String getReimburseNo() {
@@ -282,6 +313,46 @@ public class ExpenseReimburseMain extends BaseEntity {
         this.paymentTime = paymentTime;
     }
 
+    public Long getSubmitUserId() {
+        return submitUserId;
+    }
+
+    public void setSubmitUserId(Long submitUserId) {
+        this.submitUserId = submitUserId;
+    }
+
+    public LocalDateTime getSubmitTime() {
+        return submitTime;
+    }
+
+    public void setSubmitTime(LocalDateTime submitTime) {
+        this.submitTime = submitTime;
+    }
+
+    public Long getApprovedUserId() {
+        return approvedUserId;
+    }
+
+    public void setApprovedUserId(Long approvedUserId) {
+        this.approvedUserId = approvedUserId;
+    }
+
+    public LocalDateTime getApprovedTime() {
+        return approvedTime;
+    }
+
+    public void setApprovedTime(LocalDateTime approvedTime) {
+        this.approvedTime = approvedTime;
+    }
+
+    public String getApprovalComment() {
+        return approvalComment;
+    }
+
+    public void setApprovalComment(String approvalComment) {
+        this.approvalComment = approvalComment;
+    }
+
     @Override
     public String toString() {
         return "ExpenseReimburseMain{" +
@@ -300,6 +371,11 @@ public class ExpenseReimburseMain extends BaseEntity {
                 ", approvalStatus=" + approvalStatus +
                 ", currentNode='" + currentNode + '\'' +
                 ", approvalInstanceId=" + approvalInstanceId +
+                ", submitUserId=" + submitUserId +
+                ", submitTime=" + submitTime +
+                ", approvedUserId=" + approvedUserId +
+                ", approvedTime=" + approvedTime +
+                ", approvalComment='" + approvalComment + '\'' +
                 ", invoiceTotal=" + invoiceTotal +
                 ", taxTotal=" + taxTotal +
                 ", bankInfo='" + bankInfo + '\'' +

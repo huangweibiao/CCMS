@@ -99,10 +99,28 @@ public class LoanRepayment extends BaseEntity {
     private java.time.LocalDateTime approvalTime;
     
     /**
-     * 审批意见
+     * 审批备注
      */
     @Column(name = "approval_comment", length = 500)
     private String approvalComment;
+    
+    /**
+     * 还款单号
+     */
+    @Column(name = "repayment_no", unique = true, length = 50)
+    private String repaymentNo;
+    
+    /**
+     * 还款日期
+     */
+    @Column(name = "repayment_date")
+    private java.time.LocalDate repaymentDate;
+    
+    /**
+     * 预计还款截止日期
+     */
+    @Column(name = "due_date")
+    private java.time.LocalDate dueDate;
     
     // 还款方式常量
     public static final int TYPE_CASH = 1;        // 现金还款
@@ -238,5 +256,29 @@ public class LoanRepayment extends BaseEntity {
 
     public void setApprovalComment(String approvalComment) {
         this.approvalComment = approvalComment;
+    }
+
+    public String getRepaymentNo() {
+        return repaymentNo;
+    }
+
+    public void setRepaymentNo(String repaymentNo) {
+        this.repaymentNo = repaymentNo;
+    }
+
+    public java.time.LocalDate getRepaymentDate() {
+        return repaymentDate;
+    }
+
+    public void setRepaymentDate(java.time.LocalDate repaymentDate) {
+        this.repaymentDate = repaymentDate;
+    }
+
+    public java.time.LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(java.time.LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 }

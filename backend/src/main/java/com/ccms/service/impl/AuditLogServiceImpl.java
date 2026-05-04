@@ -3,10 +3,11 @@ package com.ccms.service.impl;
 import com.ccms.entity.audit.AuditLog;
 import com.ccms.repository.AuditLogRepository;
 import com.ccms.service.audit.AuditLogService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +21,14 @@ import java.util.stream.Collectors;
  * 审计日志服务实现类
  */
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class AuditLogServiceImpl implements AuditLogService {
+    private static final Logger log = LoggerFactory.getLogger(AuditLogServiceImpl.class);
 
     private final AuditLogRepository auditLogRepository;
+    
+    public AuditLogServiceImpl(AuditLogRepository auditLogRepository) {
+        this.auditLogRepository = auditLogRepository;
+    }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -43,12 +47,12 @@ public class AuditLogServiceImpl implements AuditLogService {
                 if (success) {
                     auditLog.markSuccess();
                 } else {
-                    auditLog.markFailure();
+                    auditLog.markFailure("操作失败", 500);
                 }
             }
             
-            auditLog.setCreatedTime(LocalDateTime.now());
-            auditLog.setUpdatedTime(LocalDateTime.now());
+            auditLog.setCreateTime(LocalDateTime.now());
+            auditLog.setUpdateTime(LocalDateTime.now());
             
             auditLogRepository.save(auditLog);
         } catch (Exception e) {
@@ -75,15 +79,15 @@ public class AuditLogServiceImpl implements AuditLogService {
                 if (success) {
                     auditLog.markSuccess();
                 } else {
-                    auditLog.markFailure();
+                    auditLog.markFailure("操作失败", 500);
                 }
             }
             
             auditLog.setRequestMethod(requestMethod);
             auditLog.setRequestUrl(requestUrl);
             auditLog.setRequestParams(requestParams);
-            auditLog.setCreatedTime(LocalDateTime.now());
-            auditLog.setUpdatedTime(LocalDateTime.now());
+            auditLog.setCreateTime(LocalDateTime.now());
+            auditLog.setUpdateTime(LocalDateTime.now());
             
             auditLogRepository.save(auditLog);
         } catch (Exception e) {
@@ -109,15 +113,15 @@ public class AuditLogServiceImpl implements AuditLogService {
                 if (success) {
                     auditLog.markSuccess();
                 } else {
-                    auditLog.markFailure();
+                    auditLog.markFailure("操作失败", 500);
                 }
             }
             
             auditLog.setEntityType(entityType);
             auditLog.setEntityId(entityId);
-            auditLog.setEntityData(entityData);
-            auditLog.setCreatedTime(LocalDateTime.now());
-            auditLog.setUpdatedTime(LocalDateTime.now());
+            auditLog.setEntityName(entityData);  // 使用entityName字段存储entityData
+            auditLog.setCreateTime(LocalDateTime.now());
+            auditLog.setUpdateTime(LocalDateTime.now());
             
             auditLogRepository.save(auditLog);
         } catch (Exception e) {
@@ -213,7 +217,8 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Override
     public Map<String, Long> getActiveUsersRanking(LocalDateTime startTime, LocalDateTime endTime, int limit) {
-        List<Object[]> userStats = auditLogRepository.getTopActiveUsers(startTime, endTime, limit);
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Object[]> userStats = auditLogRepository.getTopActiveUsers(startTime, endTime, pageable);
         return userStats.stream()
                 .collect(Collectors.toMap(
                         arr -> (String) arr[0], 
@@ -244,7 +249,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         for (AuditLog log : auditLogs.getContent()) {
             csvContent.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
-                    log.getCreatedTime().format(formatter),
+                    log.getCreateTime().format(formatter),
                     log.getModule(),
                     log.getOperation(),
                     log.getUsername(),

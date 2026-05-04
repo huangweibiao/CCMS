@@ -3,14 +3,14 @@ package com.ccms.interceptor;
 import com.ccms.annotation.Idempotent;
 import com.ccms.service.audit.AuditLogService;
 import com.ccms.util.RedisUtil;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
@@ -19,12 +19,17 @@ import java.util.concurrent.TimeUnit;
  * 基于Redis实现幂等性控制，防止重复请求
  */
 @Component
-@Slf4j
-@RequiredArgsConstructor
 public class IdempotentInterceptor implements HandlerInterceptor {
 
+    private static final Logger log = LoggerFactory.getLogger(IdempotentInterceptor.class);
+    
     private final RedisUtil redisUtil;
     private final AuditLogService auditLogService;
+    
+    public IdempotentInterceptor(RedisUtil redisUtil, AuditLogService auditLogService) {
+        this.redisUtil = redisUtil;
+        this.auditLogService = auditLogService;
+    }
 
     /**
      * 令牌前缀
@@ -133,6 +138,4 @@ public class IdempotentInterceptor implements HandlerInterceptor {
         // TODO: 从SecurityContext获取当前用户名
         return "anonymous";
     }
-}
-
 }
