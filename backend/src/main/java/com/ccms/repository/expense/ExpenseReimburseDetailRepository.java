@@ -46,7 +46,6 @@ public interface ExpenseReimburseDetailRepository extends JpaRepository<ExpenseR
      * 删除报销单的所有明细
      * 
      * @param reimburseId 报销单ID
-     * @return 删除的记录数
      */
-    Long deleteByReimburseId(Long reimburseId);
+    void deleteByReimburseId(Long reimburseId);
 }

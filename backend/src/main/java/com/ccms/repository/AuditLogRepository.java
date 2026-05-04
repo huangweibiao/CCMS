@@ -113,7 +113,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     /**
      * 删除指定时间之前的审计日志（数据归档）
      */
-    Long deleteByCreatedTimeBefore(LocalDateTime cutoffTime);
+    void deleteByCreatedTimeBefore(LocalDateTime cutoffTime);
 
     /**
      * 统计指定时间段的平均响应时间

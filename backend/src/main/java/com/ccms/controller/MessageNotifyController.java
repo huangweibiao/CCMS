@@ -268,7 +268,7 @@ public class MessageNotifyController {
             for (Long messageId : request.getMessageIds()) {
                 SysMessage message = sysMessageRepository.findById(messageId).orElse(null);
                 if (message != null && message.getReceiverId().equals(request.getUserId())) {
-                    message.setDeleted(1);
+            message.setDeleted(true);
                     message.setUpdatedTime(LocalDateTime.now());
                     message.setUpdatedBy(request.getUserId());
                     sysMessageRepository.save(message);
