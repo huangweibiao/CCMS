@@ -1,7 +1,7 @@
 package com.ccms.service.impl.auth;
 
-import com.ccms.entity.system.Department;
-import com.ccms.entity.system.User;
+import com.ccms.entity.system.dept.Department;
+import com.ccms.entity.system.user.User;
 import com.ccms.repository.system.UserRepository;
 import com.ccms.service.auth.AuthService;
 import org.slf4j.Logger;

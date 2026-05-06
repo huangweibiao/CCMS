@@ -1,7 +1,7 @@
 package com.ccms.security;
 
 import com.ccms.service.AuthService;
-import com.ccms.entity.system.SysUser;
+import com.ccms.entity.system.user.SysUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

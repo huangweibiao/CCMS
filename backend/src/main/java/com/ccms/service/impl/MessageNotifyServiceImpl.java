@@ -1,6 +1,6 @@
 package com.ccms.service.impl;
 
-import com.ccms.entity.SysMessage;
+import com.ccms.entity.message.SysMessage;
 import com.ccms.repository.SysMessageRepository;
 import com.ccms.service.MessageNotifyService;
 import org.springframework.beans.factory.annotation.Autowired;

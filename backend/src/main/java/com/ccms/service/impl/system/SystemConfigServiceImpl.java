@@ -1,6 +1,6 @@
 package com.ccms.service.impl.system;
 
-import com.ccms.entity.system.SystemConfig;
+import com.ccms.entity.system.config.SystemConfig;
 import com.ccms.repository.SystemConfigRepository;
 import com.ccms.service.system.SystemConfigService;
 import org.slf4j.Logger;

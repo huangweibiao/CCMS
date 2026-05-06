@@ -1,6 +1,6 @@
 package com.ccms.service.impl;
 
-import com.ccms.entity.system.SysUser;
+import com.ccms.entity.system.user.SysUser;
 import com.ccms.repository.system.SysUserRepository;
 import com.ccms.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.ccms.service;
 
-import com.ccms.entity.system.SysUser;
+import com.ccms.entity.system.user.SysUser;
 
 import java.util.List;
 import java.util.Map;
@@ -122,7 +122,7 @@ public interface AuthService {
      * @param deptId 部门ID（可选）
      * @return 用户分页列表
      */
-    org.springframework.data.domain.Page<com.ccms.entity.system.SysUser> getUserList(int page, int size, String username, Long deptId);
+    org.springframework.data.domain.Page<com.ccms.entity.system.user.SysUser> getUserList(int page, int size, String username, Long deptId);
     
     /**
      * 根据ID获取用户信息

@@ -26,6 +26,13 @@ public class ApiResponse<T> implements Serializable {
     public Long getDuration() { return duration; }
 
     /**
+     * 判断是否成功
+     */
+    public Boolean getSuccess() {
+        return code != null && code >= 200 && code < 300;
+    }
+
+    /**
      * 响应状态码
      */
     private Integer code;

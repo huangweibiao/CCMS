@@ -1,6 +1,6 @@
 package com.ccms.repository;
 
-import com.ccms.entity.system.TodoItem;
+import com.ccms.entity.system.user.TodoItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

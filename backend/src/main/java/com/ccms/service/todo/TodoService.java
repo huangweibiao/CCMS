@@ -1,6 +1,6 @@
 package com.ccms.service.todo;
 
-import com.ccms.entity.todo.TodoItem;
+import com.ccms.entity.system.user.TodoItem;
 import java.util.List;
 
 /**
@@ -11,7 +11,7 @@ public interface TodoService {
     /**
      * 获取用户待办列表
      */
-    List<TodoItem> getUserTodos(Long userId, TodoItem.TodoStatus status, Integer priority);
+    List<TodoItem> getUserTodos(Long userId, String status, Integer priority);
     
     /**
      * 创建待办事项
@@ -21,7 +21,7 @@ public interface TodoService {
     /**
      * 更新待办状态
      */
-    void updateTodoStatus(Long todoId, TodoItem.TodoStatus status);
+    void updateTodoStatus(Long todoId, String status);
     
     /**
      * 标记待办为完成

@@ -1,6 +1,6 @@
 package com.ccms.service;
 
-import com.ccms.entity.system.OperateLog;
+import com.ccms.entity.system.log.OperateLog;
 
 /**
  * 操作日志服务接口

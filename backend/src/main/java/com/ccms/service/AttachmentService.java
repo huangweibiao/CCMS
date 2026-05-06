@@ -1,6 +1,6 @@
 package com.ccms.service;
 
-import com.ccms.entity.SysAttachment;
+import com.ccms.entity.system.SysAttachment;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;

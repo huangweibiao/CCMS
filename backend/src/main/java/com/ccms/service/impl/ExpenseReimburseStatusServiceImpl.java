@@ -1,6 +1,6 @@
 package com.ccms.service.impl;
 
-import com.ccms.entity.system.OperateLog;
+import com.ccms.entity.system.log.OperateLog;
 import com.ccms.entity.expense.ExpenseReimburseMain;
 import com.ccms.enums.OperateTypeEnum;
 import com.ccms.enums.ReimburseStatusEnum;

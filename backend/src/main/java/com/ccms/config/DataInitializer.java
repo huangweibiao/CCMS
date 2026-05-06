@@ -1,8 +1,8 @@
 package com.ccms.config;
 
-import com.ccms.entity.system.SysUser;
-import com.ccms.entity.system.SysDept;
-import com.ccms.entity.system.SysRole;
+import com.ccms.entity.system.user.SysUser;
+import com.ccms.entity.system.dept.SysDept;
+import com.ccms.entity.system.permission.SysRole;
 import com.ccms.entity.budget.BudgetCategory;
 import com.ccms.entity.expense.ExpenseType;
 import com.ccms.repository.system.SysUserRepository;

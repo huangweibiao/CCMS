@@ -1,6 +1,6 @@
 package com.ccms.service.auth;
 
-import com.ccms.entity.system.User;
+import com.ccms.entity.system.user.User;
 
 import java.util.List;
 import java.util.Set;

@@ -1,6 +1,6 @@
 package com.ccms.service.impl.system;
 
-import com.ccms.entity.system.DataDict;
+import com.ccms.entity.system.config.DataDict;
 import com.ccms.repository.DataDictRepository;
 import com.ccms.service.system.DataDictService;
 import org.slf4j.Logger;

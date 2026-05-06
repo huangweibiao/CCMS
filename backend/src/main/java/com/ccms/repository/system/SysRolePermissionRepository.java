@@ -1,6 +1,6 @@
 package com.ccms.repository.system;
 
-import com.ccms.entity.system.SysRolePermission;
+import com.ccms.entity.system.permission.SysRolePermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

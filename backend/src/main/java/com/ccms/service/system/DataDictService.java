@@ -1,6 +1,6 @@
 package com.ccms.service.system;
 
-import com.ccms.entity.system.DataDict;
+import com.ccms.entity.system.config.DataDict;
 
 import java.util.List;
 import java.util.Map;

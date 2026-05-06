@@ -1,6 +1,6 @@
 package com.ccms.repository;
 
-import com.ccms.entity.system.OperateLog;
+import com.ccms.entity.system.log.OperateLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

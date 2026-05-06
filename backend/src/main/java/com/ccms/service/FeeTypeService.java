@@ -1,6 +1,6 @@
 package com.ccms.service;
 
-import com.ccms.entity.fee.FeeType;
+import com.ccms.entity.master.FeeType;
 import com.ccms.repository.FeeTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

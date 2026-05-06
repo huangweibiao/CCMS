@@ -1,8 +1,8 @@
 package com.ccms.service.loan;
 
-import com.ccms.entity.loan.LoanApply;
+import com.ccms.entity.expense.LoanMain;
 import com.ccms.entity.expense.ExpenseReimburse;
-import com.ccms.entity.loan.LoanRepayment;
+import com.ccms.entity.expense.LoanRepayment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +32,7 @@ public class LoanDeductionService {
         Long userId = reimburse.getApplyUserId();
         
         // 1. 查找用户未还清的借款
-        List<LoanApply> outstandingLoans = findOutstandingLoans(userId);
+        List<LoanMain> outstandingLoans = findOutstandingLoans(userId);
         if (outstandingLoans.isEmpty()) {
             result.setDeductedAmount(BigDecimal.ZERO);
             result.setMessage("无待核销借款");
@@ -66,7 +66,7 @@ public class LoanDeductionService {
     /**
      * 查找未还清借款
      */
-    private List<LoanApply> findOutstandingLoans(Long userId) {
+    private List<LoanMain> findOutstandingLoans(Long userId) {
         // TODO: 实现查询逻辑，查找状态为"借款中"或"部分还款"的借款单
         // 按借款时间排序，优先处理较早的借款
         return List.of();
@@ -92,13 +92,13 @@ public class LoanDeductionService {
     /**
      * 计算核销计划
      */
-    private DeductionPlan calculateDeductionPlan(List<LoanApply> outstandingLoans, 
+    private DeductionPlan calculateDeductionPlan(List<LoanMain> outstandingLoans, 
                                                  BigDecimal availableAmount) {
         DeductionPlan plan = new DeductionPlan();
         BigDecimal remainingAmount = availableAmount;
         
         // 按借款时间顺序核销（先借先还原则）
-        for (LoanApply loan : outstandingLoans) {
+        for (LoanMain loan : outstandingLoans) {
             if (remainingAmount.compareTo(BigDecimal.ZERO) <= 0) {
                 break;
             }
@@ -124,7 +124,7 @@ public class LoanDeductionService {
     /**
      * 计算借款剩余应还金额
      */
-    private BigDecimal calculateOutstandingAmount(LoanApply loan) {
+    private BigDecimal calculateOutstandingAmount(LoanMain loan) {
         BigDecimal loanAmount = loan.getLoanAmount();
         BigDecimal repaidAmount = getRepaidAmount(loan.getId());
         return loanAmount.subtract(repaidAmount);
@@ -154,7 +154,7 @@ public class LoanDeductionService {
     /**
      * 更新借款状态
      */
-    private void updateLoanStatus(LoanApply loan, BigDecimal deductedAmount) {
+    private void updateLoanStatus(LoanMain loan, BigDecimal deductedAmount) {
         // 计算还款后的剩余金额
         BigDecimal outstandingAmount = calculateOutstandingAmount(loan);
         BigDecimal remainingAfterDeduction = outstandingAmount.subtract(deductedAmount);
@@ -253,7 +253,7 @@ public class LoanDeductionService {
             this.details = new java.util.ArrayList<>();
         }
         
-        public void addDeductionDetail(LoanApply loan, BigDecimal amount) {
+        public void addDeductionDetail(LoanMain loan, BigDecimal amount) {
             details.add(new DeductionDetail(loan, amount));
         }
         
@@ -272,16 +272,16 @@ public class LoanDeductionService {
      * 核销明细
      */
     public static class DeductionDetail {
-        private LoanApply loan;
+        private LoanMain loan;
         private BigDecimal deductAmount;
         
-        public DeductionDetail(LoanApply loan, BigDecimal deductAmount) {
+        public DeductionDetail(LoanMain loan, BigDecimal deductAmount) {
             this.loan = loan;
             this.deductAmount = deductAmount;
         }
         
         // Getters
-        public LoanApply getLoan() {
+        public LoanMain getLoan() {
             return loan;
         }
         

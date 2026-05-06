@@ -1,6 +1,6 @@
 package com.ccms.repository;
 
-import com.ccms.entity.SysMessage;
+import com.ccms.entity.message.SysMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

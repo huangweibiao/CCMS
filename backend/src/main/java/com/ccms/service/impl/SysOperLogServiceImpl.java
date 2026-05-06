@@ -1,6 +1,6 @@
 package com.ccms.service.impl;
 
-import com.ccms.entity.system.SysOperLog;
+import com.ccms.entity.system.log.SysOperLog;
 import com.ccms.repository.SysOperLogRepository;
 import com.ccms.service.SysOperLogService;
 import jakarta.persistence.criteria.Predicate;

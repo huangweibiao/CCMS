@@ -1,6 +1,6 @@
 package com.ccms.repository;
 
-import com.ccms.entity.system.DataDict;
+import com.ccms.entity.system.config.DataDict;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

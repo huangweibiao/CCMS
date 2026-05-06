@@ -1,6 +1,6 @@
 package com.ccms.service.system;
 
-import com.ccms.entity.system.SystemConfig;
+import com.ccms.entity.system.config.SystemConfig;
 
 import java.util.List;
 import java.util.Map;

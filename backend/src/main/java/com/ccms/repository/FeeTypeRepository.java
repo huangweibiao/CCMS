@@ -1,6 +1,6 @@
 package com.ccms.repository;
 
-import com.ccms.entity.fee.FeeType;
+import com.ccms.entity.master.FeeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;

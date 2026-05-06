@@ -1,6 +1,6 @@
 package com.ccms.service.loan;
 
-import com.ccms.entity.loan.LoanApply;
+import com.ccms.entity.expense.LoanMain;
 import com.ccms.repository.loan.LoanApplyRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

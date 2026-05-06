@@ -1,6 +1,6 @@
 package com.ccms.service.impl;
 
-import com.ccms.entity.system.TodoItem;
+import com.ccms.entity.system.user.TodoItem;
 import com.ccms.repository.TodoItemRepository;
 import com.ccms.service.MessageNotifyService;
 import com.ccms.service.TodoReminderService;
@@ -54,11 +54,11 @@ public class TodoReminderServiceImpl implements TodoReminderService {
             }
             
             // 转换为实体并保存
-            com.ccms.entity.system.TodoItem entity = new com.ccms.entity.system.TodoItem();
+            com.ccms.entity.system.user.TodoItem entity = new com.ccms.entity.system.user.TodoItem();
             copyTodoProperties(serviceTodo, entity);
             entity.setCreatedTime(LocalDateTime.now());
             
-            com.ccms.entity.system.TodoItem savedTodo = todoItemRepository.save(entity);
+            com.ccms.entity.system.user.TodoItem savedTodo = todoItemRepository.save(entity);
             
             // 发送待办提醒
             if (savedTodo.getStatus().equals("PENDING")) {
@@ -82,7 +82,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
                 return new TodoOperationResult(false, "待办项ID不能为空");
             }
             
-            com.ccms.entity.system.TodoItem existingTodo = todoItemRepository.findById(serviceTodo.getTodoId())
+            com.ccms.entity.system.user.TodoItem existingTodo = todoItemRepository.findById(serviceTodo.getTodoId())
                     .orElseThrow(() -> new RuntimeException("待办项不存在: " + serviceTodo.getTodoId()));
             
             // 转换并更新字段
@@ -98,7 +98,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
                 }
             }
             
-            com.ccms.entity.system.TodoItem updatedTodo = todoItemRepository.save(existingTodo);
+            com.ccms.entity.system.user.TodoItem updatedTodo = todoItemRepository.save(existingTodo);
             
             TodoOperationResult result = new TodoOperationResult(true, "更新待办项成功");
             result.setTodoItem(updatedTodo.toServiceItem());
@@ -112,7 +112,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     @Override
     public TodoOperationResult completeTodo(Long todoId, Long userId, String remarks) {
         try {
-            com.ccms.entity.system.TodoItem todo = todoItemRepository.findById(todoId)
+            com.ccms.entity.system.user.TodoItem todo = todoItemRepository.findById(todoId)
                     .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoId));
             
             // 检查权限：只能完成分配给自己的待办项
@@ -125,7 +125,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
             todo.setUpdatedTime(LocalDateTime.now());
             todo.setUpdatedBy(userId);
             
-            com.ccms.entity.system.TodoItem completedTodo = todoItemRepository.save(todo);
+            com.ccms.entity.system.user.TodoItem completedTodo = todoItemRepository.save(todo);
             
             // 发送完成通知
             sendTodoCompletionNotification(completedTodo.toServiceItem());
@@ -142,7 +142,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     @Override
     public TodoOperationResult cancelTodo(Long todoId, Long userId, String reason) {
         try {
-            com.ccms.entity.system.TodoItem todo = todoItemRepository.findById(todoId)
+            com.ccms.entity.system.user.TodoItem todo = todoItemRepository.findById(todoId)
                     .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoId));
             
             // 检查权限：只能取消自己创建的或分配给的待办项
@@ -156,7 +156,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
             todo.setUpdatedTime(LocalDateTime.now());
             todo.setUpdatedBy(userId);
             
-            com.ccms.entity.system.TodoItem cancelledTodo = todoItemRepository.save(todo);
+            com.ccms.entity.system.user.TodoItem cancelledTodo = todoItemRepository.save(todo);
             
             TodoOperationResult result = new TodoOperationResult(true, "取消待办项成功");
             result.setTodoItem(cancelledTodo.toServiceItem());
@@ -170,7 +170,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     @Override
     public TodoOperationResult deleteTodo(Long todoId, Long userId) {
         try {
-            com.ccms.entity.system.TodoItem todo = todoItemRepository.findById(todoId)
+            com.ccms.entity.system.user.TodoItem todo = todoItemRepository.findById(todoId)
                     .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoId));
             
             // 检查权限：只能删除自己创建的待办项
@@ -201,13 +201,13 @@ public class TodoReminderServiceImpl implements TodoReminderService {
                 .stream()
                 .filter(todo -> status == null || todo.getStatus().equals(convertStatusToString(status)))
                 .filter(todo -> priority == null || todo.getPriority().equals(convertPriorityToString(priority)))
-                .map(com.ccms.entity.system.TodoItem::toServiceItem)
+                .map(com.ccms.entity.system.user.TodoItem::toServiceItem)
                 .collect(Collectors.toList());
     }
     
     @Override
     public TodoItem getTodoDetail(Long todoId) {
-        com.ccms.entity.system.TodoItem todo = todoItemRepository.findById(todoId)
+        com.ccms.entity.system.user.TodoItem todo = todoItemRepository.findById(todoId)
                 .orElseThrow(() -> new RuntimeException("待办项不存在: " + todoId));
         return todo.toServiceItem();
     }
@@ -216,9 +216,9 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     public void checkAndMarkExpiredTodos() {
         try {
             LocalDateTime now = LocalDateTime.now();
-            List<com.ccms.entity.system.TodoItem> expiredTodos = todoItemRepository.findByDeadlineBeforeAndStatusAndDeleted(now, "PENDING", 0);
+            List<com.ccms.entity.system.user.TodoItem> expiredTodos = todoItemRepository.findByDeadlineBeforeAndStatusAndDeleted(now, "PENDING", 0);
             
-            for (com.ccms.entity.system.TodoItem todo : expiredTodos) {
+            for (com.ccms.entity.system.user.TodoItem todo : expiredTodos) {
                 todo.markAsExpired();
                 todo.setUpdatedTime(now);
                 todoItemRepository.save(todo);
@@ -281,7 +281,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
     public TodoStatistics getTodoStatistics(Long userId) {
         TodoStatistics stats = new TodoStatistics();
         
-        List<com.ccms.entity.system.TodoItem> userTodos = todoItemRepository.findByAssigneeIdAndDeleted(userId, 0);
+        List<com.ccms.entity.system.user.TodoItem> userTodos = todoItemRepository.findByAssigneeIdAndDeleted(userId, 0);
         
         stats.setTotalCount(userTodos.size());
         stats.setPendingCount((int) userTodos.stream()
@@ -484,7 +484,7 @@ public class TodoReminderServiceImpl implements TodoReminderService {
                todo.getAssigneeId() != null;
     }
     
-    private void copyTodoProperties(TodoItem source, com.ccms.entity.system.TodoItem target) {
+    private void copyTodoProperties(TodoItem source, com.ccms.entity.system.user.TodoItem target) {
         if (source.getContent() != null) target.setContent(source.getContent());
         if (source.getAssigneeId() != null) target.setAssigneeId(source.getAssigneeId());
         if (source.getPriority() != null) target.setPriority(source.getPriority().toString());

@@ -1,6 +1,6 @@
 package com.ccms.service;
 
-import com.ccms.entity.SysMessage;
+import com.ccms.entity.message.SysMessage;
 
 import java.util.List;
 import java.util.Map;

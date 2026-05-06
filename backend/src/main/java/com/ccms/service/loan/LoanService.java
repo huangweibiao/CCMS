@@ -1,6 +1,6 @@
 package com.ccms.service.loan;
 
-import com.ccms.entity.loan.LoanApply;
+import com.ccms.entity.expense.LoanMain;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

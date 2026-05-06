@@ -1,6 +1,6 @@
 package com.ccms.service.impl;
 
-import com.ccms.entity.SysAttachment;
+import com.ccms.entity.system.SysAttachment;
 import com.ccms.service.AttachmentService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

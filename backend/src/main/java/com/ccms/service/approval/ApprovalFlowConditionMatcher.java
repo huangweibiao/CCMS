@@ -1,8 +1,8 @@
 package com.ccms.service.approval;
 
 import com.ccms.entity.approval.ApprovalFlowConfig;
-import com.ccms.entity.budget.FeeType;
-import com.ccms.entity.system.SysDept;
+import com.ccms.entity.master.FeeType;
+import com.ccms.entity.system.dept.SysDept;
 import com.ccms.repository.approval.ApprovalFlowConfigRepository;
 import com.ccms.repository.system.SysDeptRepository;
 import com.ccms.repository.FeeTypeRepository;

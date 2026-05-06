@@ -1,6 +1,6 @@
 package com.ccms.service;
 
-import com.ccms.entity.system.SysOperLog;
+import com.ccms.entity.system.log.SysOperLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
