@@ -62,15 +62,7 @@ public class ApiResponse<T> implements Serializable {
         return success(null);
     }
 
-    // 自定义构造函数 - 解决Lombok @AllArgsConstructor参数不匹配问题
-    public ApiResponse(Integer code, String message, T data, LocalDateTime timestamp, String path, Long duration) {
-        this.code = code;
-        this.message = message;
-        this.data = data;
-        this.timestamp = timestamp;
-        this.path = path;
-        this.duration = duration;
-    }
+
 
     /**
      * 成功响应

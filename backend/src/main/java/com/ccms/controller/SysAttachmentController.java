@@ -27,10 +27,7 @@ public class SysAttachmentController {
 
     private final SysAttachmentService attachmentService;
 
-    // 构造函数注入，解决Lombok @RequiredArgsConstructor不生效的问题
-    public SysAttachmentController(SysAttachmentService attachmentService) {
-        this.attachmentService = attachmentService;
-    }
+
 
     /**
      * 上传单个文件

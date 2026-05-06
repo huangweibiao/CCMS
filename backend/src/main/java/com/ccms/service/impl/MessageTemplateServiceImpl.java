@@ -22,10 +22,7 @@ public class MessageTemplateServiceImpl implements MessageTemplateService {
     
     private final MessageTemplateRepository templateRepository;
 
-    // 构造函数注入，解决Lombok @RequiredArgsConstructor不生效的问题
-    public MessageTemplateServiceImpl(MessageTemplateRepository templateRepository) {
-        this.templateRepository = templateRepository;
-    }
+
     
     @Override
     public Optional<MessageTemplate> getTemplateByCode(String templateCode) {

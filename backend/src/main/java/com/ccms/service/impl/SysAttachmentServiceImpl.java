@@ -37,14 +37,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class SysAttachmentServiceImpl implements SysAttachmentService {
     
-    private static final Logger log = LoggerFactory.getLogger(SysAttachmentServiceImpl.class);
-    
     private final SysAttachmentRepository attachmentRepository;
-
-    // 构造函数注入，解决Lombok @RequiredArgsConstructor不生效的问题
-    public SysAttachmentServiceImpl(SysAttachmentRepository attachmentRepository) {
-        this.attachmentRepository = attachmentRepository;
-    }
     
     @Value("${file.upload.path:/uploads}")
     private String uploadPath;
