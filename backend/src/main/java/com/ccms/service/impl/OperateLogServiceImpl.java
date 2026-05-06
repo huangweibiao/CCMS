@@ -1,7 +1,7 @@
 package com.ccms.service.impl;
 
 import com.ccms.entity.system.log.OperateLog;
-import com.ccms.repository.OperateLogRepository;
+import com.ccms.repository.system.log.OperateLogRepository;
 import com.ccms.service.OperateLogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -4,8 +4,8 @@ import com.ccms.entity.approval.ApprovalFlowConfig;
 import com.ccms.entity.master.FeeType;
 import com.ccms.entity.system.dept.SysDept;
 import com.ccms.repository.approval.ApprovalFlowConfigRepository;
-import com.ccms.repository.system.SysDeptRepository;
-import com.ccms.repository.FeeTypeRepository;
+import com.ccms.repository.system.dept.SysDeptRepository;
+import com.ccms.repository.master.FeeTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

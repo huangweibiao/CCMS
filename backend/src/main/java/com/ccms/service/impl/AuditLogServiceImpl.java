@@ -1,7 +1,7 @@
 package com.ccms.service.impl;
 
 import com.ccms.entity.audit.AuditLog;
-import com.ccms.repository.AuditLogRepository;
+import com.ccms.repository.audit.AuditLogRepository;
 import com.ccms.service.audit.AuditLogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

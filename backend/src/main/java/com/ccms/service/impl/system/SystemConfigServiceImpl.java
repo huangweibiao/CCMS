@@ -1,7 +1,7 @@
 package com.ccms.service.impl.system;
 
 import com.ccms.entity.system.config.SystemConfig;
-import com.ccms.repository.SystemConfigRepository;
+import com.ccms.repository.system.config.SystemConfigRepository;
 import com.ccms.service.system.SystemConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

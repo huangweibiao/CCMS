@@ -1,7 +1,7 @@
 package com.ccms.service.impl;
 
 import com.ccms.entity.system.user.SysUser;
-import com.ccms.repository.system.SysUserRepository;
+import com.ccms.repository.system.user.SysUserRepository;
 import com.ccms.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

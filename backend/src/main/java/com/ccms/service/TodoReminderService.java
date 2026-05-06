@@ -262,7 +262,7 @@ public interface TodoReminderService {
      * @param todoItem 待办项信息
      * @return 发送结果
      */
-    MessageNotifyService.NotifyResult sendTodoReminder(TodoItem todoItem);
+    boolean sendTodoReminder(TodoItem todoItem);
     
     /**
      * 获取待办统计信息

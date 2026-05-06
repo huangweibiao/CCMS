@@ -1,7 +1,7 @@
 package com.ccms.entity;
 
 import com.ccms.BaseTest;
-import com.ccms.entity.system.SysUser;
+import com.ccms.entity.system.user.SysUser;
 import com.ccms.entity.expense.ExpenseApply;
 import com.ccms.entity.budget.BudgetMain;
 import org.junit.jupiter.api.Test;
