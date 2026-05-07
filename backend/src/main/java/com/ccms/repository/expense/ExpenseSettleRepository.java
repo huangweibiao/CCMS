@@ -20,18 +20,18 @@ public interface ExpenseSettleRepository extends JpaRepository<ExpenseSettle, Lo
     /**
      * 根据申请单主表ID查询核销记录
      * 
-     * @param applyMainId 申请单主表ID
+     * @param expenseApplyId 申请单主表ID
      * @return 核销记录列表
      */
-    List<ExpenseSettle> findByApplyMainId(Long applyMainId);
+    List<ExpenseSettle> findByExpenseApplyId(Long expenseApplyId);
 
     /**
-     * 根据费用明细ID查询核销记录
+     * 根据申请人ID查询核销记录
      * 
-     * @param expenseDetailId 费用明细ID
+     * @param applyUserId 申请人ID
      * @return 核销记录列表
      */
-    List<ExpenseSettle> findByExpenseDetailId(Long expenseDetailId);
+    List<ExpenseSettle> findByApplyUserId(Long applyUserId);
 
     /**
      * 根据核销状态查询核销记录
@@ -42,30 +42,13 @@ public interface ExpenseSettleRepository extends JpaRepository<ExpenseSettle, Lo
     List<ExpenseSettle> findByStatus(Integer status);
 
     /**
-     * 根据核销人ID查询核销记录
-     * 
-     * @param settleUserId 核销人ID
-     * @return 核销记录列表
-     */
-    List<ExpenseSettle> findBySettleUserId(Long settleUserId);
-
-    /**
      * 统计申请单的核销总额
      * 
-     * @param applyMainId 申请单主表ID
+     * @param expenseApplyId 申请单主表ID
      * @return 核销总额
      */
-    @Query("SELECT COALESCE(SUM(es.settleAmount), 0) FROM ExpenseSettle es WHERE es.applyMainId = :applyMainId AND es.status >= 2")
-    BigDecimal calculateTotalSettleAmount(@Param("applyMainId") Long applyMainId);
-
-    /**
-     * 统计费用明细的核销总额
-     * 
-     * @param expenseDetailId 费用明细ID
-     * @return 核销总额
-     */
-    @Query("SELECT COALESCE(SUM(es.settleAmount), 0) FROM ExpenseSettle es WHERE es.expenseDetailId = :expenseDetailId AND es.status >= 2")
-    BigDecimal calculateTotalSettleAmountByDetail(@Param("expenseDetailId") Long expenseDetailId);
+    @Query("SELECT COALESCE(SUM(es.settleAmount), 0) FROM ExpenseSettle es WHERE es.expenseApplyId = :expenseApplyId AND es.status >= 2")
+    BigDecimal calculateTotalSettleAmount(@Param("expenseApplyId") Long expenseApplyId);
 
     /**
      * 查询指定日期范围内的核销记录
@@ -85,16 +68,4 @@ public interface ExpenseSettleRepository extends JpaRepository<ExpenseSettle, Lo
     @org.springframework.data.jpa.repository.Modifying
     @Query("UPDATE ExpenseSettle es SET es.status = :status WHERE es.id = :id")
     void updateStatus(@Param("id") Long id, @Param("status") Integer status);
-
-    /**
-     * 统计部门在指定年度的核销总额
-     * 
-     * @param deptId 部门ID
-     * @param year 年份
-     * @return 核销总额
-     */
-    @Query("SELECT COALESCE(SUM(es.settleAmount), 0) FROM ExpenseSettle es " +
-           "JOIN ExpenseApplyMain eam ON es.applyMainId = eam.id " +
-           "WHERE eam.deptId = :deptId AND YEAR(es.settleDate) = :year AND es.status >= 2")
-    BigDecimal calculateTotalSettleAmountByDeptAndYear(@Param("deptId") Long deptId, @Param("year") Integer year);
 }
