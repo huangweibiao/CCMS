@@ -40,6 +40,31 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/user/DepartmentList.vue'),
         meta: { title: '部门管理', icon: 'OfficeBuilding', requiresAdmin: true }
       },
+      // 系统管理
+      {
+        path: 'system/dict',
+        name: 'DataDict',
+        component: () => import('@/views/system/DataDict.vue'),
+        meta: { title: '数据字典', icon: 'Collection', requiresAdmin: true }
+      },
+      {
+        path: 'system/config',
+        name: 'SystemConfig',
+        component: () => import('@/views/system/SystemConfig.vue'),
+        meta: { title: '系统配置', icon: 'Setting', requiresAdmin: true }
+      },
+      {
+        path: 'system/attachment',
+        name: 'Attachment',
+        component: () => import('@/views/system/Attachment.vue'),
+        meta: { title: '附件管理', icon: 'Paperclip', requiresAdmin: true }
+      },
+      {
+        path: 'system/log',
+        name: 'OperLog',
+        component: () => import('@/views/system/OperLog.vue'),
+        meta: { title: '操作日志', icon: 'Document', requiresAdmin: true }
+      },
       // 预算管理
       {
         path: 'budgets',

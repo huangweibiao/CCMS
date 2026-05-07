@@ -1,7 +1,7 @@
 package com.ccms.security;
 
-import com.ccms.service.AuthService;
-import com.ccms.entity.system.user.SysUser;
+import com.ccms.service.UserService;
+import com.ccms.entity.system.user.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,34 +18,34 @@ import java.io.IOException;
 
 /**
  * JWT认证过滤器
- * 
+ *
  * @author 系统生成
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final AuthService authService;
+    private final UserService userService;
 
     @Autowired
-    public JwtAuthenticationFilter(AuthService authService) {
-        this.authService = authService;
+    public JwtAuthenticationFilter(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                   HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request,
+                                   HttpServletResponse response,
                                    FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && authService.validateToken(jwt)) {
-                String username = authService.getUsernameFromToken(jwt);
-                SysUser sysUser = authService.loadUserByUsername(username);
-                if (sysUser != null) {
+            if (StringUtils.hasText(jwt) && userService.validateToken(jwt)) {
+                String username = userService.getUsernameFromToken(jwt);
+                User user = userService.loadUserByUsername(username);
+                if (user != null) {
                     UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                        sysUser.getUserName(), "", java.util.Collections.emptyList());
-                    
+                        user.getUsername(), "", java.util.Collections.emptyList());
+
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        UsernamePasswordAuthenticationToken authentication = 
+                        UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

@@ -2,7 +2,7 @@ package com.ccms.config;
 
 import com.ccms.security.JwtAuthenticationFilter;
 import com.ccms.security.JwtAuthenticationEntryPoint;
-import com.ccms.service.AuthService;
+import com.ccms.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +25,7 @@ import java.util.Arrays;
 
 /**
  * Spring Security配置类
- * 
+ *
  * @author 系统生成
  */
 @Configuration
@@ -34,17 +34,17 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
-    private final AuthService authService;
+    private final UserService userService;
 
     @Autowired
-    public SecurityConfig(JwtAuthenticationEntryPoint unauthorizedHandler, AuthService authService) {
+    public SecurityConfig(JwtAuthenticationEntryPoint unauthorizedHandler, UserService userService) {
         this.unauthorizedHandler = unauthorizedHandler;
-        this.authService = authService;
+        this.userService = userService;
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(authService);
+        return new JwtAuthenticationFilter(userService);
     }
 
     @Bean
