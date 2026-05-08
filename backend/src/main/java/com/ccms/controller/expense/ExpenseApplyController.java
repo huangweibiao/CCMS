@@ -4,6 +4,7 @@ import com.ccms.entity.expense.ExpenseApplyMain;
 import com.ccms.repository.expense.ExpenseApplyMainRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,16 +37,26 @@ public class ExpenseApplyController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Integer status) {
-        Page<ExpenseApplyMain> applyPage;
+        
+        List<ExpenseApplyMain> list;
         if (userId != null && status != null) {
-            applyPage = applyMainRepository.findByApplyUserIdAndStatus(userId, status, PageRequest.of(page, size));
+            list = applyMainRepository.findByApplyUserIdAndStatus(userId, status);
         } else if (userId != null) {
-            applyPage = applyMainRepository.findByApplyUserId(userId, PageRequest.of(page, size));
+            list = applyMainRepository.findByApplyUserId(userId);
         } else if (status != null) {
-            applyPage = applyMainRepository.findByStatus(status, PageRequest.of(page, size));
+            list = applyMainRepository.findByStatus(status);
         } else {
-            applyPage = applyMainRepository.findAll(PageRequest.of(page, size));
+            return ResponseEntity.ok(applyMainRepository.findAll(PageRequest.of(page, size)));
         }
+        
+        // 手动分页
+        int start = Math.min(page * size, list.size());
+        int end = Math.min(start + size, list.size());
+        Page<ExpenseApplyMain> applyPage = new PageImpl<>(
+                list.subList(start, end),
+                PageRequest.of(page, size),
+                list.size()
+        );
         return ResponseEntity.ok(applyPage);
     }
 
@@ -64,11 +75,9 @@ public class ExpenseApplyController {
      */
     @GetMapping("/no/{applyNo}")
     public ResponseEntity<ExpenseApplyMain> getApplyByNo(@PathVariable String applyNo) {
-        ExpenseApplyMain apply = applyMainRepository.findByApplyNo(applyNo);
-        if (apply != null) {
-            return ResponseEntity.ok(apply);
-        }
-        return ResponseEntity.notFound().build();
+        return applyMainRepository.findByApplyNo(applyNo)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**
@@ -162,7 +171,16 @@ public class ExpenseApplyController {
     public ResponseEntity<Page<ExpenseApplyMain>> getPendingApplies(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Page<ExpenseApplyMain> applies = applyMainRepository.findByStatus(1, PageRequest.of(page, size));
+        List<ExpenseApplyMain> list = applyMainRepository.findByStatus(1);
+        
+        // 手动分页
+        int start = Math.min(page * size, list.size());
+        int end = Math.min(start + size, list.size());
+        Page<ExpenseApplyMain> applies = new PageImpl<>(
+                list.subList(start, end),
+                PageRequest.of(page, size),
+                list.size()
+        );
         return ResponseEntity.ok(applies);
     }
 

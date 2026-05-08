@@ -6,6 +6,7 @@ import com.ccms.repository.expense.ExpenseReimburseMainRepository;
 import com.ccms.repository.expense.ExpenseReimburseDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,16 +45,26 @@ public class ExpenseReimburseController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Integer status) {
-        Page<ExpenseReimburseMain> reimbursePage;
+        
+        List<ExpenseReimburseMain> list;
         if (userId != null && status != null) {
-            reimbursePage = reimburseMainRepository.findBySubmitUserIdAndStatus(userId, status, PageRequest.of(page, size));
+            list = reimburseMainRepository.findBySubmitUserIdAndStatus(userId, status);
         } else if (userId != null) {
-            reimbursePage = reimburseMainRepository.findBySubmitUserId(userId, PageRequest.of(page, size));
+            list = reimburseMainRepository.findBySubmitUserId(userId);
         } else if (status != null) {
-            reimbursePage = reimburseMainRepository.findByStatus(status, PageRequest.of(page, size));
+            list = reimburseMainRepository.findByStatus(status);
         } else {
-            reimbursePage = reimburseMainRepository.findAll(PageRequest.of(page, size));
+            return ResponseEntity.ok(reimburseMainRepository.findAll(PageRequest.of(page, size)));
         }
+        
+        // 手动分页
+        int start = Math.min(page * size, list.size());
+        int end = Math.min(start + size, list.size());
+        Page<ExpenseReimburseMain> reimbursePage = new PageImpl<>(
+                list.subList(start, end),
+                PageRequest.of(page, size),
+                list.size()
+        );
         return ResponseEntity.ok(reimbursePage);
     }
 

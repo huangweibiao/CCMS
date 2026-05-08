@@ -7,8 +7,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 费用申请单主表Repository接口
@@ -130,4 +134,62 @@ public interface ExpenseApplyMainRepository extends JpaRepository<ExpenseApplyMa
     @org.springframework.data.jpa.repository.Modifying
     @Query("UPDATE ExpenseApplyMain eam SET eam.status = :status, eam.approvalStatus = :approvalStatus WHERE eam.id = :id")
     void updateStatus(@Param("id") Long id, @Param("status") Integer status, @Param("approvalStatus") Integer approvalStatus);
+
+    // ==================== 为Controller提供的方法 ====================
+    
+    /**
+     * 根据申请单号查询（兼容applyNo字段名）
+     */
+    default Optional<ExpenseApplyMain> findByApplyNo(String applyNo) {
+        return findByApplyNumber(applyNo);
+    }
+    
+    /**
+     * 根据申请人ID和状态查询
+     */
+    default List<ExpenseApplyMain> findByApplyUserIdAndStatus(Long applyUserId, Integer status) {
+        return findByApplyUserId(applyUserId).stream()
+                .filter(e -> status.equals(e.getStatus()))
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 根据申请人ID查询并按创建时间倒序
+     */
+    default List<ExpenseApplyMain> findByApplyUserIdOrderByCreateTimeDesc(Long applyUserId) {
+        List<ExpenseApplyMain> list = new ArrayList<>(findByApplyUserId(applyUserId));
+        list.sort((e1, e2) -> {
+            if (e1.getCreateTime() == null) return 1;
+            if (e2.getCreateTime() == null) return -1;
+            return e2.getCreateTime().compareTo(e1.getCreateTime());
+        });
+        return list;
+    }
+    
+    /**
+     * 根据部门ID查询并按创建时间倒序
+     */
+    default List<ExpenseApplyMain> findByApplyDeptIdOrderByCreateTimeDesc(Long deptId) {
+        List<ExpenseApplyMain> list = new ArrayList<>(findByDeptId(deptId));
+        list.sort((e1, e2) -> {
+            if (e1.getCreateTime() == null) return 1;
+            if (e2.getCreateTime() == null) return -1;
+            return e2.getCreateTime().compareTo(e1.getCreateTime());
+        });
+        return list;
+    }
+    
+    /**
+     * 统计申请人申请单数量
+     */
+    default long countByApplyUserId(Long applyUserId) {
+        return findByApplyUserId(applyUserId).size();
+    }
+    
+    /**
+     * 统计申请人指定状态的申请单数量
+     */
+    default long countByApplyUserIdAndStatus(Long applyUserId, Integer status) {
+        return findByApplyUserIdAndStatus(applyUserId, status).size();
+    }
 }

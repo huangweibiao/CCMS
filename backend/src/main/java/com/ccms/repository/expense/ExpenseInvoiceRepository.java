@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 发票表数据访问接口
@@ -65,4 +66,13 @@ public interface ExpenseInvoiceRepository extends JpaRepository<ExpenseInvoice, 
      * @return 数量
      */
     Long countByInvoiceType(Integer invoiceType);
+
+    /**
+     * 根据发票类型查询发票列表（为Controller提供）
+     */
+    default List<ExpenseInvoice> findByInvoiceType(Integer invoiceType) {
+        return findAll().stream()
+                .filter(i -> invoiceType.equals(i.getInvoiceType()))
+                .collect(Collectors.toList());
+    }
 }
