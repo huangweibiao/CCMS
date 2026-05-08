@@ -77,6 +77,21 @@ export default defineConfig(({ mode }) => {
       cors: true
     },
     
+    // 优化依赖预构建
+    optimizeDeps: {
+      include: [
+        'vue',
+        'vue-router',
+        'pinia',
+        'element-plus',
+        '@element-plus/icons-vue',
+        'echarts',
+        'axios',
+        'dayjs'
+      ],
+      exclude: []
+    },
+    
     // 构建配置
     build: {
       outDir: 'dist',
@@ -105,8 +120,9 @@ export default defineConfig(({ mode }) => {
           },
           manualChunks: {
             vendor: ['vue', 'vue-router', 'pinia'],
-            ui: ['element-plus'],
-            charts: ['echarts']
+            'ui-core': ['element-plus', '@element-plus/icons-vue'],
+            charts: ['echarts'],
+            utils: ['axios', 'dayjs']
           }
         }
       },
@@ -117,8 +133,8 @@ export default defineConfig(({ mode }) => {
     // CSS配置
     css: {
       preprocessorOptions: {
-        scss: {
-          additionalData: `@import "@/styles/variables.scss";`
+      scss: {
+          additionalData: `@use "@/styles/variables.scss" as *;`
         }
       }
     },

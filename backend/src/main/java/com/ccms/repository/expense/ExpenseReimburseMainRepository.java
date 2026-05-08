@@ -47,6 +47,4 @@ public interface ExpenseReimburseMainRepository extends BaseRepository<ExpenseRe
     List<ExpenseReimburseMain> findByReimburseUserId(Long reimburseUserId);
     
     List<ExpenseReimburseMain> findByReimburseDeptId(Long reimburseDeptId);
-    
-}
 }
