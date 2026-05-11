@@ -99,6 +99,21 @@ public class ApiResponse<T> implements Serializable {
     }
 
     /**
+     * 静态error方法（带错误码和数据）
+     */
+    public static <T> ApiResponse<T> error(Integer code, String message, T data) {
+        ApiResponse<T> response = new ApiResponse<>(code, message, data);
+        return response;
+    }
+
+    /**
+     * 无参success方法
+     */
+    public static <T> ApiResponse<T> success() {
+        return new ApiResponse<>(200, "操作成功", null);
+    }
+
+    /**
      * Getter方法
      */
     public Integer getCode() {
