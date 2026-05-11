@@ -1,36 +1,14 @@
 package com.ccms.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * 统一API响应包装器
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> implements Serializable {
-    
-    // 手动添加 getter 方法确保 Lombok 生成正确的方法
-    public Integer getCode() { return code; }
-    public String getMessage() { return message; }
-    public T getData() { return data; }
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public String getPath() { return path; }
-    public Long getDuration() { return duration; }
-
-    /**
-     * 判断是否成功
-     */
-    public Boolean getSuccess() {
-        return code != null && code >= 200 && code < 300;
-    }
 
     /**
      * 响应状态码
@@ -48,7 +26,7 @@ public class ApiResponse<T> implements Serializable {
     private T data;
 
     /**
-     * 响应时间
+     * 响应时间戳
      */
     private LocalDateTime timestamp;
 
@@ -58,53 +36,119 @@ public class ApiResponse<T> implements Serializable {
     private String path;
 
     /**
-     * 处理耗时(毫秒)
+     * 请求耗时
      */
     private Long duration;
 
     /**
-     * 成功响应
+     * 默认构造器
      */
-    public static <T> ApiResponse<T> success() {
-        return success(null);
+    public ApiResponse() {
+        this.code = 200;
+        this.message = "操作成功";
+        this.timestamp = LocalDateTime.now();
+        this.path = "";
+        this.duration = 0L;
     }
 
-
+    /**
+     * 全参构造器
+     */
+    public ApiResponse(Integer code, String message, T data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+        this.timestamp = LocalDateTime.now();
+        this.path = "";
+        this.duration = 0L;
+    }
 
     /**
-     * 成功响应
+     * 判断是否成功
+     */
+    public Boolean getSuccess() {
+        return code != null && code >= 200 && code < 300;
+    }
+
+    /**
+     * 泛型success方法
      */
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(200, "操作成功", data, LocalDateTime.now(), null, null);
+        return new ApiResponse<>(200, "操作成功", data);
     }
 
     /**
-     * 失败响应
+     * 泛型success方法（带消息）
+     */
+    public static <T> ApiResponse<T> success(T data, String message) {
+        return new ApiResponse<>(200, message, data);
+    }
+
+    /**
+     * 静态error方法
      */
     public static <T> ApiResponse<T> error(String message) {
-        return error(500, message);
+        return new ApiResponse<>(500, message, null);
     }
 
     /**
-     * 失败响应
+     * 静态error方法（带错误码）
      */
     public static <T> ApiResponse<T> error(Integer code, String message) {
-        return new ApiResponse<>(code, message, null, LocalDateTime.now(), null, null);
+        return new ApiResponse<>(code, message, null);
     }
 
     /**
-     * 创建响应并设置路径
+     * Getter方法
      */
-    public ApiResponse<T> path(String path) {
+    public Integer getCode() {
+        return code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public Long getDuration() {
+        return duration;
+    }
+
+    /**
+     * Setter方法
+     */
+    public void setCode(Integer code) {
+        this.code = code;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public void setPath(String path) {
         this.path = path;
-        return this;
     }
 
-    /**
-     * 创建响应并设置耗时
-     */
-    public ApiResponse<T> duration(Long duration) {
+    public void setDuration(Long duration) {
         this.duration = duration;
-        return this;
     }
 }
