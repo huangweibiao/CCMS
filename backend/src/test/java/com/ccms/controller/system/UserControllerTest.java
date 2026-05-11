@@ -252,7 +252,7 @@ public class UserControllerTest extends ControllerTestBase {
         when(userService.updateUserStatus(1L, 0)).thenReturn(true);
 
         // when & then
-        performPut("/api/system/users/{userId}/status?status=0", 1L)
+        performPut("/api/system/users/1/status?status=0")
                 .andExpect(status().isOk());
     }
 
@@ -268,7 +268,7 @@ public class UserControllerTest extends ControllerTestBase {
         when(userService.updateUserStatus(1L, 0)).thenReturn(false);
 
         // when & then
-        performPut("/api/system/users/{userId}/status?status=0", 1L)
+        performPut("/api/system/users/1/status?status=0")
                 .andExpect(status().isBadRequest());
     }
 
@@ -285,7 +285,7 @@ public class UserControllerTest extends ControllerTestBase {
         when(userService.resetPassword(1L)).thenReturn(newPassword);
 
         // when & then
-        performPost("/api/system/users/{userId}/reset-password", 1L)
+        performPost("/api/system/users/1/reset-password")
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.newPassword", is(newPassword)));
@@ -443,5 +443,148 @@ public class UserControllerTest extends ControllerTestBase {
         user.setPassword("password123");
         user.setEnabled(true);
         return user;
+    }
+
+    /**
+     * Task 9.1: 添加用户密码强度验证测试
+     */
+
+    /**
+     * given: 提供弱密码（只有字母）
+     * when: 调用创建用户接口
+     * then: 返回400状态码和密码强度不足的错误信息
+     */
+    @Test
+    @DisplayName("用户密码强度验证 - 弱密码（只有字母）")
+    public void testPasswordValidation_WeakPasswordOnlyLetters() throws Exception {
+        // given
+        User user = createTestUser(null, "newuser", "新用户", "newuser@ccms.com");
+        user.setPassword("weakpassword");
+
+        when(userService.createUser(org.mockito.ArgumentMatchers.any(User.class)))
+                .thenThrow(new RuntimeException("密码强度不足"));
+
+        // when & then
+        performPost("/api/system/users", user)
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * given: 提供弱密码（只有数字）
+     * when: 调用创建用户接口
+     * then: 返回400状态码和密码强度不足的错误信息
+     */
+    @Test
+    @DisplayName("用户密码强度验证 - 弱密码（只有数字）")
+    public void testPasswordValidation_WeakPasswordOnlyNumbers() throws Exception {
+        // given
+        User user = createTestUser(null, "newuser", "新用户", "newuser@ccms.com");
+        user.setPassword("12345678");
+
+        when(userService.createUser(org.mockito.ArgumentMatchers.any(User.class)))
+                .thenThrow(new RuntimeException("密码强度不足"));
+
+        // when & then
+        performPost("/api/system/users", user)
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * given: 提供弱密码（长度不足）
+     * when: 调用创建用户接口
+     * then: 返回400状态码和密码长度不足的错误信息
+     */
+    @Test
+    @DisplayName("用户密码强度验证 - 密码长度不足")
+    public void testPasswordValidation_PasswordTooShort() throws Exception {
+        // given
+        User user = createTestUser(null, "newuser", "新用户", "newuser@ccms.com");
+        user.setPassword("Short1");
+
+        when(userService.createUser(org.mockito.ArgumentMatchers.any(User.class)))
+                .thenThrow(new RuntimeException("密码长度不足8位"));
+
+        // when & then
+        performPost("/api/system/users", user)
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * given: 提供强密码（包含大小写字母、数字、特殊字符）
+     * when: 调用创建用户接口
+     * then: 返回200状态码
+     */
+    @Test
+    @DisplayName("用户密码强度验证 - 强密码验证成功")
+    public void testPasswordValidation_StrongPassword() throws Exception {
+        // given
+        User user = createTestUser(null, "newuser", "新用户", "newuser@ccms.com");
+        user.setPassword("StrongPassword@123");
+        User createdUser = createTestUser(1L, "newuser", "新用户", "newuser@ccms.com");
+
+        when(userService.createUser(org.mockito.ArgumentMatchers.any(User.class))).thenReturn(createdUser);
+
+        // when & then
+        performPost("/api/system/users", user)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)));
+    }
+
+    /**
+     * Task 9.2: 添加用户重复登录限制测试
+     */
+
+    /**
+     * given: 用户已存在
+     * when: 模拟登录检查
+     * then: 返回用户信息
+     */
+    @Test
+    @DisplayName("用户重复登录限制 - 用户存在检查")
+    public void testDuplicateLoginPrevention() throws Exception {
+        // given
+        User user = createTestUser(1L, "zhangsan", "张三", "zhangsan@ccms.com");
+        when(userService.loadUserByUsername("zhangsan")).thenReturn(user);
+
+        // when & then
+        performGet("/api/system/users/username/{username}", "zhangsan")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username", is("zhangsan")));
+    }
+
+    /**
+     * Task 9.5: 添加用户状态变更测试（启用/禁用）
+     */
+
+    /**
+     * given: 用户当前状态为启用
+     * when: 调用禁用用户接口
+     * then: 返回200状态码
+     */
+    @Test
+    @DisplayName("用户状态变更 - 禁用用户成功")
+    public void testDisableUser_Success() throws Exception {
+        // given
+        when(userService.updateUserStatus(1L, 0)).thenReturn(true);
+
+        // when & then
+        performPut("/api/system/users/1/status?status=0")
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * given: 用户当前状态为禁用
+     * when: 调用启用用户接口
+     * then: 返回200状态码
+     */
+    @Test
+    @DisplayName("用户状态变更 - 启用用户成功")
+    public void testEnableUser_Success() throws Exception {
+        // given
+        when(userService.updateUserStatus(1L, 1)).thenReturn(true);
+
+        // when & then
+        performPut("/api/system/users/1/status?status=1")
+                .andExpect(status().isOk());
     }
 }

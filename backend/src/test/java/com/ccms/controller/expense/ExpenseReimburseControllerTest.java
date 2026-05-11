@@ -607,5 +607,326 @@ class ExpenseReimburseControllerTest extends ControllerTestBase {
         detail.setUpdateTime(LocalDateTime.now());
         return detail;
     }
+
+    // ==================== 新增：借款核销逻辑测试 ====================
+    
+    @Test
+    void shouldDeductMultipleLoansWhenSubmitReimburse() throws Exception {
+        // given: 报销单总金额1000，关联3个借款
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        reimburse.setTotalAmount(new BigDecimal("1000.00"));
+        reimburse.setLoanDeductTotal(BigDecimal.ZERO);
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        
+        // 模拟核销借款后的状态
+        ExpenseReimburseMain afterDeduct = createTestReimburse(1L, "R2024001", 1);
+        afterDeduct.setLoanDeductTotal(new BigDecimal("1000.00")); // 核销1000
+        
+        when(reimburseMainRepository.save(any(ExpenseReimburseMain.class))).thenReturn(afterDeduct);
+        
+        // when & then: 核销成功
+        performPost("/api/expense/reimburse/1/deduct-loans")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("借款核销成功")));
+    }
+
+    @Test
+    void shouldRejectDeductWhenAmountMismatch() throws Exception {
+        // given: 报销金额小于借款总金额
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        reimburse.setTotalAmount(new BigDecimal("800.00"));
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        
+        // when & then: 核销失败
+        performPost("/api/expense/reimburse/1/deduct-loans")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("报销金额不能小于已关联的借款总金额")));
+    }
+
+    @Test
+    void shouldRejectDeductWhenNoLoansLinked() throws Exception {
+        // given: 未关联借款的报销单
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        
+        // when & then: 核销失败
+        performPost("/api/expense/reimburse/1/deduct-loans")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("报销单未关联任何借款，无法执行核销操作")));
+    }
+
+    /**
+     * given: 报销单被驳回
+     * when: 修改并重新提交报销单
+     * then: 状态变更成功
+     */
+    @Test
+    void shouldModifyAndResubmitRejectedReimburse() throws Exception {
+        // given: 报销单处于被驳回状态
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 4); // 被驳回状态
+        reimburse.setReimburseNo("R2024001");
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        
+        // 修改驳回的报销单
+        ExpenseReimburseMain modified = createTestReimburse(1L, "R2024001", 0); // 修改为草稿状态
+        modified.setReason("修改后的报销理由");
+        when(reimburseMainRepository.save(any(ExpenseReimburseMain.class))).thenReturn(modified);
+        
+        // when: 重新提交
+        performPost("/api/expense/reimburse/1/submit")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("报销单已重新提交")));
+    }
+
+    @Test
+    void shouldRejectModificationWhenReimbursePaid() throws Exception {
+        // given: 报销单已支付，无法修改
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 3); // 已支付状态
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        
+        // when: 尝试修改
+        performPut("/api/expense/reimburse/1", reimburse)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("已支付的报销单无法修改")));
+    }
+
+    /**
+     * given: 报销单中存在重复的发票号码
+     * when: 校验发票重复性
+     * then: 检测到重复发票并返回错误
+     */
+    @Test
+    void shouldDetectDuplicateInvoice() throws Exception {
+        // given: 报销单包含重复发票
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        ExpenseReimburseDetail detail1 = createTestDetail(1L, 1L, new BigDecimal("100.00"));
+        detail1.setInvoiceNo("INV001");
+        ExpenseReimburseDetail detail2 = createTestDetail(2L, 1L, new BigDecimal("200.00"));
+        detail2.setInvoiceNo("INV001"); // 相同发票号
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        when(reimburseDetailRepository.save(any(ExpenseReimburseDetail.class))).thenReturn(detail1);
+        
+        // when: 提交时检查发票重复
+        performPost("/api/expense/reimburse/1/submit")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("存在重复发票号码：INV001")));
+    }
+
+    /**
+     * given: 报销单中所有发票号码唯一
+     * when: 校验发票重复性
+     * then: 校验通过
+     */
+    @Test
+    void shouldAcceptUniqueInvoices() throws Exception {
+        // given: 报销单包含唯一发票
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        ExpenseReimburseDetail detail1 = createTestDetail(1L, 1L, new BigDecimal("100.00"));
+        detail1.setInvoiceNo("INV001");
+        ExpenseReimburseDetail detail2 = createTestDetail(2L, 1L, new BigDecimal("200.00"));
+        detail2.setInvoiceNo("INV002"); // 不同发票号
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        when(reimburseDetailRepository.save(any(ExpenseReimburseDetail.class))).thenReturn(detail1);
+        
+        // when: 提交时检查发票
+        performPost("/api/expense/reimburse/1/submit")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("报销单已提交")));
+    }
+
+    /**
+     * given: 报销单包含多个明细
+     * when: 计算汇总数据
+     * then: 汇总数据准确无误
+     */
+    @Test
+    void shouldCalculateSummaryAccurately() throws Exception {
+        // given: 报销单包含3个明细
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        reimburse.setTotalAmount(new BigDecimal("600.00")); // 明细总金额600
+        reimburse.setInvoiceTotal(new BigDecimal("600.00")); // 发票总金额600
+        
+        ExpenseReimburseDetail detail1 = createTestDetail(1L, 1L, new BigDecimal("100.00"));
+        ExpenseReimburseDetail detail2 = createTestDetail(2L, 1L, new BigDecimal("200.00"));
+        ExpenseReimburseDetail detail3 = createTestDetail(3L, 1L, new BigDecimal("300.00"));
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        when(reimburseDetailRepository.findByReimburseId(1L)).thenReturn(Arrays.asList(detail1, detail2, detail3));
+        
+        // when: 获取汇总数据
+        performGet("/api/expense/reimburse/1/summary")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalAmount", is(600.00)))
+                .andExpect(jsonPath("$.detailCount", is(3)))
+                .andExpect(jsonPath("$.invoiceTotal", is(600.00)))
+                .andExpect(jsonPath("$.invoiceMatch", is(true)));
+    }
+
+    /**
+     * given: 报销单明细金额与汇总不符
+     * when: 计算汇总数据
+     * then: 检测到金额不匹配
+     */
+    @Test
+    void shouldDetectAmountMismatchInSummary() throws Exception {
+        // given: 明细金额500，但汇总设置为600
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        reimburse.setTotalAmount(new BigDecimal("600.00"));
+        
+        ExpenseReimburseDetail detail1 = createTestDetail(1L, 1L, new BigDecimal("300.00"));
+        ExpenseReimburseDetail detail2 = createTestDetail(2L, 1L, new BigDecimal("200.00"));
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        when(reimburseDetailRepository.findByReimburseId(1L)).thenReturn(Arrays.asList(detail1, detail2));
+        
+        // when: 获取汇总数据
+        performGet("/api/expense/reimburse/1/summary")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalAmount", is(600.00))) // 汇总金额
+                .andExpect(jsonPath("$.actualDetailTotal", is(500.00))) // 实际明细总计
+                .andExpect(jsonPath("$.amountMismatch", is(true))) // 金额不匹配
+                .andExpect(jsonPath("$.difference", is(100.00))); // 差异
+    }
+
+    /**
+     * given: 报销金额为0
+     * when: 创建或更新报销单
+     * then: 返回金额必须大于0的错误
+     */
+    @Test
+    void shouldRejectReimburseWithZeroAmount() throws Exception {
+        // given: 报销金额为0
+        ExpenseReimburseMain reimburse = createTestReimburse(null, "R2024001", null);
+        reimburse.setTotalAmount(BigDecimal.ZERO);
+        
+        when(reimburseMainRepository.save(any(ExpenseReimburseMain.class))).thenReturn(reimburse);
+        
+        // when: 创建报销单
+        performPost("/api/expense/reimburse", reimburse)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("报销金额必须大于0")));
+    }
+
+    /**
+     * given: 报销金额为负数
+     * when: 创建或更新报销单
+     * then: 返回金额必须大于0的错误
+     */
+    @Test
+    void shouldRejectReimburseWithNegativeAmount() throws Exception {
+        // given: 报销金额为负数
+        ExpenseReimburseMain reimburse = createTestReimburse(null, "R2024001", null);
+        reimburse.setTotalAmount(new BigDecimal("-100.00"));
+        
+        when(reimburseMainRepository.save(any(ExpenseReimburseMain.class))).thenReturn(reimburse);
+        
+        // when: 创建报销单
+        performPost("/api/expense/reimburse", reimburse)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("报销金额必须大于0")));
+    }
+
+    /**
+     * given: 报销金额为极大值
+     * when: 创建或更新报销单
+     * then: 超过业务规则限制时返回错误
+     */
+    @Test
+    void shouldRejectReimburseWithExcessiveAmount() throws Exception {
+        // given: 报销金额为极大值（超过业务限制）
+        ExpenseReimburseMain reimburse = createTestReimburse(null, "R2024001", null);
+        reimburse.setTotalAmount(new BigDecimal("999999.99"));
+        
+        when(reimburseMainRepository.save(any(ExpenseReimburseMain.class))).thenReturn(reimburse);
+        
+        // when: 创建报销单
+        performPost("/api/expense/reimburse", reimburse)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("报销金额超过单笔上限999999.99元")));
+    }
+
+    /**
+     * given: 报销单违反业务规则（发票号码格式错误）
+     * when: 提交报销单
+     * then: 返回业务规则验证错误
+     */
+    @Test
+    void shouldRejectReimburseWithInvalidInvoiceFormat() throws Exception {
+        // given: 发票号码格式不正确
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        ExpenseReimburseDetail detail = createTestDetail(null, null, new BigDecimal("100.00"));
+        detail.setInvoiceNo("INVALID-FORMAT"); // 错误格式
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        when(reimburseDetailRepository.save(any(ExpenseReimburseDetail.class))).thenReturn(detail);
+        
+        // when: 添加明细
+        performPost("/api/expense/reimburse/1/details", detail)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("发票号码格式不正确，应为：INV+12位数字")));
+    }
+
+    /**
+     * given: 报销单数据一致性问题（总计与明细不匹配）
+     * when: 提交报销单
+     * then: 检测到数据一致性问题
+     */
+    @Test
+    void shouldDetectDataInconsistency() throws Exception {
+        // given: 数据存在一致性问题
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        reimburse.setTotalAmount(new BigDecimal("1000.00")); // 主表金额1000
+        reimburse.setInvoiceTotal(new BigDecimal("900.00")); // 发票总金额900，不匹配
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        
+        // when: 检查数据一致性
+        performPost("/api/expense/reimburse/1/check-consistency")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("数据一致性检查失败：发票总金额与报销单总金额不匹配")))
+                .andExpect(jsonPath("$.data.totalAmount", is(1000.00)))
+                .andExpect(jsonPath("$.data.invoiceTotal", is(900.00)))
+                .andExpect(jsonPath("$.data.difference", is(100.00)));
+    }
+
+    /**
+     * given: 报销单金额与借款核销金额不匹配
+     * when: 提交报销单
+     * then: 返回业务规则违反错误
+     */
+    @Test
+    void shouldRejectInvalidLoanDeduction() throws Exception {
+        // given: 借款核销金额不合理
+        ExpenseReimburseMain reimburse = createTestReimburse(1L, "R2024001", 0);
+        reimburse.setTotalAmount(new BigDecimal("1000.00"));
+        reimburse.setLoanDeductTotal(new BigDecimal("1200.00")); // 核销金额大于报销金额
+        
+        when(reimburseMainRepository.findById(1L)).thenReturn(Optional.of(reimburse));
+        when(reimburseMainRepository.save(any(ExpenseReimburseMain.class))).thenReturn(reimburse);
+        
+        // when: 提交报销单
+        performPost("/api/expense/reimburse/1/submit")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("借款核销金额不能大于报销总金额")));
+    }
 }
 

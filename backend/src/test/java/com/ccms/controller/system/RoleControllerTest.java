@@ -229,5 +229,167 @@ class RoleControllerTest extends ControllerTestBase {
         performGet("/api/system/roles/permissions/tree")
                 .andExpect(status().isOk());
     }
+
+    /**
+     * Task 10.1: 添加角色权限继承测试
+     */
+
+    @Test
+    void shouldInheritPermissionsFromParentRole() throws Exception {
+        // given
+        SysPermission parentPerm = new SysPermission();
+        parentPerm.setId(1L);
+        parentPerm.setPermCode("user:list");
+        parentPerm.setParentId(0L);
+        parentPerm.setSortOrder(1);
+        
+        when(sysPermissionRepository.findAll()).thenReturn(Collections.singletonList(parentPerm));
+
+        // when & then
+        performGet("/api/system/roles/permissions/tree")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    /**
+     * Task 10.2: 添加权限变更后用户登录权限生效测试
+     */
+
+    @Test
+    void shouldUpdatePermissionsAfterRoleChange() throws Exception {
+        // given
+        SysRole role = createTestRole(1L, "ADMIN", "管理员", 1);
+        SysPermission newPerm = new SysPermission();
+        newPerm.setId(3L);
+        newPerm.setPermCode("expense:audit");
+        
+        when(sysRoleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(sysRolePermissionRepository.save(any(SysRolePermission.class))).thenReturn(new SysRolePermission());
+
+        // when & then
+        performPost("/api/system/roles/1/permissions", Arrays.asList(1L, 2L, 3L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    /**
+     * Task 10.3: 添加权限缓存一致性测试
+     */
+
+    @Test
+    void shouldInvalidatePermissionCacheWhenRoleUpdated() throws Exception {
+        // given
+        SysRole role = createTestRole(1L, "ADMIN", "管理员", 1);
+        SysRole updatedRole = createTestRole(1L, "ADMIN", "超级管理员", 1);
+        when(sysRoleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(sysRoleRepository.save(any(SysRole.class))).thenReturn(updatedRole);
+
+        // when & then
+        performPut("/api/system/roles/1", updatedRole)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("角色更新成功"));
+    }
+
+    /**
+     * Task 10.4: 添加角色与用户关联关系测试
+     */
+
+    @Test
+    void shouldGetUsersByRoleId() throws Exception {
+        // given
+        when(sysRoleRepository.existsById(1L)).thenReturn(true);
+
+        // when & then
+        performGet("/api/system/roles/1/users")
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldAssignUsersToRole() throws Exception {
+        // given
+        SysRole role = createTestRole(1L, "ADMIN", "管理员", 1);
+        when(sysRoleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+        // when & then
+        performPost("/api/system/roles/1/users", Arrays.asList(1L, 2L, 3L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void shouldRemoveUsersFromRole() throws Exception {
+        // given
+        SysRole role = createTestRole(1L, "ADMIN", "管理员", 1);
+        when(sysRoleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+        // when & then
+        performDelete("/api/system/roles/1/users", Arrays.asList(2L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    /**
+     * Task 10.5: 添加权限树结构测试
+     */
+
+    @Test
+    void shouldReturnPermissionTreeWithChildren() throws Exception {
+        // given
+        SysPermission parentPerm = new SysPermission();
+        parentPerm.setId(1L);
+        parentPerm.setPermCode("user");
+        parentPerm.setPermName("用户管理");
+        parentPerm.setParentId(0L);
+        parentPerm.setSortOrder(1);
+        
+        SysPermission childPerm1 = new SysPermission();
+        childPerm1.setId(2L);
+        childPerm1.setPermCode("user:list");
+        childPerm1.setPermName("用户列表");
+        childPerm1.setParentId(1L);
+        childPerm1.setSortOrder(1);
+        
+        SysPermission childPerm2 = new SysPermission();
+        childPerm2.setId(3L);
+        childPerm2.setPermCode("user:create");
+        childPerm2.setPermName("用户新增");
+        childPerm2.setParentId(1L);
+        childPerm2.setSortOrder(2);
+        
+        when(sysPermissionRepository.findAll()).thenReturn(Arrays.asList(parentPerm, childPerm1, childPerm2));
+
+        // when & then
+        performGet("/api/system/roles/permissions/tree")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    void shouldReturnPermissionTreeWithMultipleLevels() throws Exception {
+        // given
+        SysPermission level1 = new SysPermission();
+        level1.setId(1L);
+        level1.setPermCode("system");
+        level1.setPermName("系统管理");
+        level1.setParentId(0L);
+        
+        SysPermission level2 = new SysPermission();
+        level2.setId(2L);
+        level2.setPermCode("system:user");
+        level2.setPermName("用户管理");
+        level2.setParentId(1L);
+        
+        SysPermission level3 = new SysPermission();
+        level3.setId(3L);
+        level3.setPermCode("system:user:list");
+        level3.setPermName("用户列表");
+        level3.setParentId(2L);
+        
+        when(sysPermissionRepository.findAll()).thenReturn(Arrays.asList(level1, level2, level3));
+
+        // when & then
+        performGet("/api/system/roles/permissions/tree")
+                .andExpect(status().isOk());
+    }
 }
 

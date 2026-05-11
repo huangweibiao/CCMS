@@ -1,0 +1,144 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< com.ccms:ccms-backend >------------------------
+[INFO] Building CCMS Backend 1.0.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] The artifact mysql:mysql-connector-java:jar:8.0.33 has been relocated to com.mysql:mysql-connector-j:jar:8.0.33
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.12:prepare-agent (prepare-agent) @ ccms-backend ---
+[INFO] argLine set to -javaagent:D:\\maven-repo\\org\\jacoco\\org.jacoco.agent\\0.8.12\\org.jacoco.agent-0.8.12-runtime.jar=destfile=D:\\aitools\\comate\\CCMS\\backend\\target\\jacoco.exec,excludes=**/entity/**:**/dto/**:**/config/**:**/constant/**:**/vo/**:**/enums/**:**/aspect/**
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ ccms-backend ---
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 368 resources from target\classes to target\classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.11.0:compile (default-compile) @ ccms-backend ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:testResources (default-testResources) @ ccms-backend ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.11.0:testCompile (default-testCompile) @ ccms-backend ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 39 source files with javac [debug deprecation release 21] to target\test-classes
+[INFO] 由于在类路径中发现了一个或多个处理程序，因此启用了
+  批注处理。未来发行版的 javac 可能会禁用批注处理，
+  除非至少按名称指定了一个处理程序 (-processor)，
+  或指定了搜索路径 (--processor-path, --processor-module-path)，
+  或显式启用了批注处理 (-proc:only, -proc:full)。
+  可使用 -Xlint:-options 隐藏此消息。
+  可使用 -proc:none 禁用批注处理。
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[35,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[35,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[35,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[35,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/ControllerTestBase.java:[35,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/RoleControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SysAttachmentControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SysAttachmentControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SysAttachmentControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SysAttachmentControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SysAttachmentControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SystemConfigControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SystemConfigControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SystemConfigControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SystemConfigControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SystemConfigControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SystemConfigControllerTest.java:[153,77] 最后一个参数使用了不准确的变量类型的 varargs 方法的非 varargs 调用; 
+  对于 varargs 调用, 应使用 java.lang.Object
+  对于非 varargs 调用, 应使用 java.lang.Object[], 这样也可以抑制此警告
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SystemConfigControllerTest.java:[192,81] 最后一个参数使用了不准确的变量类型的 varargs 方法的非 varargs 调用; 
+  对于 varargs 调用, 应使用 java.lang.Object
+  对于非 varargs 调用, 应使用 java.lang.Object[], 这样也可以抑制此警告
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/SystemConfigControllerTest.java:[199,56] 最后一个参数使用了不准确的变量类型的 varargs 方法的非 varargs 调用; 
+  对于 varargs 调用, 应使用 java.lang.Object
+  对于非 varargs 调用, 应使用 java.lang.Object[], 这样也可以抑制此警告
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[27,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[30,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetControlControllerTest.java:[33,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/async/AsyncExportControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/async/AsyncExportControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/async/AsyncExportControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/async/AsyncExportControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/async/AsyncExportControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/AuthControllerTest.java:[23,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/AuthControllerTest.java:[23,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/AuthControllerTest.java:[23,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/AuthControllerTest.java:[23,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/system/AuthControllerTest.java:[23,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanRepaymentControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanRepaymentControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanRepaymentControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanRepaymentControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanRepaymentControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetAdjustControllerTest.java:[25,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetAdjustControllerTest.java:[25,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetAdjustControllerTest.java:[25,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetAdjustControllerTest.java:[25,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/budget/BudgetAdjustControllerTest.java:[25,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/archive/DataArchiveControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/archive/DataArchiveControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/archive/DataArchiveControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/archive/DataArchiveControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/archive/DataArchiveControllerTest.java:[24,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/message/MessageControllerTest.java:[28,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/message/MessageControllerTest.java:[28,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/message/MessageControllerTest.java:[28,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/message/MessageControllerTest.java:[28,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/message/MessageControllerTest.java:[28,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanControllerTest.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanControllerTest.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanControllerTest.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanControllerTest.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/LoanControllerTest.java:[32,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/ExpenseApplyControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/ExpenseApplyControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/ExpenseApplyControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/ExpenseApplyControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/expense/ExpenseApplyControllerTest.java:[31,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/monitor/SystemMonitorControllerTest.java:[26,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/monitor/SystemMonitorControllerTest.java:[26,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/monitor/SystemMonitorControllerTest.java:[26,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/monitor/SystemMonitorControllerTest.java:[26,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/monitor/SystemMonitorControllerTest.java:[26,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/monitor/SystemMonitorControllerTest.java:[29,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[WARNING] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/monitor/SystemMonitorControllerTest.java:[29,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.MockBean 已过时, 且标记为待删除
+[INFO] /D:/aitools/comate/CCMS/backend/src/test/java/com/ccms/controller/monitor/SystemMonitorControllerTest.java: 某些输入文件额外使用或覆盖了标记为待删除的已过时 API。
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  22.553 s
+[INFO] Finished at: 2026-05-09T18:29:23+08:00
+[INFO] ------------------------------------------------------------------------

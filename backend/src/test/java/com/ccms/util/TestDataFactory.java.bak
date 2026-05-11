@@ -1,0 +1,451 @@
+package com.ccms.util;
+
+import com.ccms.entity.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 测试数据工厂类
+ * 用于生成各种测试实体对象
+ */
+public class TestDataFactory {
+
+    private static Long idCounter = 1L;
+
+    /**
+     * 生成唯一ID
+     */
+    public static Long generateId() {
+        return idCounter++;
+    }
+
+    /**
+     * 生成编码
+     */
+    public static String generateCode(String prefix) {
+        return prefix + System.currentTimeMillis();
+    }
+
+    /**
+     * 创建费用申请主表
+     */
+    public static ExpenseApplyMain createExpenseApplyMain() {
+        ExpenseApplyMain entity = new ExpenseApplyMain();
+        entity.setId(generateId());
+        entity.setApplyNo(generateCode("EXP"));
+        entity.setApplyType("TRAVEL");
+        entity.setApplyStatus(0);
+        entity.setApplyAmount(new BigDecimal("1000.00"));
+        entity.setApplyUserId(1L);
+        entity.setApplyUserName("测试用户");
+        entity.setApplyDeptId(1L);
+        entity.setApplyDeptName("测试部门");
+        entity.setApplyDate(LocalDate.now());
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建费用申请明细
+     */
+    public static ExpenseApplyDetail createExpenseApplyDetail(Long mainId) {
+        ExpenseApplyDetail entity = new ExpenseApplyDetail();
+        entity.setId(generateId());
+        entity.setMainId(mainId);
+        entity.setExpenseType("交通费");
+        entity.setExpenseAmount(new BigDecimal("500.00"));
+        entity.setExpenseDate(LocalDate.now());
+        entity.setCreateTime(LocalDateTime.now());
+        return entity;
+    }
+
+    /**
+     * 创建借款主表
+     */
+    public static LoanMain createLoanMain() {
+        LoanMain entity = new LoanMain();
+        entity.setId(generateId());
+        entity.setLoanNo(generateCode("LOAN"));
+        entity.setLoanType(1);
+        entity.setLoanStatus(0);
+        entity.setLoanAmount(new BigDecimal("5000.00"));
+        entity.setLoanUserId(1L);
+        entity.setLoanUserName("测试用户");
+        entity.setLoanDeptId(1L);
+        entity.setLoanDeptName("测试部门");
+        entity.setLoanDate(LocalDate.now());
+        entity.setExpectedRepayDate(LocalDate.now().plusMonths(1));
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建借款明细
+     */
+    public static LoanDetail createLoanDetail(Long mainId) {
+        LoanDetail entity = new LoanDetail();
+        entity.setId(generateId());
+        entity.setMainId(mainId);
+        entity.setPurpose("差旅借款");
+        entity.setAmount(new BigDecimal("3000.00"));
+        entity.setCreateTime(LocalDateTime.now());
+        return entity;
+    }
+
+    /**
+     * 创建还款记录
+     */
+    public static LoanRepayment createLoanRepayment() {
+        LoanRepayment entity = new LoanRepayment();
+        entity.setId(generateId());
+        entity.setRepaymentNo(generateCode("RP"));
+        entity.setLoanId(1L);
+        entity.setRepaymentType(1);
+        entity.setRepaymentStatus(0);
+        entity.setRepaymentAmount(new BigDecimal("2000.00"));
+        entity.setRepaymentDate(LocalDate.now());
+        entity.setRepaymentUserId(1L);
+        entity.setRepaymentUserName("测试用户");
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建还款记录
+     */
+    public static Repayment createRepayment() {
+        Repayment entity = new Repayment();
+        entity.setId(generateId());
+        entity.setRepayNo(generateCode("REP"));
+        entity.setLoanId(1L);
+        entity.setRepayType(1);
+        entity.setRepayStatus(0);
+        entity.setRepayAmount(new BigDecimal("1500.00"));
+        entity.setRepayDate(LocalDate.now());
+        entity.setRepayUserId(1L);
+        entity.setRepayUserName("测试用户");
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建预算主表
+     */
+    public static BudgetMain createBudgetMain() {
+        BudgetMain entity = new BudgetMain();
+        entity.setId(generateId());
+        entity.setBudgetNo(generateCode("BG"));
+        entity.setBudgetYear(LocalDate.now().getYear());
+        entity.setBudgetType("DEPT");
+        entity.setBudgetStatus(0);
+        entity.setTotalAmount(new BigDecimal("100000.00"));
+        entity.setDeptId(1L);
+        entity.setDeptName("测试部门");
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建预算明细
+     */
+    public static BudgetDetail createBudgetDetail(Long mainId) {
+        BudgetDetail entity = new BudgetDetail();
+        entity.setId(generateId());
+        entity.setMainId(mainId);
+        entity.setBudgetItem("办公费");
+        entity.setBudgetAmount(new BigDecimal("10000.00"));
+        entity.setCreateTime(LocalDateTime.now());
+        return entity;
+    }
+
+    /**
+     * 创建发票信息
+     */
+    public static InvoiceInfo createInvoiceInfo() {
+        InvoiceInfo entity = new InvoiceInfo();
+        entity.setId(generateId());
+        entity.setInvoiceNo(generateCode("INV"));
+        entity.setInvoiceCode("1234567890");
+        entity.setInvoiceType("VAT");
+        entity.setInvoiceStatus(0);
+        entity.setInvoiceAmount(new BigDecimal("1000.00"));
+        entity.setInvoiceDate(LocalDate.now());
+        entity.setSellerName("测试销售方");
+        entity.setBuyerName("测试购买方");
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建发票明细
+     */
+    public static InvoiceDetail createInvoiceDetail(Long invoiceId) {
+        InvoiceDetail entity = new InvoiceDetail();
+        entity.setId(generateId());
+        entity.setInvoiceId(invoiceId);
+        entity.setItemName("测试商品");
+        entity.setItemAmount(new BigDecimal("500.00"));
+        entity.setCreateTime(LocalDateTime.now());
+        return entity;
+    }
+
+    /**
+     * 创建流程定义
+     */
+    public static WorkflowDef createWorkflowDef() {
+        WorkflowDef entity = new WorkflowDef();
+        entity.setId(generateId());
+        entity.setWorkflowCode(generateCode("WF"));
+        entity.setWorkflowName("测试流程");
+        entity.setWorkflowType("EXPENSE");
+        entity.setWorkflowStatus(1);
+        entity.setVersion(1);
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建流程实例
+     */
+    public static WorkflowInstance createWorkflowInstance() {
+        WorkflowInstance entity = new WorkflowInstance();
+        entity.setId(generateId());
+        entity.setWorkflowId(1L);
+        entity.setBusinessKey("EXP001");
+        entity.setBusinessType("EXPENSE");
+        entity.setInstanceStatus(1);
+        entity.setCurrentNode("审批节点");
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建审批记录
+     */
+    public static ApprovalRecord createApprovalRecord() {
+        ApprovalRecord entity = new ApprovalRecord();
+        entity.setId(generateId());
+        entity.setInstanceId(1L);
+        entity.setNodeId(1L);
+        entity.setNodeName("审批节点");
+        entity.setApproverId(1L);
+        entity.setApproverName("审批人");
+        entity.setAction(1);
+        entity.setComment("同意");
+        entity.setCreateTime(LocalDateTime.now());
+        return entity;
+    }
+
+    /**
+     * 创建消息通知
+     */
+    public static MessageNotification createMessageNotification() {
+        MessageNotification entity = new MessageNotification();
+        entity.setId(generateId());
+        entity.setMessageType("TODO");
+        entity.setMessageTitle("测试消息");
+        entity.setMessageContent("这是一条测试消息");
+        entity.setReceiverId(1L);
+        entity.setReceiverName("测试用户");
+        entity.setReadStatus(0);
+        entity.setBusinessType("EXPENSE");
+        entity.setBusinessId(1L);
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建系统用户
+     */
+    public static SysUser createSysUser() {
+        SysUser entity = new SysUser();
+        entity.setId(generateId());
+        entity.setUserName("测试用户");
+        entity.setLoginName("testuser");
+        entity.setPassword("password");
+        entity.setEmail("test@example.com");
+        entity.setPhone("13800138000");
+        entity.setStatus(1);
+        entity.setDeptId(1L);
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建系统角色
+     */
+    public static SysRole createSysRole() {
+        SysRole entity = new SysRole();
+        entity.setId(generateId());
+        entity.setRoleCode("ROLE_TEST");
+        entity.setRoleName("测试角色");
+        entity.setRoleStatus(1);
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建系统部门
+     */
+    public static SysDept createSysDept() {
+        SysDept entity = new SysDept();
+        entity.setId(generateId());
+        entity.setDeptCode("DEPT001");
+        entity.setDeptName("测试部门");
+        entity.setParentId(0L);
+        entity.setDeptStatus(1);
+        entity.setSort(1);
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建系统菜单
+     */
+    public static SysMenu createSysMenu() {
+        SysMenu entity = new SysMenu();
+        entity.setId(generateId());
+        entity.setMenuCode("MENU001");
+        entity.setMenuName("测试菜单");
+        entity.setMenuType(1);
+        entity.setParentId(0L);
+        entity.setMenuPath("/test");
+        entity.setMenuIcon("icon");
+        entity.setMenuStatus(1);
+        entity.setSort(1);
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建数据归档记录
+     */
+    public static DataArchive createDataArchive() {
+        DataArchive entity = new DataArchive();
+        entity.setId(generateId());
+        entity.setArchiveNo(generateCode("ARC"));
+        entity.setArchiveName("测试归档");
+        entity.setArchiveType("EXPENSE");
+        entity.setArchiveStatus(0);
+        entity.setArchiveYear(LocalDate.now().getYear());
+        entity.setArchiveMonth(LocalDate.now().getMonthValue());
+        entity.setRecordCount(100);
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setCreateBy("admin");
+        entity.setUpdateBy("admin");
+        entity.setDelFlag(0);
+        return entity;
+    }
+
+    /**
+     * 创建系统日志
+     */
+    public static SysLog createSysLog() {
+        SysLog entity = new SysLog();
+        entity.setId(generateId());
+        entity.setLogType("OPERATION");
+        entity.setLogTitle("测试操作");
+        entity.setOperationType("CREATE");
+        entity.setRequestMethod("POST");
+        entity.setRequestUrl("/api/test");
+        entity.setRequestParams("{}");
+        entity.setResponseData("{}");
+        entity.setUserId(1L);
+        entity.setUsername("testuser");
+        entity.setIpAddress("127.0.0.1");
+        entity.setExecuteTime(100);
+        entity.setCreateTime(LocalDateTime.now());
+        return entity;
+    }
+
+    // ==================== 批量创建方法 ====================
+
+    /**
+     * 批量创建费用申请
+     */
+    public static List List<ExpenseApplyMain> createExpenseApplyMainList(int count) {
+        List List<ExpenseApplyMain> list = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            list.add(createExpenseApplyMain());
+        }
+        return list;
+    }
+
+    /**
+     * 批量创建用户
+     */
+    public static List List<SysUser> createSysUserList(int count) {
+        List List<SysUser> list = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            SysUser user = createSysUser();
+            user.setUserName("测试用户" + (i + 1));
+            user.setLoginName("testuser" + (i + 1));
+            list.add(user);
+        }
+        return list;
+    }
+
+    /**
+     * 重置ID计数器（用于测试隔离）
+     */
+    public static void resetIdCounter() {
+        idCounter = 1L;
+    }
+}

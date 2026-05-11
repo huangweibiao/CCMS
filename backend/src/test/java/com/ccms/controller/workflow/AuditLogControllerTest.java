@@ -27,9 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AuditLogController.class)
 class AuditLogControllerTest extends ControllerTestBase {
 
-    @MockBean
-    private AuditLogService auditLogService;
-
     private AuditLog createTestAuditLog(Long id, String module, String operation) {
         AuditLog log = new AuditLog();
         log.setId(id);

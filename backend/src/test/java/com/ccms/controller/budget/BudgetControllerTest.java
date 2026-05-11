@@ -264,5 +264,136 @@ class BudgetControllerTest extends ControllerTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("预算预警设置成功"));
     }
+
+    /**
+     * Task 13.1: 添加预算执行率计算测试
+     */
+
+    @Test
+    void shouldCalculateBudgetExecutionRate() throws Exception {
+        // given
+        BudgetService.BudgetExecution execution = new BudgetService.BudgetExecution(
+                new BigDecimal("100000.00"),
+                new BigDecimal("30000.00"),
+                new BigDecimal("30.00")
+        );
+
+        when(budgetService.checkPermission(anyString(), eq("budget:view"))).thenReturn(true);
+        when(budgetService.getBudgetExecution(1L)).thenReturn(execution);
+
+        // when & then
+        performGet("/api/budgets/1/execution")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.budgetAmount").value(100000.00))
+                .andExpect(jsonPath("$.usedAmount").value(30000.00))
+                .andExpect(jsonPath("$.executionRate").value(30.00));
+    }
+
+    @Test
+    void shouldHandleZeroBudgetInExecutionRate() throws Exception {
+        // given
+        BudgetService.BudgetExecution execution = new BudgetService.BudgetExecution(
+                new BigDecimal("0.00"),
+                new BigDecimal("0.00"),
+                new BigDecimal("0.00")
+        );
+
+        when(budgetService.checkPermission(anyString(), eq("budget:view"))).thenReturn(true);
+        when(budgetService.getBudgetExecution(1L)).thenReturn(execution);
+
+        // when & then
+        performGet("/api/budgets/1/execution")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.executionRate").value(0.00));
+    }
+
+    /**
+     * Task 13.2: 添加预算偏差分析测试
+     */
+
+    @Test
+    void shouldAnalyzeBudgetVariance() throws Exception {
+        // given
+        BudgetService.BudgetExecution execution = new BudgetService.BudgetExecution(
+                new BigDecimal("100000.00"),
+                new BigDecimal("120000.00"),
+                new BigDecimal("120.00")
+        );
+
+        when(budgetService.checkPermission(anyString(), eq("budget:statistics"))).thenReturn(true);
+        when(budgetService.getBudgetExecution(1L)).thenReturn(execution);
+
+        // when & then
+        performGet("/api/budgets/1/execution")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.budgetAmount").value(100000.00))
+                .andExpect(jsonPath("$.usedAmount").value(120000.00))
+                .andExpect(jsonPath("$.executionRate").value(120.00));
+    }
+
+    @Test
+    void shouldAnalyzeFavorableBudgetVariance() throws Exception {
+        // given
+        BudgetService.BudgetExecution execution = new BudgetService.BudgetExecution(
+                new BigDecimal("100000.00"),
+                new BigDecimal("80000.00"),
+                new BigDecimal("80.00")
+        );
+
+        when(budgetService.checkPermission(anyString(), eq("budget:statistics"))).thenReturn(true);
+        when(budgetService.getBudgetExecution(1L)).thenReturn(execution);
+
+        // when & then
+        performGet("/api/budgets/1/execution")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.executionRate").value(80.00));
+    }
+
+    /**
+     * Task 13.3: 添加预算趋势分析测试
+     */
+
+    @Test
+    void shouldAnalyzeBudgetTrendByYear() throws Exception {
+        // given
+        BudgetService.BudgetStatistics statistics = new BudgetService.BudgetStatistics(
+                new BigDecimal("500000.00"),
+                new BigDecimal("150000.00"),
+                new BigDecimal("350000.00"),
+                new BigDecimal("30.00")
+        );
+
+        when(budgetService.checkPermission(anyString(), eq("budget:statistics"))).thenReturn(true);
+        when(budgetService.getAnnualBudgetStatistics(2025)).thenReturn(statistics);
+
+        // when & then
+        performGet("/api/budgets/statistics/annual?year=2025")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalBudget").value(500000.00));
+    }
+
+    /**
+     * Task 13.4: 添加预算对比报表数据准确性测试
+     */
+
+    @Test
+    void shouldCompareBudgetVsActualByDepartment() throws Exception {
+        // given
+        Map<String, Object> statistics = new HashMap<>();
+        statistics.put("deptId", 1L);
+        statistics.put("year", 2025);
+        statistics.put("totalBudget", 100000.00);
+        statistics.put("totalUsed", 95000.00);
+        statistics.put("variance", -5000.00);
+
+        when(budgetService.checkPermission(anyString(), eq("budget:statistics"))).thenReturn(true);
+        when(budgetService.getDepartmentBudgetStatistics(1L, 2025)).thenReturn(statistics);
+
+        // when & then
+        performGet("/api/budgets/statistics/department?deptId=1&year=2025")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalBudget").value(100000.00))
+                .andExpect(jsonPath("$.totalUsed").value(95000.00));
+    }
 }
 

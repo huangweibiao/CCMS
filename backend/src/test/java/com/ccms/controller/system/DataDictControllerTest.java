@@ -144,4 +144,145 @@ class DataDictControllerTest extends ControllerTestBase {
         performPost("/api/system/dict/reload-cache")
                 .andExpect(status().isOk());
     }
+
+    /**
+     * Task 11.1: 添加字典项缓存失效测试
+     */
+
+    @Test
+    void shouldInvalidateDictCache() throws Exception {
+        // given
+        DataDict dict = createTestDict(1L, "STATUS", "ACTIVE", "启用");
+        when(dataDictService.saveDict(any(DataDict.class))).thenReturn(dict);
+        doNothing().when(dataDictService).reloadDictCache();
+
+        // when & then
+        performPut("/api/system/dict/1", dict)
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldInvalidateDictCacheAfterDelete() throws Exception {
+        // given
+        doNothing().when(dataDictService).deleteDict(1L);
+        doNothing().when(dataDictService).reloadDictCache();
+
+        // when & then
+        performDelete("/api/system/dict/1")
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * Task 11.3: 添加字典项数据验证测试
+     */
+
+    @Test
+    void shouldValidateEmptyDictCode() throws Exception {
+        // given
+        DataDict dict = createTestDict(1L, "STATUS", "", "启用");
+        when(dataDictService.saveDict(any(DataDict.class))).thenThrow(new IllegalArgumentException("字典编码不能为空"));
+
+        // when & then
+        performPost("/api/system/dict", dict)
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldValidateDuplicateDictCode() throws Exception {
+        // given
+        DataDict dict = createTestDict(1L, "STATUS", "ACTIVE", "启用");
+        when(dataDictService.dictExists("STATUS", "ACTIVE")).thenReturn(true);
+
+        // when & then
+        performPost("/api/system/dict", dict)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.exists").value(true));
+    }
+
+    @Test
+    void shouldValidateEmptyDictName() throws Exception {
+        // given
+        DataDict dict = createTestDict(1L, "STATUS", "CODE", "");
+        when(dataDictService.saveDict(any(DataDict.class))).thenThrow(new IllegalArgumentException("字典名称不能为空"));
+
+        // when & then
+        performPost("/api/system/dict", dict)
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Task 11.4: 添加字典项父子关系测试
+     */
+
+    @Test
+    void shouldReturnDictTreeWithChildren() throws Exception {
+        // given
+        DataDict parent = createTestDict(1L, "EXPENSE_TYPE", "OFFICE", "办公费用");
+        
+        DataDict child1 = createTestDict(2L, "EXPENSE_TYPE", "SUPPLIES", "办公用品");
+        
+        DataDict child2 = createTestDict(3L, "EXPENSE_TYPE", "PRINT", "打印费");
+        
+        List<DataDict> allDicts = Arrays.asList(parent, child1, child2);
+        when(dataDictService.getDictTree("EXPENSE_TYPE")).thenReturn(allDicts);
+
+        // when & then
+        performGet("/api/system/dict/type/EXPENSE_TYPE/tree")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)));
+    }
+
+    @Test
+    void shouldGetDictChildren() throws Exception {
+        // given
+        DataDict child1 = createTestDict(2L, "EXPENSE_TYPE", "SUPPLIES", "办公用品");
+        
+        DataDict child2 = createTestDict(3L, "EXPENSE_TYPE", "PRINT", "打印费");
+        
+        when(dataDictService.getDictsByType("EXPENSE_TYPE")).thenReturn(Arrays.asList(child1, child2));
+
+        // when & then
+        performGet("/api/system/dict/type/EXPENSE_TYPE")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    /**
+     * Task 11.5: 添加字典项排序功能测试
+     */
+
+    @Test
+    void shouldReturnDictsInOrder() throws Exception {
+        // given
+        DataDict dict1 = createTestDict(1L, "STATUS", "ACTIVE", "启用");
+        dict1.setSortOrder(1);
+        
+        DataDict dict2 = createTestDict(2L, "STATUS", "INACTIVE", "禁用");
+        dict2.setSortOrder(2);
+        
+        DataDict dict3 = createTestDict(3L, "STATUS", "PENDING", "待处理");
+        dict3.setSortOrder(3);
+        
+        when(dataDictService.getDictsByType("STATUS")).thenReturn(Arrays.asList(dict1, dict2, dict3));
+
+        // when & then
+        performGet("/api/system/dict/type/STATUS")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].sortOrder").value(1))
+                .andExpect(jsonPath("$[1].sortOrder").value(2))
+                .andExpect(jsonPath("$[2].sortOrder").value(3));
+    }
+
+    @Test
+    void shouldUpdateDictSortOrder() throws Exception {
+        // given
+        DataDict dict = createTestDict(1L, "STATUS", "ACTIVE", "启用");
+        dict.setSortOrder(5);
+        when(dataDictService.saveDict(any(DataDict.class))).thenReturn(dict);
+
+        // when & then
+        performPut("/api/system/dict/1", dict)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sortOrder").value(5));
+    }
 }
