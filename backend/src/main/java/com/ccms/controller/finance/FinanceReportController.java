@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public class FinanceReportController {
                     startDate, endDate, departmentId);
 
             if (result.isSuccess()) {
-                return ApiResponse.success("费用统计报表生成成功");
+                return ApiResponse.success(null, "费用统计报表生成成功");
             } else {
                 return ApiResponse.error(result.getMessage());
             }
@@ -60,7 +61,7 @@ public class FinanceReportController {
                     startDate, endDate, departmentId);
 
             if (result.isSuccess()) {
-                return ApiResponse.success("支付统计报表生成成功");
+                return ApiResponse.success(null, "支付统计报表生成成功");
             } else {
                 return ApiResponse.error(result.getMessage());
             }
@@ -83,7 +84,7 @@ public class FinanceReportController {
                     startDate, endDate, departmentId);
 
             if (result.isSuccess()) {
-                return ApiResponse.success("部门费用分析报表生成成功");
+                return ApiResponse.success(null, "部门费用分析报表生成成功");
             } else {
                 return ApiResponse.error(result.getMessage());
             }
@@ -103,7 +104,7 @@ public class FinanceReportController {
             FinanceReportService.ReportGenerationResult result = reportService.generateAccountBalanceReport(accountDate);
 
             if (result.isSuccess()) {
-                return ApiResponse.success("科目余额分析报表生成成功");
+                return ApiResponse.success(null, "科目余额分析报表生成成功");
             } else {
                 return ApiResponse.error(result.getMessage());
             }
@@ -126,7 +127,7 @@ public class FinanceReportController {
                     startDate, endDate, departmentId);
 
             if (result.isSuccess()) {
-                return ApiResponse.success("现金流报表生成成功");
+                return ApiResponse.success(null, "现金流报表生成成功");
             } else {
                 return ApiResponse.error(result.getMessage());
             }
@@ -142,7 +143,7 @@ public class FinanceReportController {
     public ApiResponse<Object> getReportById(@PathVariable Long id) {
         try {
             FinanceReport report = reportService.getReportById(id);
-            return ApiResponse.success("查询报表成功", report);
+            return ApiResponse.success(report, "查询报表成功");
         } catch (Exception e) {
             return ApiResponse.error("查询报表失败: " + e.getMessage());
         }
@@ -166,7 +167,7 @@ public class FinanceReportController {
             Map<String, Object> result = reportService.getReportList(
                     reportType, reportPeriod, startDate, endDate, departmentId, approvalStatus, page, size);
 
-            return ApiResponse.success("查询报表列表成功", result);
+            return ApiResponse.success(result, "查询报表列表成功");
         } catch (Exception e) {
             return ApiResponse.error("查询报表列表失败: " + e.getMessage());
         }
@@ -185,7 +186,7 @@ public class FinanceReportController {
             FinanceReportService.ReportGenerationResult result = reportService.approveReport(id, approve, comment);
 
             if (result.isSuccess()) {
-                return ApiResponse.success("报表审核成功");
+                return ApiResponse.success(null, "报表审核成功");
             } else {
                 return ApiResponse.error(result.getMessage());
             }
@@ -206,7 +207,7 @@ public class FinanceReportController {
             FinanceReportService.ReportGenerationResult result = reportService.exportReport(id, exportType);
 
             if (result.isSuccess()) {
-                return ApiResponse.success("报表导出成功", result.getReportFilePath());
+                return ApiResponse.success(result.getReportFilePath(), "报表导出成功");
             } else {
                 return ApiResponse.error(result.getMessage());
             }
@@ -227,7 +228,7 @@ public class FinanceReportController {
         try {
             Map<String, Object> result = reportService.getReportStatistics(startDate, endDate, reportType);
 
-            return ApiResponse.success("获取报表统计信息成功", result);
+            return ApiResponse.success(result, "获取报表统计信息成功");
         } catch (Exception e) {
             return ApiResponse.error("获取报表统计信息失败: " + e.getMessage());
         }
@@ -244,7 +245,7 @@ public class FinanceReportController {
                 types.put(type.getCode().toString(), type.getName());
             }
 
-            return ApiResponse.success("获取报表类型选项成功", types);
+            return ApiResponse.success(types, "获取报表类型选项成功");
         } catch (Exception e) {
             return ApiResponse.error("获取报表类型选项失败: " + e.getMessage());
         }
@@ -261,7 +262,7 @@ public class FinanceReportController {
                 periods.put(period.getCode().toString(), period.getName());
             }
 
-            return ApiResponse.success("获取报表周期选项成功", periods);
+            return ApiResponse.success(periods, "获取报表周期选项成功");
         } catch (Exception e) {
             return ApiResponse.error("获取报表周期选项失败: " + e.getMessage());
         }
@@ -281,7 +282,7 @@ public class FinanceReportController {
                 "4", "已删除"
             );
 
-            return ApiResponse.success("获取报表状态选项成功", options);
+            return ApiResponse.success(options, "获取报表状态选项成功");
         } catch (Exception e) {
             return ApiResponse.error("获取报表状态选项失败: " + e.getMessage());
         }
@@ -302,7 +303,7 @@ public class FinanceReportController {
             result.put("exportType", exportType);
             result.put("totalCount", reportIds.size());
 
-            return ApiResponse.success("批量报表导出成功", result);
+            return ApiResponse.success(result, "批量报表导出成功");
         } catch (Exception e) {
             return ApiResponse.error("批量报表导出失败: " + e.getMessage());
         }

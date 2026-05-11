@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,10 +92,11 @@ public class FinanceReportService {
      * 生成支付统计报表
      * @param startDate 开始日期
      * @param endDate 结束日期
+     * @param departmentId 部门ID（可选）
      * @return 报表生成结果
      */
     @Transactional
-    public ReportGenerationResult generatePaymentReport(LocalDate startDate, LocalDate endDate) {
+    public ReportGenerationResult generatePaymentReport(LocalDate startDate, LocalDate endDate, Long departmentId) {
         try {
             FinanceReport report = new FinanceReport();
             report.setReportName(generateReportName("支付统计报表", startDate, endDate));
@@ -184,10 +186,11 @@ public class FinanceReportService {
      * 生成现金流报表
      * @param startDate 开始日期
      * @param endDate 结束日期
+     * @param departmentId 部门ID（可选）
      * @return 报表生成结果
      */
     @Transactional
-    public ReportGenerationResult generateCashFlowReport(LocalDate startDate, LocalDate endDate) {
+    public ReportGenerationResult generateCashFlowReport(LocalDate startDate, LocalDate endDate, Long departmentId) {
         try {
             FinanceReport report = new FinanceReport();
             report.setReportName("现金流报表");
@@ -223,7 +226,7 @@ public class FinanceReportService {
      * 查询报表列表
      */
     public Map<String, Object> getReportList(FinanceReportType reportType, FinanceReportPeriod reportPeriod,
-                                          LocalDate startDate, LocalDate endDate, Long departmentId, Integer page, Integer size) {
+                                          LocalDate startDate, LocalDate endDate, Long departmentId, Integer approvalStatus, Integer page, Integer size) {
         Map<String, Object> result = new HashMap<>();
 
         List<FinanceReport> reports = new java.util.ArrayList<>();
@@ -308,6 +311,27 @@ public class FinanceReportService {
 
         } catch (Exception e) {
             return new ReportGenerationResult(false, "报表导出失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取报表统计信息
+     */
+    public Map<String, Object> getReportStatistics(LocalDate startDate, LocalDate endDate, FinanceReportType reportType) {
+        Map<String, Object> statistics = new HashMap<>();
+        
+        try {
+            // TODO: 实现实际的统计逻辑
+            statistics.put("reportCount", 0);
+            statistics.put("totalGenerated", 0);
+            statistics.put("generatedToday", 0);
+            statistics.put("pendingApproval", 0);
+            statistics.put("approved", 0);
+            
+            return statistics;
+            
+        } catch (Exception e) {
+            throw new RuntimeException("获取报表统计信息失败: " + e.getMessage());
         }
     }
 

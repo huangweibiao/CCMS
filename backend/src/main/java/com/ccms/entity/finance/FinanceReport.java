@@ -187,4 +187,83 @@ public class FinanceReport extends BaseEntity {
      */
     @Column(name = "update_by", nullable = false)
     private Long updateBy;
+
+    // Getter and Setter methods
+    public Long getReportId() { return reportId; }
+    public void setReportId(Long reportId) { this.reportId = reportId; }
+
+    public String getReportName() { return reportName; }
+    public void setReportName(String reportName) { this.reportName = reportName; }
+
+    public FinanceReportType getReportType() { return reportType; }
+    public void setReportType(FinanceReportType reportType) { this.reportType = reportType; }
+
+    public FinanceReportPeriod getReportPeriod() { return reportPeriod; }
+    public void setReportPeriod(FinanceReportPeriod reportPeriod) { this.reportPeriod = reportPeriod; }
+
+    public LocalDate getReportDate() { return reportDate; }
+    public void setReportDate(LocalDate reportDate) { this.reportDate = reportDate; }
+
+    public LocalDate getStartDate() { return startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+
+    public Long getDepartmentId() { return departmentId; }
+    public void setDepartmentId(Long departmentId) { this.departmentId = departmentId; }
+
+    public String getDepartmentName() { return departmentName; }
+    public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
+
+    public Long getApplicantId() { return applicantId; }
+    public void setApplicantId(Long applicantId) { this.applicantId = applicantId; }
+
+    public String getApplicantName() { return applicantName; }
+    public void setApplicantName(String applicantName) { this.applicantName = applicantName; }
+
+    public Integer getApprovalStatus() { return approvalStatus; }
+    public void setApprovalStatus(Integer approvalStatus) { this.approvalStatus = approvalStatus; }
+
+    public Long getApprovalUserId() { return approvalUserId; }
+    public void setApprovalUserId(Long approvalUserId) { this.approvalUserId = approvalUserId; }
+
+    public String getApprovalUserName() { return approvalUserName; }
+    public void setApprovalUserName(String approvalUserName) { this.approvalUserName = approvalUserName; }
+
+    public LocalDateTime getApprovalTime() { return approvalTime; }
+    public void setApprovalTime(LocalDateTime approvalTime) { this.approvalTime = approvalTime; }
+
+    public String getApprovalComment() { return approvalComment; }
+    public void setApprovalComment(String approvalComment) { this.approvalComment = approvalComment; }
+
+    public String getReportData() { return reportData; }
+    public void setReportData(String reportData) { this.reportData = reportData; }
+
+    public String getReportFilePath() { return reportFilePath; }
+    public void setReportFilePath(String reportFilePath) { this.reportFilePath = reportFilePath; }
+
+    public Integer getGenerationStatus() { return generationStatus; }
+    public void setGenerationStatus(Integer generationStatus) { this.generationStatus = generationStatus; }
+
+    public Integer getDownloadCount() { return downloadCount; }
+    public void setDownloadCount(Integer downloadCount) { this.downloadCount = downloadCount; }
+
+    public Boolean getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
+
+    public String getRemark() { return remark; }
+    public void setRemark(String remark) { this.remark = remark; }
+
+    public LocalDateTime getCreateTime() { return createTime; }
+    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
+
+    public LocalDateTime getUpdateTime() { return updateTime; }
+    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
+
+    public Long getCreateBy() { return createBy; }
+    public void setCreateBy(Long createBy) { this.createBy = createBy; }
+
+    public Long getUpdateBy() { return updateBy; }
+    public void setUpdateBy(Long updateBy) { this.updateBy = updateBy; }
 }

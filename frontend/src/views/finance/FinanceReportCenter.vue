@@ -182,7 +182,6 @@
           </div>
         </div>
       </div>
-      </div>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="closeReportDetail">关闭</el-button>
@@ -676,8 +675,8 @@ export default {
     }
     
     &.active {
-      background: linear-gradient(135deg, #409eff 0%, #36a3f 100%);
-      border-color: #36a3f;
+      background: linear-gradient(135deg, #409eff 0%, #36a3ff 100%);
+      border-color: #36a3ff;
     }
   }
   
@@ -689,7 +688,7 @@ export default {
     align-items: center;
     justify-content: center;
     margin: 0 auto 15px;
-    background: linear-gradient(135deg, #409eff 0%, #36a3f 100%);
+    background: linear-gradient(135deg, #409eff 0%, #36a3ff 100%);
     color: #ffffff;
   }
   

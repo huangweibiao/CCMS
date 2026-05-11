@@ -3,6 +3,8 @@ package com.ccms.repository.finance;
 import com.ccms.entity.finance.FinancePayment;
 import com.ccms.entity.finance.FinancePaymentMethod;
 import com.ccms.repository.BaseRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,6 +28,14 @@ public interface FinancePaymentRepository extends BaseRepository<FinancePayment,
     /**
      * 根据业务类型查询支付单据
      * @param businessType 业务类型
+     * @param pageable 分页信息
+     * @return 支付单据分页列表
+     */
+    Page<FinancePayment> findByBusinessType(String businessType, Pageable pageable);
+
+    /**
+     * 根据业务类型查询支付单据
+     * @param businessType 业务类型
      * @return 支付单据列表
      */
     List<FinancePayment> findByBusinessType(String businessType);
@@ -38,12 +48,29 @@ public interface FinancePaymentRepository extends BaseRepository<FinancePayment,
     FinancePayment findByBusinessId(Long businessId);
 
     /**
+     * 根据业务单据编号查询支付单据（分页）
+     * @param businessNo 业务单据编号
+     * @param pageable 分页信息
+     * @return 支付单据分页信息
+     */
+    @Query("SELECT p FROM FinancePayment p WHERE p.businessNo LIKE %:businessNo%")
+    Page<FinancePayment> findByBusinessNoLike(@Param("businessNo") String businessNo, Pageable pageable);
+
+    /**
      * 根据业务单据编号查询支付单据
      * @param businessNo 业务单据编号
      * @return 支付单据信息
      */
     @Query("SELECT p FROM FinancePayment p WHERE p.businessNo LIKE %:businessNo%")
     FinancePayment findByBusinessNoLike(@Param("businessNo") String businessNo);
+
+    /**
+     * 根据支付状态查询支付单据（分页）
+     * @param paymentStatus 支付状态
+     * @param pageable 分页信息
+     * @return 支付单据分页列表
+     */
+    Page<FinancePayment> findByPaymentStatus(Integer paymentStatus, Pageable pageable);
 
     /**
      * 根据支付状态查询支付单据
@@ -72,6 +99,16 @@ public interface FinancePaymentRepository extends BaseRepository<FinancePayment,
      * @return 支付单据列表
      */
     List<FinancePayment> findByApplyEmployeeId(Long applyEmployeeId);
+
+    /**
+     * 根据支付日期范围查询支付单据（分页）
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     * @param pageable 分页信息
+     * @return 支付单据分页列表
+     */
+    @Query("SELECT p FROM FinancePayment p WHERE p.paymentDate BETWEEN :startDate AND :endDate")
+    Page<FinancePayment> findByPaymentDateBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, Pageable pageable);
 
     /**
      * 根据支付日期范围查询支付单据

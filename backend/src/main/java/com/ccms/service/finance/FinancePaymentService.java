@@ -56,16 +56,20 @@ public class FinancePaymentService {
     }
 
     /**
-     * 创建财务支付单据
+     * 创建支付单据
      * @param businessType 业务类型
      * @param businessId 业务单据ID
      * @param businessNo 业务单据编号
      * @param amount 支付金额
+     * @param paymentMethod 支付方式
+     * @param paymentReason 支付原因
+     * @param paymentReasonDetail 支付原因详情
      * @return 支付单据信息
      */
     @Transactional
     public PaymentGenerationResult createPayment(String businessType, Long businessId, String businessNo,
-                                                        BigDecimal amount, String paymentMethod) {
+                                                        BigDecimal amount, String paymentMethod, 
+                                                        String paymentReason, String paymentReasonDetail) {
         try {
             FinancePayment payment = new FinancePayment();
             payment.setPaymentNo(generatePaymentNo(businessType));
@@ -78,6 +82,12 @@ public class FinancePaymentService {
             payment.setApplyEmployeeName(getCurrentUserName());
             payment.setAmount(amount);
             payment.setPaymentMethod(FinancePaymentMethod.valueOf(paymentMethod));
+            if (paymentReason != null) {
+                payment.setPaymentReason(paymentReason);
+            }
+            if (paymentReasonDetail != null) {
+                payment.setPaymentReasonDetail(paymentReasonDetail);
+            }
             payment.setPaymentDate(LocalDate.now());
             payment.setPaymentStatus(1); // 待审批
             payment.setAccountingStatus(0); // 未核算
@@ -180,7 +190,6 @@ public class FinancePaymentService {
     private String getCurrentDepartmentName() {
         return "财务部";
     }
-}
 
     /**
      * 查询支付单据列表
@@ -363,5 +372,16 @@ public class FinancePaymentService {
      */
     private String getCurrentDepartmentName() {
         return "财务部"; // 暂时返回固定名称，实际应从系统配置获取
+    }
+
+    /**
+     * 根据支付单编号查询支付单据
+     */
+    public FinancePayment getPaymentByNo(String paymentNo) {
+        FinancePayment payment = paymentRepository.findByPaymentNo(paymentNo);
+        if (payment == null) {
+            throw new RuntimeException("支付单据不存在: " + paymentNo);
+        }
+        return payment;
     }
 }
