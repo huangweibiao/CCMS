@@ -163,33 +163,7 @@ public class FinancePaymentService {
         return result;
     }
 
-    /**
-     * 生成支付编号
-     */
-    private String generatePaymentNo(String businessType) {
-        return businessType.toUpperCase() + "-" + System.currentTimeMillis() % 10000;
-    }
 
-    /**
-     * 获取当前用户ID
-     */
-    private Long getCurrentUserId() {
-        return 1L;
-    }
-
-    /**
-     * 获取当前用户名
-     */
-    private String getCurrentUserName() {
-        return "系统管理员";
-    }
-
-    /**
-     * 获取当前部门名称
-     */
-    private String getCurrentDepartmentName() {
-        return "财务部";
-    }
 
     /**
      * 查询支付单据列表
