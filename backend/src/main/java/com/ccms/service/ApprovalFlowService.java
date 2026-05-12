@@ -8,6 +8,8 @@ import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.BusinessType;
+import com.ccms.enums.BusinessTypeEnum;
+import com.ccms.enums.PriorityTypeEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -219,6 +221,87 @@ public interface ApprovalFlowService {
      * 催办审批任务
      */
     void remindApprovalTask(Long instanceId, Long approverId);
+    
+    // 流程配置管理方法
+    /**
+     * 创建审批流程配置
+     */
+    ApprovalFlowConfig createApprovalFlowConfig(String flowName, String flowCode, BusinessTypeEnum businessType, String description, PriorityTypeEnum priority);
+
+    /**
+     * 更新审批流程配置
+     */
+    ApprovalFlowConfig updateApprovalFlowConfig(Long id, String flowName, String description, PriorityTypeEnum priority, Boolean enabled);
+
+    /**
+     * 获取审批流程配置详情
+     */
+    ApprovalFlowConfig getApprovalFlowConfig(Long id);
+
+    /**
+     * 删除审批流程配置
+     */
+    void deleteApprovalFlowConfig(Long id);
+
+    /**
+     * 启用/禁用流程配置
+     */
+    void toggleApprovalFlowConfig(Long id, boolean enabled);
+
+    /**
+     * 分页查询审批流程配置
+     */
+    Page<ApprovalFlowConfig> getApprovalFlowConfigs(BusinessTypeEnum businessType, String keyword, Boolean enabled, Pageable pageable);
+
+    /**
+     * 根据业务类型获取流程配置
+     */
+    List<ApprovalFlowConfig> getApprovalFlowConfigsByBusinessType(BusinessTypeEnum businessType);
+
+    /**
+     * 获取最新的流程配置
+     */
+    List<ApprovalFlowConfig> getLatestFlowConfigs();
+
+    /**
+     * 创建流程配置版本
+     */
+    ApprovalFlowConfig createFlowConfigVersion(Long sourceConfigId, String versionName, String description, PriorityTypeEnum priority);
+
+    /**
+     * 复制流程配置
+     */
+    ApprovalFlowConfig copyApprovalFlowConfig(Long sourceConfigId, String newFlowName, String newFlowCode);
+
+    /**
+     * 导入流程配置
+     */
+    ApprovalFlowConfig importApprovalFlowConfig(String flowName, String flowCode, BusinessTypeEnum businessType, String description, PriorityTypeEnum priority);
+
+    /**
+     * 导出流程配置
+     */
+    String exportApprovalFlowConfig(Long id);
+
+    /**
+     * 获取审批节点列表
+     */
+    List<ApprovalNode> getApprovalNodesByFlowConfig(Long configId);
+
+    /**
+     * 验证流程配置
+     */
+    boolean validateApprovalFlowConfig(Long configId);
+
+    /**
+     * 匹配适用的流程配置
+     */
+    ApprovalFlowConfig matchApprovalFlowConfig(BusinessTypeEnum businessType, Double amount, PriorityTypeEnum priority);
+
+    /**
+     * 获取默认流程配置
+     */
+    ApprovalFlowConfig getDefaultFlowConfig(BusinessTypeEnum businessType);
 
     // 统计数据结构定义
     class ApprovalStatistics {

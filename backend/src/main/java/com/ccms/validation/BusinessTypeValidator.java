@@ -2,8 +2,8 @@ package com.ccms.validation;
 
 import com.ccms.enums.BusinessType;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * 业务类型验证器实现

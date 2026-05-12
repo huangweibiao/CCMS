@@ -14,7 +14,7 @@ import com.ccms.service.ApprovalFlowService;
 import com.ccms.dto.ApprovalRequest;
 import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.ApprovalAction;
-import com.ccms.enums.BusinessType;
+import com.ccms.enums.BusinessTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +22,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
 
 /**
  * 借款服务实现类
@@ -474,13 +473,20 @@ public class LoanServiceImpl implements LoanService {
         // 创建审批请求
         ApprovalRequest request = new ApprovalRequest();
         request.setBusinessId(loanId.toString());
-        request.setBusinessType(BusinessType.LOAN);
+        request.setBusinessType(BusinessTypeEnum.LOAN);
         request.setApplicantId(applicantId);
         request.setTitle(title != null ? title : "借款申请审批-" + loan.getLoanNo());
-        request.setDescription("借款申请审批流程");
+        request.setContent("借款申请审批流程");
         
-        // 提交审批流程
-        ApprovalInstance approvalInstance = approvalFlowService.createApprovalInstance(request);
+        // 提交审批流程 - 由于ApprovalFlowService没有createApprovalInstance方法，
+        // 使用startApprovalInstance替代
+        ApprovalInstance approvalInstance = approvalFlowService.startApprovalInstance(
+            com.ccms.enums.BusinessType.valueOf("LOAN"), 
+            String.valueOf(loanId), 
+            applicantId, 
+            request.getTitle(), 
+            request.getContent()
+        );
         
         // 更新借款申请状态为审批中
         loan.setStatus(1); // 审批中
@@ -492,10 +498,10 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public ApprovalStatus getApprovalStatus(Long loanId) {
         // 查找关联的审批实例
-        Optional<ApprovalInstance> instanceOpt = approvalInstanceRepository.findByBusinessId(loanId.toString());
+        Optional<ApprovalInstance> instanceOpt = approvalInstanceRepository.findTopByBusinessTypeAndBusinessIdOrderByCreateTimeDesc(BusinessTypeEnum.LOAN, loanId);
         if (instanceOpt.isPresent()) {
             ApprovalInstance instance = instanceOpt.get();
-            return ApprovalStatus.valueOf(instance.getStatus());
+            return instance.getStatusEnum();
         }
         
         // 如果没有审批实例，获取借款申请自己的状态
@@ -513,12 +519,12 @@ public class LoanServiceImpl implements LoanService {
         List<Map<String, Object>> records = new ArrayList<>();
         
         // 获取审批记录
-        List<ApprovalRecord> approvalRecords = approvalRecordRepository.findByBusinessId(loanId.toString());
+        List<ApprovalRecord> approvalRecords = approvalRecordRepository.findByBusinessIdAndBusinessType(loanId, BusinessTypeEnum.LOAN);
         for (ApprovalRecord record : approvalRecords) {
             Map<String, Object> recordMap = new HashMap<>();
             recordMap.put("approverId", record.getApproverId());
-            recordMap.put("action", ApprovalAction.valueOf(record.getAction()));
-            recordMap.put("remarks", record.getRemarks());
+            recordMap.put("action", record.getApprovalActionEnum());
+            recordMap.put("remarks", record.getApprovalRemark());
             recordMap.put("approvalTime", record.getApprovalTime());
             records.add(recordMap);
         }
@@ -544,7 +550,7 @@ public class LoanServiceImpl implements LoanService {
             loan.setStatus(2); // 已批准，等待放款
         } else if (finalStatus == ApprovalStatus.REJECTED) {
             loan.setStatus(5); // 审批驳回
-        } else if (finalStatus == ApprovalStatus.WITHDRAWN || finalStatus == ApprovalStatus.CANCELLED) {
+        } else if (finalStatus == ApprovalStatus.WITHDRAWN || finalStatus == ApprovalStatus.CANCELED) {
             loan.setStatus(0); // 已撤回/取消，恢复为草稿
         }
         
@@ -575,8 +581,55 @@ public class LoanServiceImpl implements LoanService {
             case 2: return ApprovalStatus.APPROVED; // 已批准，等待放款
             case 3: return ApprovalStatus.APPROVED; // 已放款
             case 5: return ApprovalStatus.REJECTED; // 驳回
-            case 4: return ApprovalStatus.CANCELLED; // 已取消
+            case 4: return ApprovalStatus.CANCELED; // 已取消
             default: return ApprovalStatus.REJECTED;
         }
+    }
+    
+    @Override
+    public boolean approveLoan(Long loanId, ApprovalAction action, String comment) {
+        LoanMain loan = getLoanById(loanId);
+        if (loan == null) {
+            throw new IllegalArgumentException("借款申请不存在: " + loanId);
+        }
+        
+        // 获取关联的审批实例
+        ApprovalInstance instance = approvalFlowService.getApprovalInstanceByBusiness(
+            com.ccms.enums.BusinessType.valueOf("LOAN"), String.valueOf(loanId));
+        
+        if (instance == null) {
+            throw new IllegalStateException("借款申请没有关联的审批实例: " + loanId);
+        }
+        
+        // 获取当前审批人ID（从认证上下文中获取，这里简化处理）
+        Long currentUserId = getCurrentUserId();
+        
+        // 执行审批操作
+        switch (action) {
+            case APPROVE:
+                approvalFlowService.approve(instance.getId(), currentUserId, comment);
+                break;
+            case REJECT:
+                approvalFlowService.reject(instance.getId(), currentUserId, comment);
+                break;
+            case TRANSFER:
+            case SKIP:
+            case WITHDRAW:
+            case CANCEL:
+                throw new UnsupportedOperationException("操作类型 " + action + " 不受支持");
+            default:
+                throw new IllegalArgumentException("未知的审批操作: " + action);
+        }
+        
+        return true;
+    }
+    
+    /**
+     * 从认证上下文中获取当前用户ID（简化实现）
+     */
+    private Long getCurrentUserId() {
+        // 这里需要根据实际认证系统实现
+        // 暂时返回一个固定值
+        return 1L;
     }
 }

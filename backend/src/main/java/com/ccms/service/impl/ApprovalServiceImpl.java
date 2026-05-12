@@ -6,6 +6,7 @@ import com.ccms.entity.approval.ApprovalNode;
 import com.ccms.repository.approval.ApprovalProcessRepository;
 import com.ccms.repository.approval.ApprovalRecordRepository;
 import com.ccms.repository.approval.ApprovalNodeRepository;
+
 import com.ccms.service.ApprovalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -119,8 +120,9 @@ public class ApprovalServiceImpl implements ApprovalService {
             process.setCurrentNode(process.getCurrentNode() + 1);
             
             // 更新下一节点状态为待处理
-            ApprovalNode nextNode = approvalNodeRepository.findByProcessIdAndNodeLevel(processId, process.getCurrentNode());
-            if (nextNode != null) {
+            List<ApprovalNode> nextNodes = approvalNodeRepository.findByProcessIdAndNodeLevel(processId, process.getCurrentNode());
+            if (!nextNodes.isEmpty()) {
+                ApprovalNode nextNode = nextNodes.get(0);
                 nextNode.setStatus(1); // 待处理
                 approvalNodeRepository.save(nextNode);
             }
@@ -197,7 +199,8 @@ public class ApprovalServiceImpl implements ApprovalService {
             return null;
         }
         
-        return approvalNodeRepository.findByProcessIdAndNodeLevel(processId, process.getCurrentNode() + 1);
+        List<ApprovalNode> nodes = approvalNodeRepository.findByProcessIdAndNodeLevel(processId, process.getCurrentNode() + 1);
+        return nodes.isEmpty() ? null : nodes.get(0);
     }
 
     @Override
@@ -240,8 +243,9 @@ public class ApprovalServiceImpl implements ApprovalService {
             process.setCurrentNode(process.getCurrentNode() + 1);
             
             // 更新下一节点状态
-            ApprovalNode nextNode = approvalNodeRepository.findByProcessIdAndNodeLevel(processId, process.getCurrentNode());
-            if (nextNode != null) {
+            List<ApprovalNode> nextNodes = approvalNodeRepository.findByProcessIdAndNodeLevel(processId, process.getCurrentNode());
+            if (!nextNodes.isEmpty()) {
+                ApprovalNode nextNode = nextNodes.get(0);
                 nextNode.setStatus(1); // 待处理
                 approvalNodeRepository.save(nextNode);
             }
@@ -273,19 +277,19 @@ public class ApprovalServiceImpl implements ApprovalService {
     }
 
     @Override
-    public ApprovalStatistics getApprovalStatistics(LocalDateTime startDate, LocalDateTime endDate) {
+    public ApprovalService.ApprovalStatistics getApprovalStatistics(LocalDateTime startDate, LocalDateTime endDate) {
         Long totalProcesses = approvalProcessRepository.countByDateRange(startDate, endDate);
         Long pendingProcesses = approvalProcessRepository.countByStatusAndDateRange(1, startDate, endDate);
         Long approvedProcesses = approvalProcessRepository.countByStatusAndDateRange(2, startDate, endDate);
         Long rejectedProcesses = approvalProcessRepository.countByStatusAndDateRange(3, startDate, endDate);
         Long expiredProcesses = approvalProcessRepository.countExpiredProcesses(endDate);
         
-        return new ApprovalStatistics(totalProcesses, pendingProcesses, 
+        return new ApprovalService.ApprovalStatistics(totalProcesses, pendingProcesses, 
                 approvedProcesses, rejectedProcesses, expiredProcesses);
     }
 
     @Override
-    public UserApprovalStatistics getUserApprovalStatistics(Long approverId, LocalDateTime startDate, LocalDateTime endDate) {
+    public ApprovalService.UserApprovalStatistics getUserApprovalStatistics(Long approverId, LocalDateTime startDate, LocalDateTime endDate) {
         Long totalAssignments = approvalNodeRepository.countByApproverIdAndDateRange(approverId, startDate, endDate);
         Long pendingAssignments = approvalNodeRepository.countPendingByApproverIdAndDateRange(approverId, startDate, endDate);
         Long approvedAssignments = approvalNodeRepository.countApprovedByApproverIdAndDateRange(approverId, startDate, endDate);
@@ -303,7 +307,7 @@ public class ApprovalServiceImpl implements ApprovalService {
                 .average()
                 .orElse(0);
         
-        return new UserApprovalStatistics(totalAssignments, pendingAssignments, 
+        return new ApprovalService.UserApprovalStatistics(totalAssignments, pendingAssignments, 
                 approvedAssignments, rejectedAssignments, averageProcessingTime);
     }
 
@@ -330,10 +334,12 @@ public class ApprovalServiceImpl implements ApprovalService {
         }
         
         // 查找当前用户负责的审批节点
-        ApprovalNode currentNode = approvalNodeRepository.findByProcessIdAndApproverId(processId, approverId);
-        if (currentNode == null || currentNode.getStatus() != 1) {
+        List<ApprovalNode> currentNodes = approvalNodeRepository.findByProcessIdAndApproverId(processId, approverId);
+        if (currentNodes.isEmpty() || currentNodes.get(0).getStatus() != 1) {
             throw new RuntimeException("当前用户没有待处理的审批任务");
         }
+        
+        ApprovalNode currentNode = currentNodes.get(0);
         
         // 创建委托记录并重新分配
         approvalRecordRepository.createDelegationRecord(currentNode.getId(), approverId, delegateToId, reason);

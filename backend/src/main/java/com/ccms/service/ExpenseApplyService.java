@@ -127,13 +127,13 @@ public interface ExpenseApplyService {
         private final ExpenseApplyService expenseApplyService;
         
         public ExpenseApplyApprovalService(ApprovalFlowService approvalFlowService, ExpenseApplyService expenseApplyService) {
-            super();
+            super(approvalFlowService);
             this.expenseApplyService = expenseApplyService;
         }
         
         @Override
         public BusinessType getBusinessType() {
-            return BusinessType.EXPENSE_APPLY;
+            return com.ccms.enums.BusinessType.EXPENSE_REIMBURSEMENT;
         }
         
         @Override
@@ -157,8 +157,8 @@ public interface ExpenseApplyService {
             ExpenseApplyMain apply = expenseApplyService.getExpenseApplyById(Long.parseLong(request.getBusinessId()));
             return Map.of(
                 "amount", apply.getTotalAmount(),
-                "userId", apply.getApplicantId(),
-                "deptId", apply.getDeptId(),
+                "userId", apply.getApplyUserId(),
+                "deptId", apply.getApplyDeptId(),
                 "applyType", apply.getApplyType()
             );
         }
@@ -171,7 +171,7 @@ public interface ExpenseApplyService {
         @Override
         protected ApprovalFlowConfig getDefaultFlowConfig() {
             // 返回费用申请默认流程配置
-            return approvalFlowService.getDefaultFlowConfig(BusinessType.EXPENSE_APPLY);
+            return approvalFlowService.getDefaultFlowConfig(BusinessType.EXPENSE_BUDGET);
         }
         
         @Override

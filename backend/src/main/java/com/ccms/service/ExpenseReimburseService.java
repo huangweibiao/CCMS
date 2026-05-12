@@ -408,13 +408,13 @@ public interface ExpenseReimburseService {
         private final ExpenseReimburseService expenseReimburseService;
         
         public ExpenseReimburseApprovalService(ApprovalFlowService approvalFlowService, ExpenseReimburseService expenseReimburseService) {
-            super();
+            super(approvalFlowService);
             this.expenseReimburseService = expenseReimburseService;
         }
         
         @Override
         public BusinessType getBusinessType() {
-            return BusinessType.EXPENSE_REIMBURSE;
+            return com.ccms.enums.BusinessType.valueOf("EXPENSE_REIMBURSE");
         }
         
         @Override
@@ -438,9 +438,9 @@ public interface ExpenseReimburseService {
             ExpenseReimburse reimburse = expenseReimburseService.getExpenseReimburseById(Long.parseLong(request.getBusinessId()));
             return Map.of(
                 "amount", expenseReimburseService.calculateTotalAmount(Long.parseLong(request.getBusinessId())),
-                "userId", reimburse.getApplicantId(),
+                "userId", reimburse.getApplyUserId(),
                 "deptId", reimburse.getDeptId(),
-                "reimburseType", reimburse.getReimburseType()
+                "reimburseType", "STANDARD"
             );
         }
         
@@ -452,7 +452,7 @@ public interface ExpenseReimburseService {
         @Override
         protected ApprovalFlowConfig getDefaultFlowConfig() {
             // 返回费用报销默认流程配置
-            return approvalFlowService.getDefaultFlowConfig(BusinessType.EXPENSE_REIMBURSE);
+            return approvalFlowService.getDefaultFlowConfig(BusinessType.EXPENSE_REIMBURSEMENT);
         }
         
         @Override

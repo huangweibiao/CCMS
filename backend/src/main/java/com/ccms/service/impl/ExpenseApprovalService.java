@@ -168,6 +168,35 @@ public class ExpenseApprovalService extends BaseApprovalService {
     }
     
     @Override
+    protected boolean preMatchFlowConfig(ApprovalRequest request, Map<String, Object> context) {
+        log.info("费用审批流程配置匹配前检查: 业务ID={}", request.getBusinessId());
+        
+        try {
+            // 检查紧急程度是否需要特殊流程
+            if (context.containsKey("urgentLevel") && "紧急".equals(context.get("urgentLevel"))) {
+                log.info("检测到紧急费用申请，使用紧急流程");
+                return true;
+            }
+            
+            // 检查是否需要特殊审批流程
+            if (request.getAmount() != null && request.getAmount().compareTo(new BigDecimal("5000")) > 0) {
+                log.info("检测到大额费用申请，需要特殊审批流程");
+                return true;
+            }
+            
+            // 检查是否月末，月末可能需要加急处理
+            if (isEndOfMonth()) {
+                log.info("月末期间，费用审批可能触发额外验证");
+            }
+            
+            return true;
+        } catch (Exception e) {
+            log.error("费用审批流程配置匹配前检查异常", e);
+            return false;
+        }
+    }
+    
+    @Override
     protected Long getCurrentUserId() {
         // TODO: 根据认证系统获取当前用户ID
         // 暂时返回模拟值

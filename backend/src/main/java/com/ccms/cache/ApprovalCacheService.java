@@ -25,7 +25,7 @@ public class ApprovalCacheService {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
-    private com.ccms.service.approval.ApprovalAuditService auditService;
+    private com.ccms.service.ApprovalAuditService auditService;
 
     /**
      * 缓存审批流程配置

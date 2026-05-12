@@ -1,6 +1,7 @@
 package com.ccms.service.impl;
 
 import com.ccms.entity.approval.ApprovalInstance;
+import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.repository.approval.ApprovalInstanceRepository;
 import org.slf4j.Logger;
@@ -101,7 +102,7 @@ public class ApprovalTimeoutProcessor {
                     instance.getBusinessType(), instance.getBusinessId());
             
             // 标记为超时
-            instance.setStatus(ApprovalStatusEnum.TIMEOUT.ordinal());
+            instance.setStatus(ApprovalStatusEnum.TIMEOUT.getCode());
             instance.setFinishTime(now);
             instance.setRemarks("审批流程超时自动终止");
             
@@ -109,10 +110,10 @@ public class ApprovalTimeoutProcessor {
                 ApprovalInstance savedInstance = instanceRepository.save(instance);
                 log.info("超时实例处理完成: ID={}", savedInstance.getId());
                 
-                return TimeoutResult.builder()
+                return new TimeoutResultBuilder()
                         .instanceId(instance.getId())
                         .businessType(instance.getBusinessType())
-                        .businessId(instance.getBusinessId())
+                        .businessId(instance.getBusinessId() != null ? instance.getBusinessId().toString() : null)
                         .createTime(instance.getCreateTime())
                         .timeoutTime(now)
                         .durationHours(getDurationHours(instance.getCreateTime(), now))
@@ -123,14 +124,13 @@ public class ApprovalTimeoutProcessor {
             } catch (Exception e) {
                 log.error("保存超时实例失败: ID={}", instance.getId(), e);
                 
-                return TimeoutResult.builder()
+                return new TimeoutResultBuilder()
                         .instanceId(instance.getId())
                         .businessType(instance.getBusinessType())
-                        .businessId(instance.getBusinessId())
+                        .businessId(instance.getBusinessId() != null ? instance.getBusinessId().toString() : null)
                         .createTime(instance.getCreateTime())
                         .timeoutTime(now)
                         .durationHours(getDurationHours(instance.getCreateTime(), now))
-                        .status(instance.getStatus())
                         .success(false)
                         .errorMessage(e.getMessage())
                         .build();
@@ -291,7 +291,7 @@ public class ApprovalTimeoutProcessor {
     public TimeoutStatistics getStatistics() {
         LocalDateTime startTime = LocalDateTime.now().minusHours(24);
         List<ApprovalInstance> timeoutInstances = instanceRepository
-                .findByStatusAndFinishTimeAfter(ApprovalStatusEnum.TIMEOUT.ordinal(), startTime);
+                .findByStatusAndFinishTimeAfter(ApprovalStatusEnum.TIMEOUT, startTime);
         
         long totalCount = timeoutInstances.size();
         double avgDuration = timeoutInstances.stream()

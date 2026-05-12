@@ -7,6 +7,7 @@ import com.ccms.entity.approval.ApprovalFlowConfig;
 import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.BusinessType;
+import com.ccms.enums.BusinessTypeEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -193,7 +194,7 @@ public interface LoanService {
         @Override
         protected ApprovalFlowConfig getDefaultFlowConfig() {
             // 返回借款业务默认流程配置
-            return approvalFlowService.getDefaultFlowConfig(BusinessType.LOAN);
+            return approvalFlowService.getDefaultFlowConfig(BusinessTypeEnum.fromBusinessType(BusinessType.LOAN));
         }
         
         @Override

@@ -2,8 +2,8 @@ package com.ccms.validation;
 
 import com.ccms.enums.ApprovalAction;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * 审批操作类型验证器实现

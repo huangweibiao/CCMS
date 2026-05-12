@@ -116,8 +116,9 @@ public class ApprovalFlowConfigController {
         
         log.info("{}流程配置: ID={}", enabled ? "启用" : "禁用", configId);
         
-        ApprovalFlowConfig config = approvalFlowService.toggleApprovalFlowConfig(configId, enabled);
+        approvalFlowService.toggleApprovalFlowConfig(configId, enabled);
         
+        ApprovalFlowConfig config = approvalFlowService.getApprovalFlowConfig(configId);
         log.info("流程配置{}成功: ID={}", enabled ? "启用" : "禁用", configId);
         return ResponseEntity.ok(config);
     }
@@ -311,7 +312,61 @@ public class ApprovalFlowConfigController {
     }
 
     private ApprovalFlowConfigVO convertToConfigVO(ApprovalFlowConfig config) {
-        // 实现转换逻辑
-        return ApprovalFlowConfigVO.builder().build(); // 需要实现具体的转换逻辑
+        ApprovalFlowConfigVO vo = new ApprovalFlowConfigVO();
+        
+        // 基础字段映射
+        vo.setId(config.getId());
+        vo.setFlowCode(config.getFlowCode());
+        vo.setFlowName(config.getFlowName());
+        
+        // 业务类型转换
+        if (config.getBusinessType() != null) {
+            try {
+                vo.setBusinessType(config.getBusinessTypeEnum());
+                vo.setBusinessTypeName(config.getBusinessTypeEnum() != null ? config.getBusinessTypeEnum().getDescription() : null);
+            } catch (Exception e) {
+                // 如果枚举转换失败，设置默认值
+                vo.setBusinessType(null);
+                vo.setBusinessTypeName(config.getBusinessType());
+            }
+        }
+        
+        vo.setDescription(config.getDescription());
+        
+        // 状态转换（status 0-禁用 1-启用 -> Boolean enabled）
+        if (config.getStatus() != null) {
+            vo.setEnabled(config.getStatus() == 1);
+        }
+        
+        // 优先级（数字越小优先级越高 -> PriorityTypeEnum）
+        if (config.getPriority() != null) {
+            // 简单的优先级转换逻辑
+            vo.setPriorityType(config.getPriority() <= 50 ? PriorityTypeEnum.HIGH : 
+                              config.getPriority() <= 100 ? PriorityTypeEnum.MEDIUM : PriorityTypeEnum.LOW);
+            vo.setPriorityTypeName(vo.getPriorityType() != null ? vo.getPriorityType().getDescription() : null);
+        }
+        
+        vo.setVersionNumber(config.getVersion());
+        vo.setLatestVersion(true); // 简化处理，默认最新
+        vo.setCreatedBy(config.getCreateBy());
+        vo.setCreateTime(config.getCreateTime());
+        vo.setUpdatedBy(config.getUpdateBy());
+        vo.setUpdateTime(config.getUpdateTime());
+        
+        // 金额限制转换
+        if (config.getMinAmount() != null) {
+            vo.setAmountFloor(config.getMinAmount().doubleValue());
+        }
+        if (config.getMaxAmount() != null) {
+            vo.setAmountLimit(config.getMaxAmount().doubleValue());
+        }
+        
+        // 节点相关字段
+        vo.setNodeCount(0); // 简化处理
+        vo.setUsageCount(0L); // 简化处理
+        vo.setAverageDuration(0.0); // 简化处理
+        vo.setPassRate(100.0); // 简化处理
+        
+        return vo;
     }
 }

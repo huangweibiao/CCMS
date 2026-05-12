@@ -2,163 +2,151 @@ package com.ccms.service.impl;
 
 import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.entity.approval.ApprovalNode;
-import com.ccms.enums.ApprovalActionEnum;
+import com.ccms.enums.ApprovalAction;
+import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.service.ApprovalEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.util.*;
 
 public class DefaultProcessStateMachine implements ApprovalEngine.ProcessStateMachine {
     
     private static final Logger log = LoggerFactory.getLogger(DefaultProcessStateMachine.class);
 
-    @Override
-    public ApprovalStatusEnum getNextState(ApprovalStatusEnum currentState, ApprovalActionEnum action, 
-                                         ApprovalInstance instance, Map<String, Object> context) {
-        log.debug("状态转换计算: 当前状态={}, 操作={}", currentState, action);
-        
-        // 基础状态转换规则
-        switch (currentState) {
-            case RUNNING:
-                return handleRunningState(instance, action, context);
-                
-            case WAITING:
-                return handleWaitingState(instance, action, context);
-                
-            case PENDING:
-                return handlePendingState(instance, action, context);
-                
-            default:
-                // 最终状态不允许转换
-                if (currentState.isFinalStatus()) {
-                    throw new IllegalStateException("最终状态 " + currentState + " 不允许状态转换");
-                }
-                return currentState;
+    /**
+     * 状态转换结果类
+     */
+    public static class StateTransitionResult {
+        private ApprovalStatus fromState;
+        private ApprovalStatus toState;
+        private Long timestamp;
+        private Map<String, Object> contextUpdates;
+
+        public StateTransitionResult() {
+            this.contextUpdates = new HashMap<>();
+            this.timestamp = System.currentTimeMillis();
         }
+
+        public ApprovalStatus getFromState() { return fromState; }
+        public void setFromState(ApprovalStatus fromState) { this.fromState = fromState; }
+
+        public ApprovalStatus getToState() { return toState; }
+        public void setToState(ApprovalStatus toState) { this.toState = toState; }
+
+        public Long getTimestamp() { return timestamp; }
+        public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
+
+        public Map<String, Object> getContextUpdates() { return contextUpdates; }
+        public void setContextUpdates(Map<String, Object> contextUpdates) { this.contextUpdates = contextUpdates; }
     }
 
     @Override
-    public boolean isValidTransition(ApprovalStatusEnum currentState, ApprovalStatusEnum nextState) {
-        // 简单验证：不允许状态保持不变（除特殊情况外）
-        if (currentState == nextState) {
+    public boolean transition(ApprovalInstance instance, ApprovalAction action, Map<String, Object> context) {
+        log.debug("执行状态转换: 实例ID={}, 当前状态={}, 操作={}", instance.getId(), instance.getStatus(), action);
+        
+        ApprovalStatus currentStatus = instance.getStatusEnum();
+        
+        // 检查是否允许的状态转换
+        if (!isValidTransition(currentStatus, action)) {
+            log.warn("不允许的状态转换: 当前状态={}, 操作={}", currentStatus, action);
             return false;
         }
         
-        // 最终状态不允许转换为其他状态
-        if (currentState.isFinalStatus() && currentState != nextState) {
-            return false;
-        }
+        // 执行状态转换逻辑
+        ApprovalStatus newStatus = calculateNextStatus(currentStatus, action, instance);
+        instance.setStatus(newStatus.ordinal());
         
-        // 定义允许的转换
-        switch (currentState) {
-            case PENDING:
-                return nextState == ApprovalStatusEnum.RUNNING || 
-                       nextState == ApprovalStatusEnum.CANCELED;
-                        
-            case RUNNING:
-                return nextState == ApprovalStatusEnum.APPROVED ||
-                       nextState == ApprovalStatusEnum.REJECTED ||
-                       nextState == ApprovalStatusEnum.CANCELED ||
-                       nextState == ApprovalStatusEnum.TIMEOUT;
-                       
-            case WAITING:
-                return nextState == ApprovalStatusEnum.RUNNING ||
-                       nextState == ApprovalStatusEnum.CANCELED;
-                       
-            default:
-                return false;
-        }
+        log.info("状态转换成功: 实例ID={}, 新状态={}", instance.getId(), newStatus);
+        return true;
     }
 
     @Override
-    public ApprovalEngine.StateTransitionResult buildTransitionContext(ApprovalStatusEnum fromState, 
-                                                                      ApprovalStatusEnum toState,
-                                                                      Map<String, Object> currentContext) {
-        StateTransitionResult result = new StateTransitionResult();
-        result.setFromState(fromState);
-        result.setToState(toState);
-        result.setTimestamp(System.currentTimeMillis());
+    public List<ApprovalAction> getAllowedActions(ApprovalStatus currentStatus) {
+        List<ApprovalAction> allowedActions = new ArrayList<>();
         
-        // 根据状态转换构建上下文
-        if (toState.isFinalStatus()) {
-            result.getContextUpdates().put("isFinal", true);
-            result.getContextUpdates().put("finalStatus", toState.name());
-        }
-        
-        // 添加特定状态转换的上下文
-        switch (fromState) {
+        switch (currentStatus) {
+            case PENDING:
+                allowedActions.add(ApprovalAction.APPROVE);
+                allowedActions.add(ApprovalAction.CANCEL);
+                break;
+                
             case RUNNING:
-                if (toState == ApprovalStatusEnum.APPROVED) {
-                    result.getContextUpdates().put("completionType", "APPROVED");
-                } else if (toState == ApprovalStatusEnum.REJECTED) {
-                    result.getContextUpdates().put("completionType", "REJECTED");
-                }
+                allowedActions.add(ApprovalAction.APPROVE);
+                allowedActions.add(ApprovalAction.REJECT);
+                allowedActions.add(ApprovalAction.TRANSFER);
+                allowedActions.add(ApprovalAction.SKIP);
+                allowedActions.add(ApprovalAction.CANCEL);
+                break;
+                
+            default:
+                // 最终状态不允许任何操作
                 break;
         }
         
-        return result;
+        return allowedActions;
     }
 
-    private ApprovalStatusEnum handleRunningState(ApprovalInstance instance, ApprovalActionEnum action, 
-                                                 Map<String, Object> context) {
-        switch (action) {
-            case APPROVE:
-                // 检查是否是最后一个节点
-                if (instance.getProcessedNodes() >= instance.getTotalNodes() - 1) {
-                    return ApprovalStatusEnum.APPROVED;
-                } else {
-                    // 继续到下一个节点
-                    return ApprovalStatusEnum.RUNNING;
+    @Override
+    public Map<ApprovalStatus, List<ApprovalAction>> getTransitionRules() {
+        Map<ApprovalStatus, List<ApprovalAction>> rules = new HashMap<>();
+        
+        rules.put(ApprovalStatus.PENDING, Arrays.asList(ApprovalAction.APPROVE, ApprovalAction.CANCEL));
+        rules.put(ApprovalStatus.RUNNING, Arrays.asList(ApprovalAction.APPROVE, ApprovalAction.REJECT, 
+                                                        ApprovalAction.TRANSFER, ApprovalAction.SKIP, ApprovalAction.CANCEL));
+        rules.put(ApprovalStatus.APPROVING, Arrays.asList(ApprovalAction.APPROVE, ApprovalAction.REJECT, ApprovalAction.CANCEL));
+        
+        // 最终状态不允许任何转换
+        rules.put(ApprovalStatus.APPROVED, Collections.emptyList());
+        rules.put(ApprovalStatus.REJECTED, Collections.emptyList());
+        rules.put(ApprovalStatus.CANCELED, Collections.emptyList());
+        rules.put(ApprovalStatus.TIMEOUT, Collections.emptyList());
+        
+        return rules;
+    }
+
+    private boolean isValidTransition(ApprovalStatus currentStatus, ApprovalAction action) {
+        List<ApprovalAction> allowedActions = getAllowedActions(currentStatus);
+        return allowedActions.contains(action);
+    }
+
+    private ApprovalStatus calculateNextStatus(ApprovalStatus currentStatus, ApprovalAction action, ApprovalInstance instance) {
+        switch (currentStatus) {
+            case PENDING:
+                switch (action) {
+                    case APPROVE: return ApprovalStatus.RUNNING;
+                    case CANCEL: return ApprovalStatus.CANCELED;
+                    default: return currentStatus;
                 }
                 
-            case REJECT:
-                return ApprovalStatusEnum.REJECTED;
+            case RUNNING:
+                switch (action) {
+                    case APPROVE:
+                        // 检查是否是最后一个节点
+                        if (instance.getProcessedNodes() >= instance.getTotalNodes() - 1) {
+                            return ApprovalStatus.APPROVED;
+                        } else {
+                            return ApprovalStatus.RUNNING;
+                        }
+                    case REJECT: return ApprovalStatus.REJECTED;
+                    case TRANSFER: return ApprovalStatus.RUNNING;
+                    case SKIP: return ApprovalStatus.RUNNING;
+                    case CANCEL: return ApprovalStatus.CANCELED;
+                    default: return currentStatus;
+                }
                 
-            case TRANSFER:
-                // 转审操作停留在当前状态
-                return ApprovalStatusEnum.RUNNING;
-                
-            case SKIP:
-                // 跳过节点，继续流转
-                return ApprovalStatusEnum.RUNNING;
-                
-            case CANCEL:
-                return ApprovalStatusEnum.CANCELED;
+            case APPROVING:
+                switch (action) {
+                    case APPROVE:
+                    case REJECT: return ApprovalStatus.RUNNING;
+                    case CANCEL: return ApprovalStatus.CANCELED;
+                    default: return currentStatus;
+                }
                 
             default:
-                log.warn("未知的审批操作: {}", action);
-                return instance.getStatus();
+                return currentStatus;
         }
     }
 
-    private ApprovalStatusEnum handleWaitingState(ApprovalInstance instance, ApprovalActionEnum action,
-                                                 Map<String, Object> context) {
-        switch (action) {
-            case APPROVE:
-            case REJECT:
-                return ApprovalStatusEnum.RUNNING;
-                
-            case CANCEL:
-                return ApprovalStatusEnum.CANCELED;
-                
-            default:
-                return instance.getStatus();
-        }
-    }
-
-    private ApprovalStatusEnum handlePendingState(ApprovalInstance instance, ApprovalActionEnum action,
-                                                 Map<String, Object> context) {
-        switch (action) {
-            case APPROVE:
-                return ApprovalStatusEnum.RUNNING;
-                
-            case CANCEL:
-                return ApprovalStatusEnum.CANCELED;
-                
-            default:
-                return instance.getStatus();
-        }
-    }
 }

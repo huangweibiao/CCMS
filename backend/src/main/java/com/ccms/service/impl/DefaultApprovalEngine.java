@@ -40,7 +40,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         this.nodeRepository = nodeRepository;
     }
     
-    private final Map<String, NodeProcessor> nodeProcessors = new ConcurrentHashMap<>();
+    private final Map<String, ApprovalEngine.NodeProcessor> nodeProcessors = new ConcurrentHashMap<>();
     private final Map<ApprovalStatus, List<ApprovalAction>> transitionRules = createTransitionRules();
     
     private Long totalExecutions = 0L;
@@ -66,10 +66,10 @@ public class DefaultApprovalEngine implements ApprovalEngine {
                     instance.getId(), node.getId(), node.getApproverId());
             
             // 获取节点处理器
-            NodeProcessor processor = getNodeProcessor(node);
+            ApprovalEngine.NodeProcessor processor = getNodeProcessor(node);
             
             // 执行节点处理
-            NodeProcessor.NodeResult result = processor.process(node, context);
+            ApprovalEngine.NodeProcessor.NodeResult result = processor.process(node, context);
             
             if (result.isSuccess()) {
                 successfulExecutions++;
@@ -137,11 +137,11 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         ApprovalNode nextNode = getNextNode(instance);
         if (nextNode == null) {
             log.info("审批流程已完成: 实例ID={}", instance.getId());
-            instance.setStatus(ApprovalStatus.APPROVED);
+            instance.setStatus(ApprovalStatus.APPROVED.ordinal());
             instance.setFinishTime(LocalDateTime.now());
         } else {
             log.info("流转到节点 {}: 审批人ID={}", nextNode.getStepNumber(), nextNode.getApproverId());
-            instance.setCurrentNode(nextNode.getStepNumber());
+            instance.setCurrentNode(String.valueOf(nextNode.getStepNumber()));
             instance.setProcessedNodes(instance.getProcessedNodes() + 1);
         }
         
@@ -154,7 +154,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
                                            String reason, Map<String, Object> context) {
         log.info("终止审批流程: 实例ID={}, 最终状态={}, 原因={}", instance.getId(), finalStatus, reason);
         
-        instance.setStatus(finalStatus);
+        instance.setStatus(finalStatus.ordinal());
         instance.setFinishTime(LocalDateTime.now());
         instance.setRemarks(reason);
         
@@ -212,14 +212,14 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         List<ApprovalNode> allNodes = nodeRepository.findByFlowConfigIdOrderByStepNumberAsc(instance.getFlowId());
         
         return allNodes.stream()
-                .filter(node -> node.getStepNumber() == instance.getCurrentNode())
+                .filter(node -> node.getStepNumber() == Integer.parseInt(instance.getCurrentNode()))
                 .collect(Collectors.toList());
     }
 
     @Override
     public boolean canProceed(ApprovalInstance instance) {
         // 检查实例是否已完成或终止
-        if (instance.getStatus().isFinalStatus()) {
+        if (isFinalStatus(instance.getStatus())) {
             return false;
         }
         
@@ -230,7 +230,8 @@ public class DefaultApprovalEngine implements ApprovalEngine {
 
     @Override
     public ApprovalStatus getCurrentStatus(ApprovalInstance instance) {
-        return instance.getStatus();
+        // 将Integer状态转换为ApprovalStatus枚举
+        return convertToApprovalStatus(instance.getStatus());
     }
 
     @Override
@@ -260,16 +261,24 @@ public class DefaultApprovalEngine implements ApprovalEngine {
     }
 
     @Override
-    public EngineStatistics getEngineStatistics() {
+    public ApprovalEngine.EngineStatistics getEngineStatistics() {
         Double averageExecutionTime = totalExecutions > 0 ? totalExecutionTime.doubleValue() / totalExecutions : 0.0;
-        return new EngineStatistics(totalExecutions, successfulExecutions, failedExecutions, 
+        return new ApprovalEngine.EngineStatistics(totalExecutions, successfulExecutions, failedExecutions, 
                                    timeoutExecutions, averageExecutionTime);
     }
 
     @Override
-    public void registerNodeProcessor(String nodeType, NodeProcessor processor) {
+    public void registerNodeProcessor(String nodeType, ApprovalEngine.NodeProcessor processor) {
         nodeProcessors.put(nodeType, processor);
         log.info("注册节点处理器: {}", nodeType);
+    }
+
+    // 处理取消操作的私有方法
+    private ApprovalInstance handleCancelAction(ApprovalInstance instance, Map<String, Object> context) {
+        instance.setStatus(ApprovalStatus.CANCELED.ordinal());
+        instance.setFinishTime(LocalDateTime.now());
+        log.info("审批流程取消: 实例ID={}", instance.getId());
+        return instanceRepository.save(instance);
     }
 
     // 私有辅助方法
@@ -284,9 +293,9 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         log.info("默认节点处理器注册完成");
     }
 
-    private NodeProcessor getNodeProcessor(ApprovalNode node) {
+    private ApprovalEngine.NodeProcessor getNodeProcessor(ApprovalNode node) {
         String processorType = determineProcessorType(node);
-        NodeProcessor processor = nodeProcessors.get(processorType);
+        ApprovalEngine.NodeProcessor processor = nodeProcessors.get(processorType);
         
         if (processor == null) {
             throw new IllegalArgumentException("未找到对应的节点处理器: " + processorType);
@@ -353,6 +362,33 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         return rules;
     }
 
+    private boolean isFinalStatus(Integer status) {
+        if (status == null) {
+            return false;
+        }
+        ApprovalStatus approvalStatus = convertToApprovalStatus(status);
+        return approvalStatus == ApprovalStatus.APPROVED || 
+               approvalStatus == ApprovalStatus.REJECTED || 
+               approvalStatus == ApprovalStatus.CANCELED || 
+               approvalStatus == ApprovalStatus.TIMEOUT;
+    }
+
+    private ApprovalStatus convertToApprovalStatus(Integer status) {
+        if (status == null) {
+            return ApprovalStatus.RUNNING; // 默认状态
+        }
+        
+        switch (status) {
+            case 0: return ApprovalStatus.PENDING;
+            case 1: return ApprovalStatus.RUNNING;
+            case 2: return ApprovalStatus.APPROVED;
+            case 3: return ApprovalStatus.REJECTED;
+            case 4: return ApprovalStatus.CANCELED;
+            case 5: return ApprovalStatus.TIMEOUT;
+            default: return ApprovalStatus.RUNNING;
+        }
+    }
+
     private ApprovalInstance handleApproveAction(ApprovalInstance instance, Map<String, Object> context) {
         // 如果这是最后一个节点，则完成审批
         if (instance.getProcessedNodes() >= instance.getTotalNodes() - 1) {
@@ -391,7 +427,52 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         return proceedToNextNode(instance, context);
     }
 
+    // 节点处理器接口
+    public interface NodeProcessor {
+        NodeResult process(ApprovalNode node, Map<String, Object> context);
+        
+        class NodeResult {
+            private final boolean success;
+            private final String message;
+            private final Map<String, Object> output;
+            
+            public NodeResult(boolean success, String message, Map<String, Object> output) {
+                this.success = success;
+                this.message = message;
+                this.output = output;
+            }
+            
+            public boolean isSuccess() { return success; }
+            public String getMessage() { return message; }
+            public Map<String, Object> getOutput() { return output; }
+        }
+    }
 
+    // 引擎统计类
+    public static class EngineStatistics {
+        private final Long totalExecutions;
+        private final Long successfulExecutions;
+        private final Long failedExecutions;
+        private final Long timeoutExecutions;
+        private final Double averageExecutionTime;
+        
+        public EngineStatistics(Long totalExecutions, Long successfulExecutions, 
+                               Long failedExecutions, Long timeoutExecutions, 
+                               Double averageExecutionTime) {
+            this.totalExecutions = totalExecutions;
+            this.successfulExecutions = successfulExecutions;
+            this.failedExecutions = failedExecutions;
+            this.timeoutExecutions = timeoutExecutions;
+            this.averageExecutionTime = averageExecutionTime;
+        }
+        
+        // Getters
+        public Long getTotalExecutions() { return totalExecutions; }
+        public Long getSuccessfulExecutions() { return successfulExecutions; }
+        public Long getFailedExecutions() { return failedExecutions; }
+        public Long getTimeoutExecutions() { return timeoutExecutions; }
+        public Double getAverageExecutionTime() { return averageExecutionTime; }
+    }
 
     // 默认节点处理器实现
     private static class UserApprovalProcessor implements NodeProcessor {

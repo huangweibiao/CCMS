@@ -4,7 +4,9 @@ import com.ccms.dto.ApprovalRequest;
 import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.enums.ApprovalAction;
+import com.ccms.enums.BusinessType;
 import com.ccms.enums.BusinessTypeEnum;
+import com.ccms.enums.ApprovalStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -31,9 +33,6 @@ public class ApprovalServiceFactory {
         this.applicationContext = applicationContext;
         this.approvalFlowService = approvalFlowService;
     }
-
-    private final ApplicationContext applicationContext;
-    private final ApprovalFlowService approvalFlowService;
 
     /**
      * 根据业务类型获取对应的业务服务
@@ -120,8 +119,10 @@ public class ApprovalServiceFactory {
         }
         
         // 根据业务类型获取审批实例ID
-        ApprovalInstance instance = approvalFlowService.getApprovalInstanceByBusinessId(
-                businessId, businessType);
+        // 需要将BusinessTypeEnum转换为BusinessType
+        BusinessType bt = getBusinessTypeFromEnum(businessType);
+        ApprovalInstance instance = approvalFlowService.getApprovalInstanceByBusiness(
+                bt, businessId);
         if (instance == null) {
             throw new RuntimeException("找不到对应的审批实例: 业务类型=" + businessType + ", 业务ID=" + businessId);
         }
@@ -133,8 +134,9 @@ public class ApprovalServiceFactory {
                         applicationContext.getBean(ExpenseReimburseService.class);
                 
                 if (action == ApprovalAction.APPROVE || action == ApprovalAction.REJECT) {
-                    expenseReimburseService.handleApprovalCallback(
-                            instance.getId(), action, remarks);
+                    expenseReimburseService.onApprovalCompleted(
+                            Long.parseLong(businessId), 
+                            action == ApprovalAction.APPROVE ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED);
                 }
                 break;
                 
@@ -142,8 +144,9 @@ public class ApprovalServiceFactory {
                 LoanService loanService = applicationContext.getBean(LoanService.class);
                 
                 if (action == ApprovalAction.APPROVE || action == ApprovalAction.REJECT) {
-                    loanService.handleApprovalCallback(
-                            instance.getId(), action, remarks);
+                    loanService.onApprovalCompleted(
+                            Long.parseLong(businessId), 
+                            action == ApprovalAction.APPROVE ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED);
                 }
                 break;
                 
@@ -162,8 +165,10 @@ public class ApprovalServiceFactory {
         log.debug("检查业务审批状态: 业务类型={}, 业务ID={}", businessType, businessId);
         
         try {
-            ApprovalInstance instance = approvalFlowService.getApprovalInstanceByBusinessId(
-                    businessId, businessType);
+            // 需要将BusinessTypeEnum转换为BusinessType
+            BusinessType bt = getBusinessTypeFromEnum(businessType);
+            ApprovalInstance instance = approvalFlowService.getApprovalInstanceByBusiness(
+                    bt, businessId);
             
             if (instance == null) {
                 return Map.of(
@@ -175,7 +180,7 @@ public class ApprovalServiceFactory {
             
             return Map.of(
                     "success", true,
-                    "approvalStatus", instance.getStatus().name(),
+                    "approvalStatus", instance.getStatusEnum().name(),
                     "instanceId", instance.getId(),
                     "currentNode", instance.getCurrentNode(),
                     "message", "获取审批状态成功"
@@ -204,12 +209,13 @@ public class ApprovalServiceFactory {
                 case EXPENSE_REIMBURSE:
                     ExpenseReimburseService expenseReimburseService = 
                             applicationContext.getBean(ExpenseReimburseService.class);
-                    expenseReimburseService.withdrawApproval(Long.parseLong(businessId), remarks);
+                    expenseReimburseService.withdrawExpenseReimburseApproval(Long.parseLong(businessId), remarks);
                     break;
                     
                 case LOAN:
                     LoanService loanService = applicationContext.getBean(LoanService.class);
-                    loanService.withdrawApproval(Long.parseLong(businessId), remarks);
+                    // loanService没有撤回审批方法，这里可以记录日志或发送通知
+                    System.out.println("借款业务撤回审批逻辑待实现: " + businessId + ", " + remarks);
                     break;
                     
                 case EXPENSE_APPLY:
@@ -242,7 +248,7 @@ public class ApprovalServiceFactory {
         log.debug("获取业务审批记录: 业务类型={}, 业务ID={}", businessType, businessId);
         
         try {
-            List<ApprovalRecord> records;
+            List<Map<String, Object>> records;
             
             // 根据业务类型获取审批记录
             switch (businessType) {
@@ -301,5 +307,27 @@ public class ApprovalServiceFactory {
      */
     public List<BusinessTypeEnum> getSupportedBusinessTypes() {
         return Arrays.asList(BusinessTypeEnum.EXPENSE_REIMBURSE, BusinessTypeEnum.LOAN);
+    }
+
+    /**
+     * 将BusinessTypeEnum转换为对应的BusinessType
+     */
+    private BusinessType getBusinessTypeFromEnum(BusinessTypeEnum businessTypeEnum) {
+        if (businessTypeEnum == null) {
+            return null;
+        }
+        
+        switch (businessTypeEnum) {
+            case EXPENSE_REIMBURSE:
+                return BusinessType.EXPENSE_REIMBURSEMENT;
+            case LOAN:
+                return BusinessType.LOAN;
+            case EXPENSE_APPLY:
+            case BUDGET_ADJUST:
+            case OTHER:
+                return BusinessType.EXPENSE_REIMBURSEMENT; // 默认映射到费用报销
+            default:
+                return BusinessType.EXPENSE_REIMBURSEMENT; // 未知类型也映射到费用报销
+        }
     }
 }

@@ -698,10 +698,16 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
         request.setBusinessType(BusinessTypeEnum.EXPENSE_REIMBURSE);
         request.setApplicantId(applicantId);
         request.setTitle(title != null ? title : "费用报销申请审批-" + reimburse.getReimburseNo());
-        request.setDescription("费用报销申请审批流程");
+        // 移除setDescription方法调用，ApprovalRequest没有这个方法
         
         // 提交审批流程
-        ApprovalInstance approvalInstance = approvalFlowService.createApprovalInstance(request);
+        ApprovalInstance approvalInstance = approvalFlowService.startApprovalInstance(
+            request.getBusinessType(), 
+            request.getBusinessId(), 
+            request.getApplicantId(), 
+            request.getTitle(), 
+            "费用报销申请审批流程"
+        );
         
         // 更新报销申请状态为审批中
         reimburse.setStatus(1); // 审批中
