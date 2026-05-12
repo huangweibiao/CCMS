@@ -3,7 +3,6 @@ package com.ccms.service.impl;
 import com.ccms.entity.message.MessageTemplate;
 import com.ccms.repository.message.MessageTemplateRepository;
 import com.ccms.service.MessageTemplateService;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,13 +13,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MessageTemplateServiceImpl implements MessageTemplateService {
     
     private static final Logger log = LoggerFactory.getLogger(MessageTemplateServiceImpl.class);
     
     private final MessageTemplateRepository templateRepository;
+
+    public MessageTemplateServiceImpl(MessageTemplateRepository templateRepository) {
+        this.templateRepository = templateRepository;
+    }
 
 
     

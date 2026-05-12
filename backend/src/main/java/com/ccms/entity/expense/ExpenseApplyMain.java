@@ -415,6 +415,54 @@ public class ExpenseApplyMain extends BaseEntity {
         return false;
     }
 
+    /**
+     * 获取费用类型（兼容性方法）
+     */
+    public String getExpenseType() {
+        return applyType != null ? applyType.toString() : "STANDARD";
+    }
+
+    /**
+     * 获取申请人姓名（需要关联用户表）
+     */
+    public String getApplyUserName() {
+        // 这里需要根据applyUserId查询用户表，暂时返回"未知用户"
+        return "未知用户";
+    }
+
+    /**
+     * 获取部门（兼容性方法）
+     */
+    public String getDepartment() {
+        // 需要根据applyDeptId查询部门表，暂时返回"未知部门"
+        return "未知部门";
+    }
+
+    /**
+     * 获取申请日期
+     */
+    public LocalDate getApplyDate() {
+        return getCreateTime() != null ? getCreateTime().toLocalDate() : LocalDate.now();
+    }
+
+    /**
+     * 获取申请状态
+     */
+    public String getApplyStatus() {
+        return status != null ? status.toString() : "0";
+    }
+
+    /**
+     * 设置申请状态
+     */
+    public void setApplyStatus(String status) {
+        try {
+            this.status = Integer.parseInt(status);
+        } catch(NumberFormatException e) {
+            this.status = 0; // 默认值
+        }
+    }
+
     @Override
     public String toString() {
         return "ExpenseApplyMain{" +

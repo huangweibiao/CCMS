@@ -1,8 +1,7 @@
 package com.ccms.vo;
 
-import lombok.Data;
+import java.util.Objects;
 
-@Data
 public class ResultVO<T> {
     private int code;
     private String msg;

@@ -5,20 +5,25 @@ import com.ccms.entity.approval.ApprovalFlowConfig;
 import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.entity.approval.ApprovalNode;
 import com.ccms.entity.approval.ApprovalRecord;
+import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.BusinessTypeEnum;
 import com.ccms.enums.TransitionRule;
-import lombok.experimental.UtilityClass;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * 审批验证工具类
  * 提供静态方法用于审批流程的各种验证
  */
-@UtilityClass
-public class ApprovalValidator {
+public final class ApprovalValidator {
+    
+    // 私有构造函数防止实例化
+    private ApprovalValidator() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
     /**
      * 验证审批请求的完整性
@@ -88,7 +93,7 @@ public class ApprovalValidator {
             throw new IllegalArgumentException("审批人类型不能为空");
         }
         
-        if (node.getNodeOrder() == null || node.getNodeOrder() < 0) {
+        if (node.getStepNumber() == null || node.getStepNumber() < 0) {
             throw new IllegalArgumentException("节点顺序不能为空且必须大于等于0");
         }
     }
@@ -110,7 +115,7 @@ public class ApprovalValidator {
         }
         
         // 检查实例状态
-        if (instance.getStatus().isFinalStatus()) {
+        if (ApprovalStatusEnum.isFinalStatus(instance.getStatus())) {
             throw new IllegalStateException("审批实例已完成，无法执行操作");
         }
         
@@ -169,11 +174,11 @@ public class ApprovalValidator {
             throw new IllegalArgumentException("审批人ID不能为空");
         }
         
-        if (record.getAction() == null) {
+        if (record.getApprovalAction() == null) {
             throw new IllegalArgumentException("审批操作不能为空");
         }
         
-        if (record.getResult() == null) {
+        if (record.getApprovalResult() == null) {
             throw new IllegalArgumentException("审批结果不能为空");
         }
     }
@@ -210,8 +215,8 @@ public class ApprovalValidator {
         // 检查节点顺序是否连续
         for (int i = 0; i < nodes.size(); i++) {
             ApprovalNode node = nodes.get(i);
-            if (node.getNodeOrder() != i + 1) {
-                throw new IllegalArgumentException("节点顺序不连续，期望: " + (i + 1) + ", 实际: " + node.getNodeOrder());
+            if (node.getStepNumber() != i + 1) {
+                throw new IllegalArgumentException("节点顺序不连续，期望: " + (i + 1) + ", 实际: " + node.getStepNumber());
             }
         }
     }

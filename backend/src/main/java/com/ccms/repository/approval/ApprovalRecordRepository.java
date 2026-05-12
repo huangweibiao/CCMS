@@ -127,4 +127,9 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
     
     // 添加缺失的方法
     List<ApprovalRecord> findByProcessIdOrderByApprovalTimeAsc(Long processId);
+
+    // 以下方法是编译错误中缺失的方法声明
+    List<ApprovalRecord> findByInstanceId(Long instanceId);
+
+    List<ApprovalRecord> findByInstanceId(Long instanceId, org.springframework.data.domain.Pageable pageable);
 }

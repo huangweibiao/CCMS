@@ -24,6 +24,13 @@ public class ApprovalException extends RuntimeException {
     /**
      * 构造方法
      */
+    public ApprovalException(String errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+        this.errorDetail = null;
+        this.businessId = null;
+    }
+    
     public ApprovalException(String errorCode, String message, String errorDetail) {
         super(message);
         this.errorCode = errorCode;
@@ -65,7 +72,14 @@ public class ApprovalException extends RuntimeException {
     public String getErrorDetail() {
         return errorDetail;
     }
-    
+
+    /**
+     * 获取错误消息（兼容旧代码）
+     */
+    public String getErrorMessage() {
+        return getMessage();
+    }
+
     /**
      * 获取业务ID
      */
@@ -174,7 +188,7 @@ public class ApprovalException extends RuntimeException {
         return new ApprovalException("FLOW_CONFIG_NOT_FOUND", 
                 "审批流程配置不存在", 
                 "业务类型: " + businessType,
-                null);
+                (String) null);
     }
     
     /**

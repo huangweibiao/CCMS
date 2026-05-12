@@ -149,7 +149,7 @@ public interface LoanService {
         private final LoanService loanService;
         
         public LoanApprovalService(ApprovalFlowService approvalFlowService, LoanService loanService) {
-            super();
+            super(approvalFlowService);
             this.loanService = loanService;
         }
         
@@ -166,7 +166,7 @@ public interface LoanService {
         
         @Override
         protected void handleApprovalCompleted(ApprovalInstance instance, ApprovalStatus finalStatus) {
-            loanService.onApprovalCompleted(Long.parseLong(instance.getBusinessId()), finalStatus);
+            loanService.onApprovalCompleted(instance.getBusinessId(), finalStatus);
         }
         
         @Override

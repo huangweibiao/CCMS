@@ -5,8 +5,8 @@ import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.BusinessTypeEnum;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +19,18 @@ import java.util.Map;
  * 审批服务工厂
  * 统一管理各个业务类型的审批服务
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ApprovalServiceFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(ApprovalServiceFactory.class);
+
+    private final ApplicationContext applicationContext;
+    private final ApprovalFlowService approvalFlowService;
+
+    public ApprovalServiceFactory(ApplicationContext applicationContext, ApprovalFlowService approvalFlowService) {
+        this.applicationContext = applicationContext;
+        this.approvalFlowService = approvalFlowService;
+    }
 
     private final ApplicationContext applicationContext;
     private final ApprovalFlowService approvalFlowService;

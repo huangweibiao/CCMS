@@ -5,9 +5,11 @@ import com.ccms.entity.approval.ApprovalFlowConfig;
 import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.enums.BusinessType;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -16,9 +18,9 @@ import java.util.Map;
  * 基础审批服务类
  * 为具体的业务审批服务提供通用功能
  */
-@Slf4j
 @Service
 public abstract class BaseApprovalService {
+    protected static final Logger log = LoggerFactory.getLogger(BaseApprovalService.class);
 
     protected final ApprovalFlowService approvalFlowService;
     
@@ -65,32 +67,32 @@ public abstract class BaseApprovalService {
      * 发起业务审批
      */
     public ApprovalInstance startBusinessApproval(ApprovalRequest request) {
-        log.info("发起业务审批: 业务类型={}, 业务ID={}", getBusinessType(), request.getBusinessId());
+        log.info("发起业务审批: 业务类型={}, 业务ID={}", this.getBusinessType(), request.getBusinessId());
         
         // 构建上下文数据
         Map<String, Object> context = buildApprovalContext(request);
         
         // 创建前验证
         if (!validateBeforeCreate(request, context)) {
-            log.error("业务审批验证失败: 业务类型={}, 业务ID={}", getBusinessType(), request.getBusinessId());
+            log.error("业务审批验证失败: 业务类型={}, 业务ID={}", this.getBusinessType(), request.getBusinessId());
             throw new RuntimeException("业务审批验证失败");
         }
         
         // 匹配流程配置前的检查
         if (!preMatchFlowConfig(request, context)) {
-            log.warn("流程配置匹配前检查失败: 业务类型={}", getBusinessType());
+            log.warn("流程配置匹配前检查失败: 业务类型={}", this.getBusinessType());
         }
         
         // 匹配流程配置
         ApprovalFlowConfig flowConfig = matchBusinessFlowConfig(request, context);
         if (flowConfig == null) {
-            log.warn("未找到匹配的流程配置，使用默认配置: 业务类型={}", getBusinessType());
+            log.warn("未找到匹配的流程配置，使用默认配置: 业务类型={}", this.getBusinessType());
             flowConfig = getDefaultFlowConfig();
         }
         
         // 创建审批实例
         ApprovalInstance instance = approvalFlowService.startApprovalInstance(
-                request.getBusinessType(),
+                this.getBusinessType(),
                 request.getBusinessId(),
                 request.getApplicantId(),
                 request.getTitle(),
@@ -100,7 +102,7 @@ public abstract class BaseApprovalService {
         // 调用进度回调
         handleApprovalProgress(instance, context);
         
-        log.info("业务审批发起成功: 实例ID={}, 业务类型={}", instance.getId(), getBusinessType());
+        log.info("业务审批发起成功: 实例ID={}, 业务类型={}", instance.getId(), this.getBusinessType());
         return instance;
     }
     
@@ -115,7 +117,7 @@ public abstract class BaseApprovalService {
             throw new RuntimeException("审批实例不存在");
         }
         
-        if (instance.getStatus().isFinalStatus()) {
+        if (instance.getStatusEnum().isFinalStatus()) {
             log.warn("审批实例已完成，不可操作: ID={}, 状态={}", instanceId, instance.getStatus());
             throw new RuntimeException("审批实例已完成");
         }
@@ -143,9 +145,9 @@ public abstract class BaseApprovalService {
         }
         
         // 检查是否完成
-        if (updatedInstance.getStatus().isFinalStatus()) {
-            handleApprovalCompleted(updatedInstance, updatedInstance.getStatus());
-            log.info("业务审批完成: 实例ID={}, 最终状态={}", instanceId, updatedInstance.getStatus());
+        if (updatedInstance.getStatusEnum().isFinalStatus()) {
+            handleApprovalCompleted(updatedInstance, updatedInstance.getStatusEnum());
+            log.info("业务审批完成: 实例ID={}, 最终状态={}", instanceId, updatedInstance.getStatusEnum());
         } else {
             // 处理进度回调
             handleApprovalProgress(updatedInstance, null);
@@ -165,9 +167,9 @@ public abstract class BaseApprovalService {
      */
     public void cancelBusinessApproval(String businessId, String remarks) {
         ApprovalInstance instance = getBusinessApprovalDetail(businessId);
-        if (instance != null && !instance.getStatus().isFinalStatus()) {
+        if (instance != null && !instance.getStatusEnum().isFinalStatus()) {
             approvalFlowService.cancel(instance.getId(), instance.getApplicantId(), remarks);
-            log.info("业务审批取消: 业务ID={}, 业务类型={}", businessId, getBusinessType());
+            log.info("业务审批取消: 业务ID={}, 业务类型={}", businessId, this.getBusinessType());
         }
     }
     
@@ -176,7 +178,7 @@ public abstract class BaseApprovalService {
      */
     public ApprovalStatusEnum checkBusinessApprovalStatus(String businessId) {
         ApprovalInstance instance = getBusinessApprovalDetail(businessId);
-        return instance != null ? instance.getStatus() : null;
+        return instance != null ? instance.getApprovalStatus() : null;
     }
     
     /**

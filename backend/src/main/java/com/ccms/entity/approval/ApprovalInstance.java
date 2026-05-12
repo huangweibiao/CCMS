@@ -1,6 +1,7 @@
 package com.ccms.entity.approval;
 
 import com.ccms.entity.BaseEntity;
+import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.ApprovalStatusEnum;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -28,6 +29,12 @@ public class ApprovalInstance extends BaseEntity {
     private Long flowId;
     
     /**
+     * 流程配置ID（新字段别名）
+     */
+    @Transient
+    private Long flowConfigId;
+    
+    /**
      * 业务单据ID
      */
     @Column(name = "business_id", nullable = false)
@@ -38,6 +45,24 @@ public class ApprovalInstance extends BaseEntity {
      */
     @Column(name = "business_type", length = 32, nullable = false)
     private String businessType;
+    
+    /**
+     * 申请人ID
+     */
+    @Transient
+    private Long applicantId;
+    
+    /**
+     * 业务标题
+     */
+    @Transient
+    private String businessTitle;
+    
+    /**
+     * 业务内容
+     */
+    @Transient
+    private String businessContent;
     
     /**
      * 审批状态（使用枚举，存储为整数）
@@ -86,6 +111,12 @@ public class ApprovalInstance extends BaseEntity {
      */
     @Column(name = "finish_time")
     private LocalDateTime finishTime;
+    
+    /**
+     * 备注信息
+     */
+    @Column(name = "remarks", length = 500)
+    private String remarks;
 
     // Getters and Setters
     public String getInstanceNo() {
@@ -102,6 +133,16 @@ public class ApprovalInstance extends BaseEntity {
 
     public void setFlowId(Long flowId) {
         this.flowId = flowId;
+        this.flowConfigId = flowId; // 保持同步
+    }
+
+    public Long getFlowConfigId() {
+        return this.flowConfigId != null ? this.flowConfigId : this.flowId;
+    }
+
+    public void setFlowConfigId(Long flowConfigId) {
+        this.flowConfigId = flowConfigId;
+        this.flowId = flowConfigId; // 保持同步
     }
 
     public Long getBusinessId() {
@@ -120,12 +161,63 @@ public class ApprovalInstance extends BaseEntity {
         this.businessType = businessType;
     }
 
+    public Long getApplicantId() {
+        if (this.applicantId != null) {
+            return this.applicantId;
+        }
+        try {
+            return createBy != null ? Long.parseLong(createBy) : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public void setApplicantId(Long applicantId) {
+        this.applicantId = applicantId;
+        if (applicantId != null) {
+            this.createBy = applicantId.toString();
+        }
+    }
+
+    public String getBusinessTitle() {
+        return this.businessTitle != null ? this.businessTitle : approvalTitle;
+    }
+
+    public void setBusinessTitle(String businessTitle) {
+        this.businessTitle = businessTitle;
+        if (approvalTitle == null) {
+            this.approvalTitle = businessTitle;
+        }
+    }
+
+    public String getBusinessContent() {
+        return businessContent;
+    }
+
+    public void setBusinessContent(String businessContent) {
+        this.businessContent = businessContent;
+    }
+
     public Integer getStatus() {
         return status;
     }
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+    
+    public ApprovalStatus getStatusEnum() {
+        if (status == null) return null;
+        try {
+            // Use ordinal-based mapping since status is stored as integer
+            return ApprovalStatus.values()[status];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
+    }
+    
+    public void setStatusEnum(ApprovalStatus approvalStatus) {
+        this.status = approvalStatus != null ? approvalStatus.ordinal() : null;
     }
 
     public String getCurrentNode() {
@@ -199,6 +291,30 @@ public class ApprovalInstance extends BaseEntity {
 
     public void setUrgencyLevel(Integer urgencyLevel) {
         this.urgencyLevel = urgencyLevel;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    public java.math.BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(java.math.BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public Long getCurrentApproverId() {
+        return currentApproverId;
+    }
+
+    public void setCurrentApproverId(Long currentApproverId) {
+        this.currentApproverId = currentApproverId;
     }
 
     // 业务逻辑方法

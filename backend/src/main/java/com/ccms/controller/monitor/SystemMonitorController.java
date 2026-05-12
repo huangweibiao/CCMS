@@ -2,7 +2,6 @@ package com.ccms.controller.monitor;
 
 import com.ccms.common.response.ApiResponse;
 import com.ccms.service.schedule.ScheduledTaskService;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +25,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 /**
  * 系统监控控制器
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/monitor")
 public class SystemMonitorController {
     
-    private static final Logger logger = LoggerFactory.getLogger(SystemMonitorController.class);
+    private static final Logger log = LoggerFactory.getLogger(SystemMonitorController.class);
 
     @Autowired
     private CacheManager cacheManager;
@@ -98,7 +96,7 @@ public class SystemMonitorController {
                 status.put("expenseCount", expenseCount);
                 status.put("attachmentCount", attachmentCount);
             } catch (Exception e) {
-                logger.warn("获取数据库统计信息失败: {}", e.getMessage());
+                log.warn("获取数据库统计信息失败: {}", e.getMessage());
             }
             
         } catch (Exception e) {
@@ -154,7 +152,7 @@ public class SystemMonitorController {
             status.put("threadPools", threadPools);
             
         } catch (Exception e) {
-            logger.error("获取任务状态失败: {}", e.getMessage());
+            log.error("获取任务状态失败: {}", e.getMessage());
         }
         
         return ApiResponse.success(status);

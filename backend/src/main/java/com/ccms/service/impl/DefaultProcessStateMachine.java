@@ -5,12 +5,14 @@ import com.ccms.entity.approval.ApprovalNode;
 import com.ccms.enums.ApprovalActionEnum;
 import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.service.ApprovalEngine;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-@Slf4j
 public class DefaultProcessStateMachine implements ApprovalEngine.ProcessStateMachine {
+    
+    private static final Logger log = LoggerFactory.getLogger(DefaultProcessStateMachine.class);
 
     @Override
     public ApprovalStatusEnum getNextState(ApprovalStatusEnum currentState, ApprovalActionEnum action, 

@@ -35,6 +35,13 @@ public enum ApprovalStatusEnum {
     }
 
     /**
+     * 获取枚举值（兼容性方法，与getCode()相同）
+     */
+    public Integer getValue() {
+        return code;
+    }
+
+    /**
      * 根据状态码获取枚举
      */
     public static ApprovalStatusEnum getByCode(Integer code) {
@@ -51,6 +58,14 @@ public enum ApprovalStatusEnum {
      */
     public boolean isFinalStatus() {
         return this == APPROVED || this == REJECTED || this == CANCELED || this == TIMEOUT || this == TERMINATED;
+    }
+    
+    /**
+     * 根据状态码判断是否为终态
+     */
+    public static boolean isFinalStatus(Integer statusCode) {
+        ApprovalStatusEnum status = getByCode(statusCode);
+        return status != null && status.isFinalStatus();
     }
 
     /**

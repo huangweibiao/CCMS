@@ -44,4 +44,27 @@ public interface ApprovalNodeRepository extends BaseRepository<ApprovalNode, Lon
     // 根据审批人ID和状态查找节点
     @Query("SELECT an FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = :status")
     List<ApprovalNode> findByApproverIdAndStatus(@Param("approverId") Long approverId, @Param("status") Integer status);
+
+    // 以下方法是编译错误中缺失的方法声明
+    List<ApprovalNode> findByProcessIdAndNodeLevel(Long processId, Integer nodeLevel);
+
+    List<ApprovalNode> findByProcessId(Long processId);
+
+    ApprovalNode findCurrentNodeByProcessId(Long processId);
+
+    List<ApprovalNode> findByProcessIdAndNodeLevel(Long processId, int nodeLevel);
+
+    Long countByApproverIdAndDateRange(Long approverId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+
+    Long countPendingByApproverIdAndDateRange(Long approverId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+
+    Long countApprovedByApproverIdAndDateRange(Long approverId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+
+    Long countRejectedByApproverIdAndDateRange(Long approverId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+
+    List<ApprovalNode> findProcessedByApproverIdAndDateRange(Long approverId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+
+    List<ApprovalNode> findByProcessIdAndApproverId(Long processId, Long approverId);
+
+    List<ApprovalNode> findByInstanceIdOrderByStepNumber(Long instanceId);
 }

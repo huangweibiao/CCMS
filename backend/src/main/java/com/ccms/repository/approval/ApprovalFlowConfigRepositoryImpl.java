@@ -43,7 +43,7 @@ public class ApprovalFlowConfigRepositoryImpl {
               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#config.id)")
     public ApprovalFlowConfig saveWithCache(ApprovalFlowConfig config) {
         // 保存前清除相关的列表缓存
-        evictRelatedListCaches(config.getBusinessType().name(), config.getCategory());
+        evictRelatedListCaches(config.getBusinessType(), config.getCategory());
         return approvalFlowConfigRepository.save(config);
     }
 
@@ -54,7 +54,7 @@ public class ApprovalFlowConfigRepositoryImpl {
                 key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
     public void deleteByIdWithCache(Long id) {
         Optional<ApprovalFlowConfig> config = approvalFlowConfigRepository.findById(id);
-        config.ifPresent(c -> evictRelatedListCaches(c.getBusinessType().name(), c.getCategory()));
+        config.ifPresent(c -> evictRelatedListCaches(c.getBusinessType(), c.getCategory()));
         approvalFlowConfigRepository.deleteById(id);
     }
 

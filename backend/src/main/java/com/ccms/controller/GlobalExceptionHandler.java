@@ -4,11 +4,9 @@ import com.ccms.dto.ApprovalResult;
 import com.ccms.exception.ApprovalException;
 import com.ccms.exception.ApprovalNotFoundException;
 import com.ccms.exception.ApprovalStateException;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -18,17 +16,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 全局异常处理器
  */
-@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
      * 处理审批业务异常
@@ -160,10 +160,6 @@ public class GlobalExceptionHandler {
     /**
      * 错误响应对象
      */
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     private static class ErrorResponse {
         private LocalDateTime timestamp;
         private int status;
@@ -171,5 +167,112 @@ public class GlobalExceptionHandler {
         private String message;
         private String errorCode;
         private String path;
+        
+        public ErrorResponse() {
+        }
+        
+        public ErrorResponse(LocalDateTime timestamp, int status, String error, String message, String errorCode, String path) {
+            this.timestamp = timestamp;
+            this.status = status;
+            this.error = error;
+            this.message = message;
+            this.errorCode = errorCode;
+            this.path = path;
+        }
+        
+        public LocalDateTime getTimestamp() { return timestamp; }
+        public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+        
+        public int getStatus() { return status; }
+        public void setStatus(int status) { this.status = status; }
+        
+        public String getError() { return error; }
+        public void setError(String error) { this.error = error; }
+        
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        
+        public String getErrorCode() { return errorCode; }
+        public void setErrorCode(String errorCode) { this.errorCode = errorCode; }
+        
+        public String getPath() { return path; }
+        public void setPath(String path) { this.path = path; }
+        
+        @Override
+        public String toString() {
+            return "ErrorResponse{" +
+                    "timestamp=" + timestamp +
+                    ", status=" + status +
+                    ", error='" + error + '\'' +
+                    ", message='" + message + '\'' +
+                    ", errorCode='" + errorCode + '\'' +
+                    ", path='" + path + '\'' +
+                    '}';
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ErrorResponse that = (ErrorResponse) o;
+            return status == that.status &&
+                    Objects.equals(timestamp, that.timestamp) &&
+                    Objects.equals(error, that.error) &&
+                    Objects.equals(message, that.message) &&
+                    Objects.equals(errorCode, that.errorCode) &&
+                    Objects.equals(path, that.path);
+        }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hash(timestamp, status, error, message, errorCode, path);
+        }
+        
+        public static ErrorResponseBuilder builder() {
+            return new ErrorResponseBuilder();
+        }
+        
+        public static class ErrorResponseBuilder {
+            private LocalDateTime timestamp;
+            private int status;
+            private String error;
+            private String message;
+            private String errorCode;
+            private String path;
+            
+            public ErrorResponseBuilder timestamp(LocalDateTime timestamp) {
+                this.timestamp = timestamp;
+                return this;
+            }
+            
+            public ErrorResponseBuilder status(int status) {
+                this.status = status;
+                return this;
+            }
+            
+            public ErrorResponseBuilder error(String error) {
+                this.error = error;
+                return this;
+            }
+            
+            public ErrorResponseBuilder message(String message) {
+                this.message = message;
+                return this;
+            }
+            
+            public ErrorResponseBuilder errorCode(String errorCode) {
+                this.errorCode = errorCode;
+                return this;
+            }
+            
+            public ErrorResponseBuilder path(String path) {
+                this.path = path;
+                return this;
+            }
+            
+            public ErrorResponse build() {
+                return new ErrorResponse(timestamp, status, error, message, errorCode, path);
+            }
+        }
     }
 }

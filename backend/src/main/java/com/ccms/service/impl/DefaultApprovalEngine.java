@@ -5,12 +5,13 @@ import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.entity.approval.ApprovalNode;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.enums.ApproverType;
 import com.ccms.repository.approval.ApprovalInstanceRepository;
 import com.ccms.repository.approval.ApprovalNodeRepository;
 import com.ccms.service.ApprovalEngine;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,13 +20,25 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class DefaultApprovalEngine implements ApprovalEngine {
 
+    private static final Logger log = LoggerFactory.getLogger(DefaultApprovalEngine.class);
+    
+    // 审批者类型常量定义
+    private static final String USER = "USER";
+    private static final String ROLE = "ROLE";
+    private static final String DEPT = "DEPT";
+    private static final String POSITION = "POSITION";
+    private static final String SELF = "SELF";
+    
     private final ApprovalInstanceRepository instanceRepository;
     private final ApprovalNodeRepository nodeRepository;
+
+    public DefaultApprovalEngine(ApprovalInstanceRepository instanceRepository, ApprovalNodeRepository nodeRepository) {
+        this.instanceRepository = instanceRepository;
+        this.nodeRepository = nodeRepository;
+    }
     
     private final Map<String, NodeProcessor> nodeProcessors = new ConcurrentHashMap<>();
     private final Map<ApprovalStatus, List<ApprovalAction>> transitionRules = createTransitionRules();
@@ -196,7 +209,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
 
     @Override
     public List<ApprovalNode> getExecutableNodes(ApprovalInstance instance) {
-        List<ApprovalNode> allNodes = nodeRepository.findByFlowConfigIdOrderByStepNumberAsc(instance.getFlowConfigId());
+        List<ApprovalNode> allNodes = nodeRepository.findByFlowConfigIdOrderByStepNumberAsc(instance.getFlowId());
         
         return allNodes.stream()
                 .filter(node -> node.getStepNumber() == instance.getCurrentNode())
@@ -227,12 +240,12 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         List<ApprovalInstance> timeoutInstances = new ArrayList<>();
         
         // 查找超时的运行中实例
-        List<ApprovalInstance> runningInstances = instanceRepository.findByStatus(ApprovalStatus.RUNNING);
+        List<ApprovalInstance> runningInstances = instanceRepository.findByStatus(ApprovalStatus.RUNNING.ordinal());
         
         for (ApprovalInstance instance : runningInstances) {
             if (instance.getCreateTime().isBefore(timeoutThreshold)) {
                 // 标记为超时
-                instance.setStatus(ApprovalStatus.TIMEOUT);
+                instance.setStatus(ApprovalStatus.TIMEOUT.ordinal());
                 instance.setFinishTime(LocalDateTime.now());
                 instance.setRemarks("审批流程超时");
                 instanceRepository.save(instance);
@@ -300,8 +313,21 @@ public class DefaultApprovalEngine implements ApprovalEngine {
     }
 
     private ApprovalNode getNextNode(ApprovalInstance instance) {
-        return nodeRepository.findByFlowConfigIdAndStepNumber(instance.getFlowConfigId(), instance.getCurrentNode() + 1)
-                .orElse(null);
+        // 需要从currentNode获取节点序号，这里假设currentNode是节点序号的字符串表示
+        if (instance.getCurrentNode() == null || instance.getCurrentNode().isEmpty()) {
+            // 如果没有当前节点，则从第一个节点开始
+            return nodeRepository.findByFlowConfigIdAndStepNumber(instance.getFlowId(), 1)
+                    .orElse(null);
+        }
+        
+        try {
+            Integer currentStep = Integer.parseInt(instance.getCurrentNode());
+            return nodeRepository.findByFlowConfigIdAndStepNumber(instance.getFlowId(), currentStep + 1)
+                    .orElse(null);
+        } catch (NumberFormatException e) {
+            // 如果currentNode不是数字，返回null
+            return null;
+        }
     }
 
     private boolean isTransitionAllowed(ApprovalStatus currentStatus, ApprovalAction action) {
@@ -330,7 +356,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
     private ApprovalInstance handleApproveAction(ApprovalInstance instance, Map<String, Object> context) {
         // 如果这是最后一个节点，则完成审批
         if (instance.getProcessedNodes() >= instance.getTotalNodes() - 1) {
-            instance.setStatus(ApprovalStatus.APPROVED);
+            instance.setStatus(ApprovalStatus.APPROVED.ordinal());
             instance.setFinishTime(LocalDateTime.now());
             log.info("审批流程完成: 实例ID={}", instance.getId());
         } else {
@@ -342,7 +368,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
     }
 
     private ApprovalInstance handleRejectAction(ApprovalInstance instance, Map<String, Object> context) {
-        instance.setStatus(ApprovalStatus.REJECTED);
+        instance.setStatus(ApprovalStatus.REJECTED.ordinal());
         instance.setFinishTime(LocalDateTime.now());
         log.info("审批流程拒绝: 实例ID={}", instance.getId());
         return instanceRepository.save(instance);
@@ -365,12 +391,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         return proceedToNextNode(instance, context);
     }
 
-    private ApprovalInstance handleCancelAction(ApprovalInstance instance, Map<String, Object> context) {
-        instance.setStatus(ApprovalStatus.CANCELED);
-        instance.setFinishTime(LocalDateTime.now());
-        log.info("审批流程已取消: 实例ID={}", instance.getId());
-        return instanceRepository.save(instance);
-    }
+
 
     // 默认节点处理器实现
     private static class UserApprovalProcessor implements NodeProcessor {
@@ -397,87 +418,5 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         }
     }
 
-    @Override
-    public EngineStatistics getEngineStatistics() {
-        double averageExecutionTime = totalExecutions > 0 ? totalExecutionTime.doubleValue() / totalExecutions : 0.0;
-        return new EngineStatistics(
-            totalExecutions,
-            successfulExecutions,
-            failedExecutions,
-            timeoutExecutions,
-            averageExecutionTime
-        );
-    }
 
-    /**
-     * 创建状态转换规则
-     */
-    private Map<ApprovalStatus, List<ApprovalAction>> createTransitionRules() {
-        Map<ApprovalStatus, List<ApprovalAction>> rules = new HashMap<>();
-        
-        // 草稿状态可以提交审批
-        rules.put(ApprovalStatus.DRAFT, Arrays.asList(ApprovalAction.SUBMIT));
-        
-        // 审批中状态可以进行的操作
-        rules.put(ApprovalStatus.APPROVING, Arrays.asList(
-            ApprovalAction.APPROVE, 
-            ApprovalAction.REJECT, 
-            ApprovalAction.TRANSFER,
-            ApprovalAction.SKIP,
-            ApprovalAction.CANCEL
-        ));
-        
-        // 最终状态不允许任何操作
-        rules.put(ApprovalStatus.APPROVED, new ArrayList<>());
-        rules.put(ApprovalStatus.REJECTED, new ArrayList<>());
-        rules.put(ApprovalStatus.CANCELED, new ArrayList<>());
-        rules.put(ApprovalStatus.WITHDRAWN, new ArrayList<>());
-        rules.put(ApprovalStatus.TERMINATED, new ArrayList<>());
-        
-        return rules;
-    }
-
-    @Override
-    public void registerNodeProcessor(String nodeType, NodeProcessor processor) {
-        nodeProcessors.put(nodeType, processor);
-        log.info("注册节点处理器: {}", nodeType);
-    }
-
-    private NodeProcessor getNodeProcessor(ApprovalNode node) {
-        String processorKey = getProcessorKey(node.getApproverType());
-        return nodeProcessors.getOrDefault(processorKey, nodeProcessors.get("DEFAULT"));
-    }
-
-    private String getProcessorKey(ApproverType approverType) {
-        if (approverType == null) {
-            return "DEFAULT";
-        }
-        return approverType.name();
-    }
-
-    private void registerDefaultProcessors() {
-        registerNodeProcessor("USER", new UserApprovalProcessor());
-        registerNodeProcessor("ROLE", new RoleApprovalProcessor());
-        registerNodeProcessor("DEPT", new DepartmentApprovalProcessor());
-        
-        // 默认处理器
-        registerNodeProcessor("DEFAULT", new UserApprovalProcessor());
-    }
-
-    private boolean isTransitionAllowed(ApprovalStatus currentStatus, ApprovalAction action) {
-        List<ApprovalAction> allowedActions = transitionRules.get(currentStatus);
-        return allowedActions != null && allowedActions.contains(action);
-    }
-
-    private ApprovalNode getNextNode(ApprovalInstance instance) {
-        List<ApprovalNode> nodes = nodeRepository.findByFlowConfigIdOrderByStepNumberAsc(instance.getFlowConfigId());
-        Integer currentStep = instance.getCurrentNode();
-        
-        for (ApprovalNode node : nodes) {
-            if (node.getStepNumber() > currentStep) {
-                return node;
-            }
-        }
-        return null;
-    }
 }

@@ -1,17 +1,8 @@
 package com.ccms.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
  * 审批统计DTO
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ApprovalStatistics {
     
     /**
@@ -40,216 +31,249 @@ public class ApprovalStatistics {
     private Long canceledCount;
     
     /**
-     * 超时数量
-     */
-    private Long timeoutCount;
-    
-    /**
      * 平均审批时长（小时）
      */
     private Double averageDuration;
     
     /**
+     * 超时数量
+     */
+    private Long timeoutCount = 0L;
+    
+    /**
      * 最长审批时长（小时）
      */
-    private Double maxDuration;
+    private Double maxDuration = 0.0;
     
     /**
      * 最短审批时长（小时）
      */
-    private Double minDuration;
+    private Double minDuration = 0.0;
     
     /**
      * 审批通过率
      */
-    private Double approvalRate;
+    private Double approvalRate = 0.0;
     
     /**
      * 审批拒绝率
      */
-    private Double rejectionRate;
+    private Double rejectionRate = 0.0;
     
     /**
      * 超时率
      */
-    private Double timeoutRate;
+    private Double timeoutRate = 0.0;
     
-    /**
-     * 用户统计相关数据（可选）
-     */
-    private UserApprovalStatistics userStats;
+    // Constructors
+    public ApprovalStatistics() {}
     
-    /**
-     * 业务统计相关数据（可选）
-     */
-    private BusinessApprovalStatistics businessStats;
+    // Simplified constructor for common use case
+    public ApprovalStatistics(Long totalCount, Long pendingCount, Long approvedCount, Long rejectedCount, 
+                             Long canceledCount, Double averageDuration) {
+        this.totalCount = totalCount;
+        this.pendingCount = pendingCount;
+        this.approvedCount = approvedCount;
+        this.rejectedCount = rejectedCount;
+        this.canceledCount = canceledCount;
+        this.averageDuration = averageDuration;
+    }
     
-    /**
-     * 时间范围统计数据（可选）
-     */
-    private TimeRangeStatistics timeRangeStats;
-}
-
-/**
- * 用户审批统计
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class UserApprovalStatistics {
+    // Full constructor
+    public ApprovalStatistics(Long totalCount, Long pendingCount, Long approvedCount, Long rejectedCount, 
+                             Long canceledCount, Long timeoutCount, Double averageDuration, Double maxDuration, 
+                             Double minDuration, Double approvalRate, Double rejectionRate, Double timeoutRate) {
+        this.totalCount = totalCount;
+        this.pendingCount = pendingCount;
+        this.approvedCount = approvedCount;
+        this.rejectedCount = rejectedCount;
+        this.canceledCount = canceledCount;
+        this.timeoutCount = timeoutCount;
+        this.averageDuration = averageDuration;
+        this.maxDuration = maxDuration;
+        this.minDuration = minDuration;
+        this.approvalRate = approvalRate;
+        this.rejectionRate = rejectionRate;
+        this.timeoutRate = timeoutRate;
+    }
     
-    /**
-     * 审批用户ID
-     */
-    private Long userId;
+    // Builder static method
+    public static ApprovalStatisticsBuilder builder() {
+        return new ApprovalStatisticsBuilder();
+    }
     
-    /**
-     * 用户姓名
-     */
-    private String userName;
+    // Getters and Setters
+    public Long getTotalCount() { return totalCount; }
+    public void setTotalCount(Long totalCount) { this.totalCount = totalCount; }
     
-    /**
-     * 审批总数量
-     */
-    private Long totalApprovals;
+    public Long getPendingCount() { return pendingCount; }
+    public void setPendingCount(Long pendingCount) { this.pendingCount = pendingCount; }
     
-    /**
-     * 平均审批时长（小时）
-     */
-    private Double avgApprovalDuration;
+    public Long getApprovedCount() { return approvedCount; }
+    public void setApprovedCount(Long approvedCount) { this.approvedCount = approvedCount; }
     
-    /**
-     * 审批通过率
-     */
-    private Double approvalRate;
+    public Long getRejectedCount() { return rejectedCount; }
+    public void setRejectedCount(Long rejectedCount) { this.rejectedCount = rejectedCount; }
     
-    /**
-     * 待审批数量
-     */
-    private Long pendingCount;
+    public Long getCanceledCount() { return canceledCount; }
+    public void setCanceledCount(Long canceledCount) { this.canceledCount = canceledCount; }
     
-    /**
-     * 审批效率排名
-     */
-    private Integer efficiencyRank;
-}
-
-/**
- * 业务审批统计
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class BusinessApprovalStatistics {
+    public Long getTimeoutCount() { return timeoutCount; }
+    public void setTimeoutCount(Long timeoutCount) { this.timeoutCount = timeoutCount; }
     
-    /**
-     * 业务类型
-     */
-    private String businessType;
+    public Double getAverageDuration() { return averageDuration; }
+    public void setAverageDuration(Double averageDuration) { this.averageDuration = averageDuration; }
     
-    /**
-     * 业务类型名称
-     */
-    private String businessTypeName;
+    public Double getMaxDuration() { return maxDuration; }
+    public void setMaxDuration(Double maxDuration) { this.maxDuration = maxDuration; }
     
-    /**
-     * 总审批数量
-     */
-    private Long totalCount;
+    public Double getMinDuration() { return minDuration; }
+    public void setMinDuration(Double minDuration) { this.minDuration = minDuration; }
     
-    /**
-     * 平均审批时长（小时）
-     */
-    private Double avgDuration;
+    public Double getApprovalRate() { return approvalRate; }
+    public void setApprovalRate(Double approvalRate) { this.approvalRate = approvalRate; }
     
-    /**
-     * 通过率
-     */
-    private Double passRate;
+    public Double getRejectionRate() { return rejectionRate; }
+    public void setRejectionRate(Double rejectionRate) { this.rejectionRate = rejectionRate; }
     
-    /**
-     * 平均审批金额
-     */
-    private Double avgAmount;
+    public Double getTimeoutRate() { return timeoutRate; }
+    public void setTimeoutRate(Double timeoutRate) { this.timeoutRate = timeoutRate; }
     
-    /**
-     * 总审批金额
-     */
-    private Double totalAmount;
-}
-
-/**
- * 时间范围统计
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class TimeRangeStatistics {
+    // equals, hashCode, and toString methods
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        
+        ApprovalStatistics that = (ApprovalStatistics) o;
+        
+        if (totalCount != null ? !totalCount.equals(that.totalCount) : that.totalCount != null) return false;
+        if (pendingCount != null ? !pendingCount.equals(that.pendingCount) : that.pendingCount != null) return false;
+        if (approvedCount != null ? !approvedCount.equals(that.approvedCount) : that.approvedCount != null) return false;
+        if (rejectedCount != null ? !rejectedCount.equals(that.rejectedCount) : that.rejectedCount != null) return false;
+        if (canceledCount != null ? !canceledCount.equals(that.canceledCount) : that.canceledCount != null) return false;
+        if (timeoutCount != null ? !timeoutCount.equals(that.timeoutCount) : that.timeoutCount != null) return false;
+        if (averageDuration != null ? !averageDuration.equals(that.averageDuration) : that.averageDuration != null) return false;
+        if (maxDuration != null ? !maxDuration.equals(that.maxDuration) : that.maxDuration != null) return false;
+        if (minDuration != null ? !minDuration.equals(that.minDuration) : that.minDuration != null) return false;
+        if (approvalRate != null ? !approvalRate.equals(that.approvalRate) : that.approvalRate != null) return false;
+        if (rejectionRate != null ? !rejectionRate.equals(that.rejectionRate) : that.rejectionRate != null) return false;
+        return timeoutRate != null ? timeoutRate.equals(that.timeoutRate) : that.timeoutRate == null;
+    }
     
-    /**
-     * 开始时间
-     */
-    private String startDate;
+    @Override
+    public int hashCode() {
+        int result = totalCount != null ? totalCount.hashCode() : 0;
+        result = 31 * result + (pendingCount != null ? pendingCount.hashCode() : 0);
+        result = 31 * result + (approvedCount != null ? approvedCount.hashCode() : 0);
+        result = 31 * result + (rejectedCount != null ? rejectedCount.hashCode() : 0);
+        result = 31 * result + (canceledCount != null ? canceledCount.hashCode() : 0);
+        result = 31 * result + (timeoutCount != null ? timeoutCount.hashCode() : 0);
+        result = 31 * result + (averageDuration != null ? averageDuration.hashCode() : 0);
+        result = 31 * result + (maxDuration != null ? maxDuration.hashCode() : 0);
+        result = 31 * result + (minDuration != null ? minDuration.hashCode() : 0);
+        result = 31 * result + (approvalRate != null ? approvalRate.hashCode() : 0);
+        result = 31 * result + (rejectionRate != null ? rejectionRate.hashCode() : 0);
+        result = 31 * result + (timeoutRate != null ? timeoutRate.hashCode() : 0);
+        return result;
+    }
     
-    /**
-     * 结束时间
-     */
-    private String endDate;
+    @Override
+    public String toString() {
+        return "ApprovalStatistics{" +
+                "totalCount=" + totalCount +
+                ", pendingCount=" + pendingCount +
+                ", approvedCount=" + approvedCount +
+                ", rejectedCount=" + rejectedCount +
+                ", canceledCount=" + canceledCount +
+                ", timeoutCount=" + timeoutCount +
+                ", averageDuration=" + averageDuration +
+                ", maxDuration=" + maxDuration +
+                ", minDuration=" + minDuration +
+                ", approvalRate=" + approvalRate +
+                ", rejectionRate=" + rejectionRate +
+                ", timeoutRate=" + timeoutRate +
+                '}';
+    }
     
-    /**
-     * 每日统计
-     */
-    private DailyStatistics dailyStats;
-    
-    /**
-     * 每周统计
-     */
-    private WeeklyStatistics weeklyStats;
-    
-    /**
-     * 每月统计
-     */
-    private MonthlyStatistics monthlyStats;
-}
-
-/**
- * 每日统计
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class DailyStatistics {
-    private String date;
-    private Long count;
-    private Double avgDuration;
-}
-
-/**
- * 每周统计
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class WeeklyStatistics {
-    private String week;
-    private Long count;
-    private Double avgDuration;
-}
-
-/**
- * 每月统计
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class MonthlyStatistics {
-    private String month;
-    private Long count;
-    private Double avgDuration;
+    // Builder class
+    public static class ApprovalStatisticsBuilder {
+        private Long totalCount;
+        private Long pendingCount;
+        private Long approvedCount;
+        private Long rejectedCount;
+        private Long canceledCount;
+        private Long timeoutCount;
+        private Double averageDuration;
+        private Double maxDuration;
+        private Double minDuration;
+        private Double approvalRate;
+        private Double rejectionRate;
+        private Double timeoutRate;
+        
+        public ApprovalStatisticsBuilder totalCount(Long totalCount) {
+            this.totalCount = totalCount;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder pendingCount(Long pendingCount) {
+            this.pendingCount = pendingCount;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder approvedCount(Long approvedCount) {
+            this.approvedCount = approvedCount;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder rejectedCount(Long rejectedCount) {
+            this.rejectedCount = rejectedCount;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder canceledCount(Long canceledCount) {
+            this.canceledCount = canceledCount;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder timeoutCount(Long timeoutCount) {
+            this.timeoutCount = timeoutCount;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder averageDuration(Double averageDuration) {
+            this.averageDuration = averageDuration;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder maxDuration(Double maxDuration) {
+            this.maxDuration = maxDuration;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder minDuration(Double minDuration) {
+            this.minDuration = minDuration;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder approvalRate(Double approvalRate) {
+            this.approvalRate = approvalRate;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder rejectionRate(Double rejectionRate) {
+            this.rejectionRate = rejectionRate;
+            return this;
+        }
+        
+        public ApprovalStatisticsBuilder timeoutRate(Double timeoutRate) {
+            this.timeoutRate = timeoutRate;
+            return this;
+        }
+        
+        public ApprovalStatistics build() {
+            return new ApprovalStatistics(totalCount, pendingCount, approvedCount, rejectedCount,
+                canceledCount, timeoutCount, averageDuration, maxDuration, minDuration, approvalRate, rejectionRate, timeoutRate);
+        }
+    }
 }

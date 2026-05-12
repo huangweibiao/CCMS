@@ -3,6 +3,7 @@ package com.ccms.entity.approval;
 import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import com.ccms.enums.BusinessTypeEnum;
 
 /**
  * 审批流配置表实体类
@@ -27,10 +28,22 @@ public class ApprovalFlowConfig extends BaseEntity {
     private String flowName;
     
     /**
-     * 业务类型：APPLY/REIMBURSE/LOAN/BUDGET_ADJUST
+     * 业务类型：APPROVAL/EXPENSE_REIMBURSE/LOAN/BUDGET_ADJUST
      */
     @Column(name = "business_type", length = 32, nullable = false)
     private String businessType;
+    
+    /**
+     * 分类或类别
+     */
+    @Column(name = "category", length = 50)
+    private String category;
+    
+    /**
+     * creator_id
+     */
+    @Column(name = "creator_id")
+    private Long creatorId;
     
     /**
      * 适用最小金额
@@ -109,6 +122,36 @@ public class ApprovalFlowConfig extends BaseEntity {
 
     public void setBusinessType(String businessType) {
         this.businessType = businessType;
+    }
+    
+    /**
+     * 设置业务类型枚举
+     */
+    public void setBusinessTypeEnum(BusinessTypeEnum businessTypeEnum) {
+        this.businessType = businessTypeEnum != null ? businessTypeEnum.getCode() : null;
+    }
+    
+    /**
+     * 获取业务类型枚举
+     */
+    public BusinessTypeEnum getBusinessTypeEnum() {
+        return BusinessTypeEnum.getByCode(this.businessType);
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Long getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(Long creatorId) {
+        this.creatorId = creatorId;
     }
 
     public BigDecimal getMinAmount() {

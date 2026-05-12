@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -198,7 +199,7 @@ public class ApprovalMonitorService {
     // 私有方法 - 实际的统计计算逻辑（简化实现）
     
     private long getTotalOperations() {
-        return meterRegistry.find(ApprovalMonitorConfig.MetricNames.OPERATION_COUNT)
+        return (long) meterRegistry.find(ApprovalMonitorConfig.MetricNames.OPERATION_COUNT)
                 .counters()
                 .stream()
                 .mapToDouble(c -> c.count())
@@ -209,7 +210,7 @@ public class ApprovalMonitorService {
         return meterRegistry.find(ApprovalMonitorConfig.MetricNames.OPERATION_DURATION)
                 .timers()
                 .stream()
-                .mapToDouble(t -> t.mean())
+                .mapToDouble(t -> t.mean(TimeUnit.MILLISECONDS))
                 .average()
                 .orElse(0.0);
     }
@@ -221,7 +222,7 @@ public class ApprovalMonitorService {
     
     private double getErrorRate() {
         long totalOps = getTotalOperations();
-        long errorCount = meterRegistry.find(ApprovalMonitorConfig.MetricNames.ERROR_COUNT)
+        double errorCount = meterRegistry.find(ApprovalMonitorConfig.MetricNames.ERROR_COUNT)
                 .counters()
                 .stream()
                 .mapToDouble(c -> c.count())

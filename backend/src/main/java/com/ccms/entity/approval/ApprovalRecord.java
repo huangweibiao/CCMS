@@ -129,6 +129,36 @@ public class ApprovalRecord extends BaseEntity {
     @Column(name = "is_auto_approved")
     private Boolean autoApproved = false;
     
+    /**
+     * 流程ID
+     */
+    @Transient
+    private Long processId;
+    
+    /**
+     * 节点ID
+     */
+    @Transient
+    private Long nodeId;
+    
+    /**
+     * 是否已审批
+     */
+    @Transient
+    private Boolean approved;
+    
+    /**
+     * 审批评论
+     */
+    @Transient
+    private String comment;
+    
+    /**
+     * 是否跳过
+     */
+    @Transient
+    private Boolean skipped;
+    
     // 枚举相关方法
     public ApprovalActionEnum getApprovalActionEnum() {
         return ApprovalActionEnum.getByCode(approvalAction);
@@ -281,6 +311,46 @@ public class ApprovalRecord extends BaseEntity {
 
     public void setApprovalTime(LocalDateTime approvalTime) {
         this.approvalTime = approvalTime;
+    }
+
+    public Long getProcessId() {
+        return processId;
+    }
+
+    public void setProcessId(Long processId) {
+        this.processId = processId;
+    }
+
+    public Long getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(Long nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public Boolean getApproved() {
+        return approved;
+    }
+
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Boolean getSkipped() {
+        return skipped;
+    }
+
+    public void setSkipped(Boolean skipped) {
+        this.skipped = skipped;
     }
 
     public Long getTransferTo() {

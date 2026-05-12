@@ -44,4 +44,20 @@ public enum BusinessTypeEnum {
         }
         return OTHER;
     }
+
+    /**
+     * 从BusinessType转BusinessTypeEnum
+     */
+    public static BusinessTypeEnum fromBusinessType(BusinessType businessType) {
+        if (businessType == null) return OTHER;
+        
+        switch (businessType) {
+            case EXPENSE_REIMBURSEMENT:
+                return EXPENSE_REIMBURSE;
+            case LOAN:
+                return LOAN;
+            default:
+                return OTHER;
+        }
+    }
 }

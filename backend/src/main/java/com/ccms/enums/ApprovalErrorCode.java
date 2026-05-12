@@ -51,7 +51,7 @@ public enum ApprovalErrorCode {
     BUSINESS_STATUS_ERROR("1402", "业务状态错误"),
     BUSINESS_INTEGRATION_ERROR("1403", "业务集成错误"),
     BUSINESS_CALLBACK_FAILED("1404", "业务回调失败"),
-    BUSINESS_LI MIT_EXCEEDED("1405", "业务限额超限"),
+    BUSINESS_LIMIT_EXCEEDED("1405", "业务限额超限"),
 
     // 验证错误 (1500-1599)
     VALIDATION_FAILED("1500", "数据验证失败"),

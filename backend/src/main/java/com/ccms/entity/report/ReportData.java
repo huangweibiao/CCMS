@@ -1,12 +1,9 @@
 package com.ccms.entity.report;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * 报表数据实体类
@@ -14,9 +11,6 @@ import java.time.LocalDate;
  */
 @Entity
 @Table(name = "ccms_report_data")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ReportData {
     
     @Id
@@ -76,4 +70,138 @@ public class ReportData {
      */
     @Version
     private Integer version;
+
+    public ReportData() {
+    }
+
+    public ReportData(Long id, String reportType, LocalDate reportDate, String dimension1, String dimension2, BigDecimal metric1, BigDecimal metric2, Integer metric3, Double metric4, Integer version) {
+        this.id = id;
+        this.reportType = reportType;
+        this.reportDate = reportDate;
+        this.dimension1 = dimension1;
+        this.dimension2 = dimension2;
+        this.metric1 = metric1;
+        this.metric2 = metric2;
+        this.metric3 = metric3;
+        this.metric4 = metric4;
+        this.version = version;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
+    }
+
+    public LocalDate getReportDate() {
+        return reportDate;
+    }
+
+    public void setReportDate(LocalDate reportDate) {
+        this.reportDate = reportDate;
+    }
+
+    public String getDimension1() {
+        return dimension1;
+    }
+
+    public void setDimension1(String dimension1) {
+        this.dimension1 = dimension1;
+    }
+
+    public String getDimension2() {
+        return dimension2;
+    }
+
+    public void setDimension2(String dimension2) {
+        this.dimension2 = dimension2;
+    }
+
+    public BigDecimal getMetric1() {
+        return metric1;
+    }
+
+    public void setMetric1(BigDecimal metric1) {
+        this.metric1 = metric1;
+    }
+
+    public BigDecimal getMetric2() {
+        return metric2;
+    }
+
+    public void setMetric2(BigDecimal metric2) {
+        this.metric2 = metric2;
+    }
+
+    public Integer getMetric3() {
+        return metric3;
+    }
+
+    public void setMetric3(Integer metric3) {
+        this.metric3 = metric3;
+    }
+
+    public Double getMetric4() {
+        return metric4;
+    }
+
+    public void setMetric4(Double metric4) {
+        this.metric4 = metric4;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ReportData that = (ReportData) o;
+        return Objects.equals(id, that.id) && 
+               Objects.equals(reportType, that.reportType) && 
+               Objects.equals(reportDate, that.reportDate) && 
+               Objects.equals(dimension1, that.dimension1) && 
+               Objects.equals(dimension2, that.dimension2) && 
+               Objects.equals(metric1, that.metric1) && 
+               Objects.equals(metric2, that.metric2) && 
+               Objects.equals(metric3, that.metric3) && 
+               Objects.equals(metric4, that.metric4) && 
+               Objects.equals(version, that.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, reportType, reportDate, dimension1, dimension2, metric1, metric2, metric3, metric4, version);
+    }
+
+    @Override
+    public String toString() {
+        return "ReportData{" +
+                "id=" + id +
+                ", reportType='" + reportType + '\'' +
+                ", reportDate=" + reportDate +
+                ", dimension1='" + dimension1 + '\'' +
+                ", dimension2='" + dimension2 + '\'' +
+                ", metric1=" + metric1 +
+                ", metric2=" + metric2 +
+                ", metric3=" + metric3 +
+                ", metric4=" + metric4 +
+                ", version=" + version +
+                '}';
+    }
 }

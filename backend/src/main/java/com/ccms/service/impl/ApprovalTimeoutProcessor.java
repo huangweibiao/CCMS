@@ -3,8 +3,8 @@ package com.ccms.service.impl;
 import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.repository.approval.ApprovalInstanceRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -15,12 +15,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 @Component
-@RequiredArgsConstructor
-public class ApprovalTimeoutProcessor {
+public class ApprovalTimeoutProcessor {    
+    private static final Logger log = LoggerFactory.getLogger(ApprovalTimeoutProcessor.class);
     
     private final ApprovalInstanceRepository instanceRepository;
+
+    public ApprovalTimeoutProcessor(ApprovalInstanceRepository instanceRepository) {
+        this.instanceRepository = instanceRepository;
+    }
     
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private volatile boolean isRunning = false;
@@ -98,7 +101,7 @@ public class ApprovalTimeoutProcessor {
                     instance.getBusinessType(), instance.getBusinessId());
             
             // 标记为超时
-            instance.setStatus(ApprovalStatusEnum.TIMEOUT);
+            instance.setStatus(ApprovalStatusEnum.TIMEOUT.ordinal());
             instance.setFinishTime(now);
             instance.setRemarks("审批流程超时自动终止");
             
@@ -288,7 +291,7 @@ public class ApprovalTimeoutProcessor {
     public TimeoutStatistics getStatistics() {
         LocalDateTime startTime = LocalDateTime.now().minusHours(24);
         List<ApprovalInstance> timeoutInstances = instanceRepository
-                .findByStatusAndFinishTimeAfter(ApprovalStatusEnum.TIMEOUT, startTime);
+                .findByStatusAndFinishTimeAfter(ApprovalStatusEnum.TIMEOUT.ordinal(), startTime);
         
         long totalCount = timeoutInstances.size();
         double avgDuration = timeoutInstances.stream()

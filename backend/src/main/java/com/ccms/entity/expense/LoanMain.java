@@ -4,6 +4,7 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 /**
  * 借款单表实体类
@@ -219,6 +220,35 @@ public class LoanMain extends BaseEntity {
 
     public void setBankAccount(String bankAccount) {
         this.bankAccount = bankAccount;
+    }
+
+    /**
+     * 获取借款类型
+     */
+    public String getLoanType() {
+        // 这里需要根据业务规则实现，暂时返回默认值
+        return "STANDARD";
+    }
+
+    /**
+     * 获取借款期限（还款期限，单位：月）
+     */
+    public Integer getLoanPeriod() {
+        // 根据预期还款日期计算借款期限
+        if (expectRepayDate != null && getCreateTime() != null) {
+            return (int) ChronoUnit.MONTHS.between(
+                getCreateTime().toLocalDate(), 
+                expectRepayDate
+            );
+        }
+        return 12; // 默认12个月
+    }
+
+    /**
+     * 获取申请人ID（兼容性方法）
+     */
+    public Long getApplicantId() {
+        return getLoanUserId();
     }
 
     @Override

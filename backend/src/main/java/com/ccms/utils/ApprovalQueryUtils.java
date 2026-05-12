@@ -3,7 +3,7 @@ package com.ccms.utils;
 import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.enums.ApprovalStatus;
-import lombok.experimental.UtilityClass;
+import com.ccms.enums.ApprovalStatusEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,15 +15,20 @@ import java.util.stream.Collectors;
  * 审批查询工具类
  * 提供常用的查询和分析功能
  */
-@UtilityClass
-public class ApprovalQueryUtils {
+public final class ApprovalQueryUtils {
+    
+    // 私有构造函数防止实例化
+    private ApprovalQueryUtils() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
     /**
      * 根据状态过滤审批实例
      */
     public static List<ApprovalInstance> filterByStatus(List<ApprovalInstance> instances, ApprovalStatus status) {
+        Integer statusValue = status.ordinal(); // 转换为枚举序号
         return instances.stream()
-                .filter(instance -> instance.getStatus() == status)
+                .filter(instance -> instance.getStatus().equals(statusValue))
                 .collect(Collectors.toList());
     }
 
@@ -31,8 +36,11 @@ public class ApprovalQueryUtils {
      * 根据状态范围过滤审批实例
      */
     public static List<ApprovalInstance> filterByStatusRange(List<ApprovalInstance> instances, List<ApprovalStatus> statuses) {
+        List<Integer> statusValues = statuses.stream()
+                .map(ApprovalStatus::ordinal)
+                .collect(Collectors.toList());
         return instances.stream()
-                .filter(instance -> statuses.contains(instance.getStatus()))
+                .filter(instance -> statusValues.contains(instance.getStatus()))
                 .collect(Collectors.toList());
     }
 
@@ -51,7 +59,7 @@ public class ApprovalQueryUtils {
      */
     public static List<ApprovalInstance> getCompletedApprovals(List<ApprovalInstance> instances) {
         return instances.stream()
-                .filter(instance -> instance.getStatus().isFinalStatus())
+                .filter(instance -> ApprovalStatusEnum.isFinalStatus(instance.getStatus()))
                 .collect(Collectors.toList());
     }
 
@@ -65,7 +73,7 @@ public class ApprovalQueryUtils {
         }
 
         long approvedCount = completed.stream()
-                .filter(instance -> instance.getStatus() == ApprovalStatus.APPROVED)
+                .filter(instance -> ApprovalStatusEnum.APPROVED.getValue().equals(instance.getStatus()))
                 .count();
 
         return (double) approvedCount / completed.size() * 100;
@@ -162,7 +170,7 @@ public class ApprovalQueryUtils {
             return false;
         }
 
-        if (instance.getStatus().isFinalStatus()) {
+        if (ApprovalStatusEnum.isFinalStatus(instance.getStatus())) {
             return false; // 已完成的实例不算超时
         }
 
@@ -175,7 +183,7 @@ public class ApprovalQueryUtils {
     /**
      * 统计各状态审批实例数量
      */
-    public static Map<ApprovalStatus, Long> countByStatus(List<ApprovalInstance> instances) {
+    public static Map<Integer, Long> countByStatus(List<ApprovalInstance> instances) {
         return instances.stream()
                 .collect(Collectors.groupingBy(
                         ApprovalInstance::getStatus,
@@ -189,7 +197,7 @@ public class ApprovalQueryUtils {
     public static List<ApprovalInstance> getUnprocessedApprovals(List<ApprovalInstance> instances, Long approverId) {
         return instances.stream()
                 .filter(instance -> 
-                        !instance.getStatus().isFinalStatus() && 
+                        !ApprovalStatusEnum.isFinalStatus(instance.getStatus()) && 
                         approverId.equals(instance.getCurrentApproverId())
                 )
                 .collect(Collectors.toList());
@@ -214,7 +222,7 @@ public class ApprovalQueryUtils {
         }
 
         // 检查时间顺序
-        List<ApprovalRecord> sortedReco rds = getApprovalTimeline(records);
+        List<ApprovalRecord> sortedRecords = getApprovalTimeline(records);
         for (int i = 1; i < sortedRecords.size(); i++) {
             ApprovalRecord current = sortedRecords.get(i);
             ApprovalRecord previous = sortedRecords.get(i - 1);

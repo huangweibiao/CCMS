@@ -6,8 +6,6 @@ import com.ccms.entity.user.User;
 import com.ccms.enums.approval.ApprovalStatus;
 import com.ccms.enums.approval.ApprovalType;
 import com.ccms.repository.approval.*;
-import lombok.Data;
-import lombok.experimental.UtilityClass;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 审批流程测试数据生成器
@@ -651,19 +650,23 @@ public class ApprovalTestData {
     /**
      * 测试数据生成器
      */
-    @UtilityClass
-    public static class TestDataGenerator {
+    public static final class TestDataGenerator {
+        
+        // 私有构造函数防止实例化
+        private TestDataGenerator() {
+            throw new UnsupportedOperationException("Utility class cannot be instantiated");
+        }
         
         public static ExpenseApprovalDto createExpenseDto(String title, BigDecimal amount, String description, Long applicantId) {
-            return ExpenseApprovalDto.builder()
-                    .businessType("EXPENSE_APPROVAL")
-                    .businessTitle(title)
-                    .applicantId(applicantId)
-                    .departmentId(101L)
-                    .amount(amount)
-                    .description(description)
-                    .expenseDate(LocalDateTime.now())
-                    .build();
+            ExpenseApprovalDto dto = new ExpenseApprovalDto();
+            dto.setBusinessType("EXPENSE_APPROVAL");
+            dto.setBusinessTitle(title);
+            dto.setApplicantId(applicantId);
+            dto.setDepartmentId(101L);
+            dto.setAmount(amount);
+            dto.setDescription(description);
+            dto.setExpenseDate(LocalDateTime.now());
+            return dto;
         }
 
         public static ApprovalFlowConfig createFlowConfig(String name, String businessType, ApprovalType type, 
@@ -681,17 +684,83 @@ public class ApprovalTestData {
         }
     }
 
-    @Data
     private static class ExpenseTestScenario {
         private final String title;
         private final BigDecimal amount;
         private final String description;
+        
+        public ExpenseTestScenario(String title, BigDecimal amount, String description) {
+            this.title = title;
+            this.amount = amount;
+            this.description = description;
+        }
+        
+        public String getTitle() { return title; }
+        public BigDecimal getAmount() { return amount; }
+        public String getDescription() { return description; }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ExpenseTestScenario)) return false;
+            ExpenseTestScenario that = (ExpenseTestScenario) o;
+            return Objects.equals(title, that.title) &&
+                   Objects.equals(amount, that.amount) &&
+                   Objects.equals(description, that.description);
+        }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hash(title, amount, description);
+        }
+        
+        @Override
+        public String toString() {
+            return "ExpenseTestScenario{" +
+                   "title='" + title + '\'' +
+                   ", amount=" + amount +
+                   ", description='" + description + '\'' +
+                   '}';
+        }
     }
 
-    @Data
     private static class LoanTestScenario {
         private final String title;
         private final BigDecimal amount;
         private final String description;
+        
+        public LoanTestScenario(String title, BigDecimal amount, String description) {
+            this.title = title;
+            this.amount = amount;
+            this.description = description;
+        }
+        
+        public String getTitle() { return title; }
+        public BigDecimal getAmount() { return amount; }
+        public String getDescription() { return description; }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof LoanTestScenario)) return false;
+            LoanTestScenario that = (LoanTestScenario) o;
+            return Objects.equals(title, that.title) &&
+                   Objects.equals(amount, that.amount) &&
+                   Objects.equals(description, that.description);
+        }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hash(title, amount, description);
+        }
+        
+        @Override
+        public String toString() {
+            return "LoanTestScenario{" +
+                   "title='" + title + '\'' +
+                   ", amount=" + amount +
+                   ", description='" + description + '\'' +
+                   '}';
+        }
     }
 }

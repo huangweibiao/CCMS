@@ -53,7 +53,12 @@ public enum BusinessType {
     /**
      * 项目立项
      */
-    PROJECT_APPROVAL("PROJECT_APPROVAL", "项目立项");
+    PROJECT_APPROVAL("PROJECT_APPROVAL", "项目立项"),
+    
+    /**
+     * 借款业务
+     */
+    LOAN("LOAN", "借款");
 
     private final String code;
     private final String description;

@@ -91,4 +91,20 @@ public interface ApprovalInstanceRepository extends BaseRepository<ApprovalInsta
      */
     @Query("SELECT AVG(TIMESTAMPDIFF(SECOND, ai.createTime, ai.finishTime)) FROM ApprovalInstance ai WHERE ai.finishTime IS NOT NULL AND ai.createTime BETWEEN :startTime AND :endTime")
     Double findAverageApprovalDuration(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+    
+    /**
+     * 根据状态枚举和完成时间之后查找审批实例
+     */
+    List<ApprovalInstance> findByStatusAndFinishTimeAfter(ApprovalStatusEnum status, LocalDateTime finishTime);
+
+    // 以下方法是编译错误中缺失的方法声明
+    Optional<ApprovalInstance> findTop1ByBusinessTypeAndBusinessId(String businessType, Long businessId);
+
+    List<ApprovalInstance> findByStatusNotAndCreateByNot(Long status, String createBy, org.springframework.data.domain.Pageable pageable);
+
+    List<ApprovalInstance> findByCreateBy(String createBy, org.springframework.data.domain.Pageable pageable);
+
+    Long countByCreateTimeBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    Long countByStatusAndCreateTimeBetween(Long status, LocalDateTime startDate, LocalDateTime endDate);
 }

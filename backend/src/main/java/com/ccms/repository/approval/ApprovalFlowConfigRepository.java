@@ -121,4 +121,9 @@ public interface ApprovalFlowConfigRepository extends JpaRepository<ApprovalFlow
      */
     @Query("SELECT afc FROM ApprovalFlowConfig afc WHERE afc.flowCode = :flowCode ORDER BY afc.version DESC LIMIT 1")
     Optional<ApprovalFlowConfig> findLatestVersionByFlowCode(@Param("flowCode") String flowCode);
+
+    // 别名方法，与findLatestVersionByFlowCode作用相同
+    default Optional<ApprovalFlowConfig> findLatestByFlowCode(String flowCode) {
+        return findLatestVersionByFlowCode(flowCode);
+    }
 }
