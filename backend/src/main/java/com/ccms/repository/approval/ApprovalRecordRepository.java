@@ -21,13 +21,13 @@ import java.util.Optional;
 public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, Long> {
 
     /**
-     * 根据业务ID和业务类型枚举查询审批记录
+     * 根据业务ID和业务类型查询审批记录
      * 
      * @param businessId 业务ID
-     * @param businessType 业务类型枚举
+     * @param businessType 业务类型
      * @return 审批记录列表
      */
-    List<ApprovalRecord> findByBusinessIdAndBusinessType(Long businessId, BusinessTypeEnum businessType);
+    List<ApprovalRecord> findByBusinessIdAndBusinessType(Long businessId, String businessType);
 
     /**
      * 根据审批状态枚举查询审批记录
@@ -78,11 +78,11 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
      * 
      * @param id 记录ID
      * @param approvalStatus 新审批状态
-     * @param approvalComment 审批意见
+     * @param approvalRemark 审批意见
      */
     @org.springframework.data.jpa.repository.Modifying
-    @Query("UPDATE ApprovalRecord ar SET ar.approvalStatus = :approvalStatus, ar.approvalComment = :approvalComment, ar.approvalTime = CURRENT_TIMESTAMP WHERE ar.id = :id")
-    void updateApprovalStatus(@Param("id") Long id, @Param("approvalStatus") Integer approvalStatus, @Param("approvalComment") String approvalComment);
+    @Query("UPDATE ApprovalRecord ar SET ar.approvalStatus = :approvalStatus, ar.approvalRemark = :approvalRemark, ar.approvalTime = CURRENT_TIMESTAMP WHERE ar.id = :id")
+    void updateApprovalStatus(@Param("id") Long id, @Param("approvalStatus") Integer approvalStatus, @Param("approvalRemark") String approvalRemark);
 
     /**
      * 查询指定业务的所有审批节点（按审批顺序排序）
@@ -122,12 +122,9 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
      * @return 创建的记录
      */
     @org.springframework.data.jpa.repository.Modifying
-    @Query(value = "INSERT INTO approval_record (process_id, approver_id, original_approver_id, delegation_comment, create_time) VALUES (:processId, :targetApproverId, :sourceApproverId, :comment, CURRENT_TIMESTAMP)", nativeQuery = true)
+    @Query(value = "INSERT INTO ccms_approval_record (approver_id, approval_remark, create_time) VALUES (:targetApproverId, :comment, CURRENT_TIMESTAMP)", nativeQuery = true)
     void createDelegationRecord(@Param("processId") Long processId, @Param("sourceApproverId") Long sourceApproverId, @Param("targetApproverId") Long targetApproverId, @Param("comment") String comment);
     
-    // 添加缺失的方法
-    List<ApprovalRecord> findByProcessIdOrderByApprovalTimeAsc(Long processId);
-
     // 以下方法是编译错误中缺失的方法声明
     List<ApprovalRecord> findByInstanceId(Long instanceId);
 
@@ -136,5 +133,5 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
     /**
      * 根据业务ID查找审批记录
      */
-    List<ApprovalRecord> findByBusinessId(String businessId);
+    List<ApprovalRecord> findByBusinessId(Long businessId);
 }

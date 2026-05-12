@@ -519,7 +519,7 @@ public class LoanServiceImpl implements LoanService {
         List<Map<String, Object>> records = new ArrayList<>();
         
         // 获取审批记录
-        List<ApprovalRecord> approvalRecords = approvalRecordRepository.findByBusinessIdAndBusinessType(loanId, BusinessTypeEnum.LOAN);
+        List<ApprovalRecord> approvalRecords = approvalRecordRepository.findByBusinessIdAndBusinessType(loanId, BusinessTypeEnum.LOAN.toString());
         for (ApprovalRecord record : approvalRecords) {
             Map<String, Object> recordMap = new HashMap<>();
             recordMap.put("approverId", record.getApproverId());

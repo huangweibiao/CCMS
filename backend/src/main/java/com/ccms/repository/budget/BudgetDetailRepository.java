@@ -2,6 +2,7 @@ package com.ccms.repository.budget;
 
 import com.ccms.entity.budget.BudgetDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -21,10 +22,10 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
     /**
      * 根据预算主表ID查询明细列表
      * 
-     * @param budgetMainId 预算主表ID
+     * @param budgetId 预算主表ID
      * @return 明细列表
      */
-    List<BudgetDetail> findByBudgetMainId(Long budgetMainId);
+    List<BudgetDetail> findByBudgetId(Long budgetId);
 
     /**
      * 根据费用类型查询预算明细
@@ -32,43 +33,43 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
      * @param expenseType 费用类型：1-差旅费，2-办公费，3-业务招待费，4-交通费，5-通讯费，6-培训费，7-其他
      * @return 预算明细列表
      */
-    List<BudgetDetail> findByExpenseType(Integer expenseType);
+    List<BudgetDetail> findByFeeTypeId(Integer feeTypeId);
 
     /**
      * 根据预算主表ID和费用类型查询预算明细
      * 
-     * @param budgetMainId 预算主表ID
+     * @param budgetId 预算主表ID
      * @param expenseType 费用类型
      * @return 预算明细
      */
-    Optional<BudgetDetail> findByBudgetMainIdAndExpenseType(Long budgetMainId, Integer expenseType);
+    Optional<BudgetDetail> findByBudgetIdAndFeeTypeId(Long budgetId, Integer feeTypeId);
 
     /**
      * 统计预算主表的预算总额
      * 
-     * @param budgetMainId 预算主表ID
+     * @param budgetId 预算主表ID
      * @return 预算总额
      */
-    @Query("SELECT COALESCE(SUM(bd.budgetAmount), 0) FROM BudgetDetail bd WHERE bd.budgetMainId = :budgetMainId")
-    BigDecimal calculateTotalBudgetAmount(@Param("budgetMainId") Long budgetMainId);
+    @Query("SELECT COALESCE(SUM(bd.budgetAmount), 0) FROM BudgetDetail bd WHERE bd.budgetId = :budgetId")
+    BigDecimal calculateTotalBudgetAmount(@Param("budgetId") Long budgetId);
 
     /**
      * 统计预算主表的已使用金额
      * 
-     * @param budgetMainId 预算主表ID
+     * @param budgetId 预算主表ID
      * @return 已使用金额
      */
-    @Query("SELECT COALESCE(SUM(bd.usedAmount), 0) FROM BudgetDetail bd WHERE bd.budgetMainId = :budgetMainId")
-    BigDecimal calculateTotalUsedAmount(@Param("budgetMainId") Long budgetMainId);
+    @Query("SELECT COALESCE(SUM(bd.usedAmount), 0) FROM BudgetDetail bd WHERE bd.budgetId = :budgetId")
+    BigDecimal calculateTotalUsedAmount(@Param("budgetId") Long budgetId);
 
     /**
      * 统计预算主表的剩余金额
      * 
-     * @param budgetMainId 预算主表ID
+     * @param budgetId 预算主表ID
      * @return 剩余金额
      */
-    @Query("SELECT COALESCE(SUM(bd.budgetAmount - bd.usedAmount), 0) FROM BudgetDetail bd WHERE bd.budgetMainId = :budgetMainId")
-    BigDecimal calculateTotalRemainingAmount(@Param("budgetMainId") Long budgetMainId);
+    @Query("SELECT COALESCE(SUM(bd.budgetAmount - bd.usedAmount), 0) FROM BudgetDetail bd WHERE bd.budgetId = :budgetId")
+    BigDecimal calculateTotalRemainingAmount(@Param("budgetId") Long budgetId);
 
     /**
      * 更新明细使用金额
@@ -76,7 +77,7 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
      * @param id 明细ID
      * @param usedAmount 使用金额
      */
-    @org.springframework.data.jpa.repository.Modifying
+    @Modifying
     @Query("UPDATE BudgetDetail bd SET bd.usedAmount = bd.usedAmount + :usedAmount, bd.remainingAmount = bd.remainingAmount - :usedAmount WHERE bd.id = :id")
     void updateUsedAmount(@Param("id") Long id, @Param("usedAmount") BigDecimal usedAmount);
 
@@ -89,9 +90,9 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
      * @return 预算明细列表
      */
     @Query("SELECT bd FROM BudgetDetail bd " +
-           "JOIN BudgetMain bm ON bd.budgetMainId = bm.id " +
-           "WHERE bm.deptId = :deptId AND bm.budgetYear = :year AND bd.expenseType = :expenseType AND bm.status >= 2")
-    List<BudgetDetail> findByDeptIdAndYearAndExpenseType(@Param("deptId") Long deptId, @Param("year") Integer year, @Param("expenseType") Integer expenseType);
+           "JOIN BudgetMain bm ON bd.budgetId = bm.id " +
+           "WHERE bm.deptId = :deptId AND bm.budgetYear = :year AND bd.feeTypeId = :feeTypeId AND bm.status >= 2")
+    List<BudgetDetail> findByDeptIdAndYearAndFeeTypeId(@Param("deptId") Long deptId, @Param("year") Integer year, @Param("feeTypeId") Integer feeTypeId);
 
     /**
      * 查询部门在指定年度的总预算（按费用类型分组）
@@ -100,10 +101,10 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
      * @param year 年份
      * @return Object[] 包含 expenseType 和 totalAmount
      */
-    @Query("SELECT bd.expenseType, SUM(bd.budgetAmount) FROM BudgetDetail bd " +
-           "JOIN BudgetMain bm ON bd.budgetMainId = bm.id " +
+    @Query("SELECT bd.feeTypeId, SUM(bd.budgetAmount) FROM BudgetDetail bd " +
+           "JOIN BudgetMain bm ON bd.budgetId = bm.id " +
            "WHERE bm.deptId = :deptId AND bm.budgetYear = :year AND bm.status >= 2 " +
-           "GROUP BY bd.expenseType")
+           "GROUP BY bd.feeTypeId")
     List<Object[]> findBudgetSummaryByDeptAndYear(@Param("deptId") Long deptId, @Param("year") Integer year);
 
     /**
@@ -113,10 +114,10 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
      * @param year 年份
      * @return Object[] 包含 expenseType 和 totalUsedAmount
      */
-    @Query("SELECT bd.expenseType, SUM(bd.usedAmount) FROM BudgetDetail bd " +
-           "JOIN BudgetMain bm ON bd.budgetMainId = bm.id " +
+    @Query("SELECT bd.feeTypeId, SUM(bd.usedAmount) FROM BudgetDetail bd " +
+           "JOIN BudgetMain bm ON bd.budgetId = bm.id " +
            "WHERE bm.deptId = :deptId AND bm.budgetYear = :year AND bm.status >= 2 " +
-           "GROUP BY bd.expenseType")
+           "GROUP BY bd.feeTypeId")
     List<Object[]> findUsedAmountSummaryByDeptAndYear(@Param("deptId") Long deptId, @Param("year") Integer year);
     
     /**
@@ -126,7 +127,7 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
      * @return 可用的预算明细列表
      */
     @Query("SELECT bd FROM BudgetDetail bd " +
-           "JOIN BudgetMain bm ON bd.budgetMainId = bm.id " +
+           "JOIN BudgetMain bm ON bd.budgetId = bm.id " +
            "WHERE bm.deptId = :deptId AND bm.status >= 2 AND bd.budgetAmount > bd.usedAmount")
     List<BudgetDetail> findAvailableBudget(@Param("deptId") Long deptId);
 }

@@ -84,7 +84,7 @@ public class BudgetAlertServiceImpl implements BudgetAlertService {
         }
 
         // 获取预算主表的所有明细
-        List<BudgetDetail> details = budgetDetailRepository.findByBudgetMainId(budgetMain.getId());
+        List<BudgetDetail> details = budgetDetailRepository.findByBudgetId(budgetMain.getId());
         
         for (BudgetDetail detail : details) {
             // 检查预警

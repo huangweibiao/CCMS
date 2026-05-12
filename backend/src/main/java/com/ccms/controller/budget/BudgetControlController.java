@@ -233,7 +233,7 @@ public class BudgetControlController {
             BudgetMain budgetMain = budgetMainOpt.get();
             
             // 获取该预算主表的所有明细
-            var details = budgetDetailRepository.findByBudgetMainId(id);
+            var details = budgetDetailRepository.findByBudgetId(id);
             
             BigDecimal totalBudgetAmount = details.stream()
                 .map(BudgetDetail::getBudgetAmount)

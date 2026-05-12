@@ -740,7 +740,7 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
         List<Map<String, Object>> records = new ArrayList<>();
         
         // 获取审批记录
-        List<ApprovalRecord> approvalRecords = approvalRecordRepository.findByBusinessId(reimburseId.toString());
+        List<ApprovalRecord> approvalRecords = approvalRecordRepository.findByBusinessId(reimburseId);
         for (ApprovalRecord record : approvalRecords) {
             Map<String, Object> recordMap = new HashMap<>();
             recordMap.put("approverId", record.getApproverId());

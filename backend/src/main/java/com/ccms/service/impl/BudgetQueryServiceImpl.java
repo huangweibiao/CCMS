@@ -52,7 +52,7 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
             for (BudgetMain budget : budgets) {
                 // 只统计已生效状态的预算
                 if (budget.getBudgetStatus() == 3) { // 3表示已生效
-                    List<BudgetDetail> details = budgetDetailRepository.findByBudgetMainId(budget.getId());
+                    List<BudgetDetail> details = budgetDetailRepository.findByBudgetId(budget.getId());
                     
                     for (BudgetDetail detail : details) {
                         BigDecimal budgetAmount = detail.getBudgetAmount() != null ? detail.getBudgetAmount() : BigDecimal.ZERO;
@@ -127,7 +127,7 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
                 // 只统计已生效状态的预算
                 if (budget.getBudgetStatus() == 3) {
                     // 按费用类型查询预算明细
-                    List<BudgetDetail> details = budgetDetailRepository.findByBudgetMainId(budget.getId());
+                    List<BudgetDetail> details = budgetDetailRepository.findByBudgetId(budget.getId());
                     
                     for (BudgetDetail detail : details) {
                         if (detail.getFeeTypeId().equals(feeTypeId)) {

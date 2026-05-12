@@ -99,7 +99,7 @@ public class BudgetServiceImpl implements BudgetService {
         }
         
         // 检查预算明细是否完整
-        List<BudgetDetail> details = budgetDetailRepository.findByBudgetMainId(budgetId);
+        List<BudgetDetail> details = budgetDetailRepository.findByBudgetId(budgetId);
         if (details == null || details.isEmpty()) {
             throw new RuntimeException("预算明细不能为空");
         }
@@ -173,7 +173,7 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     public List<BudgetDetail> getBudgetDetails(Long budgetId) {
-        return budgetDetailRepository.findByBudgetMainId(budgetId);
+        return budgetDetailRepository.findByBudgetId(budgetId);
     }
 
     @Override
@@ -224,7 +224,7 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     public List<BudgetAdjust> getBudgetAdjustments(Long budgetId) {
-        return budgetAdjustRepository.findByBudgetMainId(budgetId);
+        return budgetAdjustRepository.findByBudgetId(budgetId);
     }
 
     @Override
@@ -245,7 +245,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public boolean checkBudgetAvailability(Long deptId, Integer expenseType, BigDecimal amount, Integer year) {
         // 查询部门的预算明细
-        List<BudgetDetail> details = budgetDetailRepository.findByDeptIdAndYearAndExpenseType(deptId, year, expenseType);
+        List<BudgetDetail> details = budgetDetailRepository.findByDeptIdAndYearAndFeeTypeId(deptId, year, expenseType);
         
         if (details.isEmpty()) {
             return false; // 没有设置该费用类型的预算
@@ -266,7 +266,7 @@ public class BudgetServiceImpl implements BudgetService {
         }
         
         // 查找可用的预算明细
-        List<BudgetDetail> details = budgetDetailRepository.findByDeptIdAndYearAndExpenseType(deptId, year, expenseType);
+        List<BudgetDetail> details = budgetDetailRepository.findByDeptIdAndYearAndFeeTypeId(deptId, year, expenseType);
         
         for (BudgetDetail detail : details) {
             if (detail.getRemainingAmount().compareTo(amount) >= 0) {
@@ -286,7 +286,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public boolean returnBudget(Long deptId, Integer expenseType, BigDecimal amount, Integer year) {
         // 查找对应的预算明细
-        List<BudgetDetail> details = budgetDetailRepository.findByDeptIdAndYearAndExpenseType(deptId, year, expenseType);
+        List<BudgetDetail> details = budgetDetailRepository.findByDeptIdAndYearAndFeeTypeId(deptId, year, expenseType);
         
         for (BudgetDetail detail : details) {
             // 退回预算

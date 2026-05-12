@@ -145,7 +145,7 @@ class BudgetControlControllerTest extends ControllerTestBase {
         BudgetDetail detail = createTestBudgetDetail(1L);
 
         when(budgetMainRepository.findById(1L)).thenReturn(Optional.of(main));
-        when(budgetDetailRepository.findByBudgetMainId(1L)).thenReturn(Collections.singletonList(detail));
+        when(budgetDetailRepository.findByBudgetId(1L)).thenReturn(Collections.singletonList(detail));
 
         performGet("/api/budget/control/main/1/statistics")
                 .andExpect(status().isOk())
@@ -282,7 +282,7 @@ class BudgetControlControllerTest extends ControllerTestBase {
         detail2.setFrozenAmount(new BigDecimal("500.00"));
 
         when(budgetMainRepository.findById(1L)).thenReturn(Optional.of(main));
-        when(budgetDetailRepository.findByBudgetMainId(1L)).thenReturn(java.util.Arrays.asList(detail1, detail2));
+        when(budgetDetailRepository.findByBudgetId(1L)).thenReturn(java.util.Arrays.asList(detail1, detail2));
 
         // when & then
         performGet("/api/budget/control/main/1/statistics")

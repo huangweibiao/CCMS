@@ -182,7 +182,8 @@ public class ApprovalServiceImpl implements ApprovalService {
 
     @Override
     public List<ApprovalRecord> getApprovalRecords(Long processId) {
-        return approvalRecordRepository.findByProcessIdOrderByApprovalTimeAsc(processId);
+        // 根据processId查询对应的审批记录，这里使用instanceId替代processId
+        return approvalRecordRepository.findByInstanceId(processId);
     }
 
     @Override

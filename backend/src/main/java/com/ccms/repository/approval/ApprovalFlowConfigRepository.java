@@ -82,7 +82,7 @@ public interface ApprovalFlowConfigRepository extends JpaRepository<ApprovalFlow
      * @param status 状态
      * @return 流程配置列表
      */
-    @Query("SELECT afc FROM ApprovalFlowConfig afc WHERE (afc.applicableDeptIds LIKE %:deptId% OR afc.applicableDeptIds = '' OR afc.applicableDeptIds IS NULL) AND afc.businessType = :businessType AND afc.status = :status")
+    @Query("SELECT afc FROM ApprovalFlowConfig afc WHERE (afc.deptId = :deptId OR afc.deptId IS NULL) AND afc.businessType = :businessType AND afc.status = :status")
     List<ApprovalFlowConfig> findApplicableFlowConfigs(@Param("deptId") Long deptId, @Param("businessType") BusinessTypeEnum businessType, @Param("status") Integer status);
 
     /**
@@ -93,7 +93,7 @@ public interface ApprovalFlowConfigRepository extends JpaRepository<ApprovalFlow
      * @param status 状态
      * @return 流程配置列表
      */
-    @Query("SELECT afc FROM ApprovalFlowConfig afc WHERE afc.businessType = :businessType AND afc.minAmountThreshold <= :amount AND afc.status = :status ORDER BY afc.minAmountThreshold DESC")
+    @Query("SELECT afc FROM ApprovalFlowConfig afc WHERE afc.businessType = :businessType AND afc.minAmount <= :amount AND afc.status = :status ORDER BY afc.minAmount DESC")
     List<ApprovalFlowConfig> findFlowConfigsByAmountThreshold(@Param("businessType") BusinessTypeEnum businessType, @Param("amount") java.math.BigDecimal amount, @Param("status") Integer status);
 
     /**
