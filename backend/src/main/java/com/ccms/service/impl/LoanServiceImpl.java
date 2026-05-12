@@ -3,9 +3,18 @@ package com.ccms.service.impl;
 import com.ccms.dto.LoanApplyRequest;
 import com.ccms.dto.LoanResponse;
 import com.ccms.entity.expense.LoanMain;
+import com.ccms.entity.approval.ApprovalInstance;
+import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.repository.expense.LoanMainRepository;
+import com.ccms.repository.approval.ApprovalInstanceRepository;
+import com.ccms.repository.approval.ApprovalRecordRepository;
 import com.ccms.service.LoanService;
 import com.ccms.service.MessageService;
+import com.ccms.service.ApprovalFlowService;
+import com.ccms.dto.ApprovalRequest;
+import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalAction;
+import com.ccms.enums.BusinessType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +42,21 @@ public class LoanServiceImpl implements LoanService {
     
     private final LoanMainRepository loanMainRepository;
     private final MessageService messageService;
+    private final ApprovalInstanceRepository approvalInstanceRepository;
+    private final ApprovalRecordRepository approvalRecordRepository;
+    private final ApprovalFlowService approvalFlowService;
 
     @Autowired
     public LoanServiceImpl(LoanMainRepository loanMainRepository, 
-                          MessageService messageService) {
+                          MessageService messageService,
+                          ApprovalInstanceRepository approvalInstanceRepository,
+                          ApprovalRecordRepository approvalRecordRepository,
+                          ApprovalFlowService approvalFlowService) {
         this.loanMainRepository = loanMainRepository;
         this.messageService = messageService;
+        this.approvalInstanceRepository = approvalInstanceRepository;
+        this.approvalRecordRepository = approvalRecordRepository;
+        this.approvalFlowService = approvalFlowService;
     }
 
     @Override
@@ -432,6 +450,131 @@ public class LoanServiceImpl implements LoanService {
         
         if (loan.getPurpose() == null || loan.getPurpose().trim().isEmpty()) {
             throw new RuntimeException("借款用途不能为空");
+        }
+    }
+    
+    // ========== 审批流程集成方法 ==========
+    
+    @Override
+    public ApprovalInstance submitForApproval(Long loanId, Long applicantId, String title) {
+        LoanMain loan = getLoanById(loanId);
+        
+        // 检查是否在审批中
+        if (isUnderApproval(loanId)) {
+            throw new RuntimeException("借款申请已在审批中");
+        }
+        
+        // 检查是否为草稿状态
+        if (loan.getStatus() != 0) {
+            throw new RuntimeException("只有草稿状态的借款申请可以提交审批");
+        }
+        
+        // 创建审批请求
+        ApprovalRequest request = new ApprovalRequest();
+        request.setBusinessId(loanId.toString());
+        request.setBusinessType(BusinessType.LOAN);
+        request.setApplicantId(applicantId);
+        request.setTitle(title != null ? title : "借款申请审批-" + loan.getLoanNo());
+        request.setDescription("借款申请审批流程");
+        
+        // 提交审批流程
+        ApprovalInstance approvalInstance = approvalFlowService.createApprovalInstance(request);
+        
+        // 更新借款申请状态为审批中
+        loan.setStatus(1); // 审批中
+        loanMainRepository.save(loan);
+        
+        return approvalInstance;
+    }
+    
+    @Override
+    public ApprovalStatus getApprovalStatus(Long loanId) {
+        // 查找关联的审批实例
+        Optional<ApprovalInstance> instanceOpt = approvalInstanceRepository.findByBusinessId(loanId.toString());
+        if (instanceOpt.isPresent()) {
+            ApprovalInstance instance = instanceOpt.get();
+            return ApprovalStatus.valueOf(instance.getStatus());
+        }
+        
+        // 如果没有审批实例，获取借款申请自己的状态
+        LoanMain loan = getLoanById(loanId);
+        if (loan == null) {
+            return ApprovalStatus.REJECTED; // 默认拒绝状态
+        }
+        
+        // 映射内部状态到审批状态
+        return mapInternalStatusToApprovalStatus(loan.getStatus());
+    }
+    
+    @Override
+    public List<Map<String, Object>> getApprovalRecords(Long loanId) {
+        List<Map<String, Object>> records = new ArrayList<>();
+        
+        // 获取审批记录
+        List<ApprovalRecord> approvalRecords = approvalRecordRepository.findByBusinessId(loanId.toString());
+        for (ApprovalRecord record : approvalRecords) {
+            Map<String, Object> recordMap = new HashMap<>();
+            recordMap.put("approverId", record.getApproverId());
+            recordMap.put("action", ApprovalAction.valueOf(record.getAction()));
+            recordMap.put("remarks", record.getRemarks());
+            recordMap.put("approvalTime", record.getApprovalTime());
+            records.add(recordMap);
+        }
+        
+        return records;
+    }
+    
+    @Override
+    public boolean isUnderApproval(Long loanId) {
+        ApprovalStatus status = getApprovalStatus(loanId);
+        return status == ApprovalStatus.PENDING || status == ApprovalStatus.IN_PROGRESS;
+    }
+    
+    @Override
+    public void onApprovalCompleted(Long loanId, ApprovalStatus finalStatus) {
+        LoanMain loan = getLoanById(loanId);
+        if (loan == null) {
+            throw new RuntimeException("借款申请不存在");
+        }
+        
+        // 根据最终审批状态更新借款申请状态
+        if (finalStatus == ApprovalStatus.APPROVED) {
+            loan.setStatus(2); // 已批准，等待放款
+        } else if (finalStatus == ApprovalStatus.REJECTED) {
+            loan.setStatus(5); // 审批驳回
+        } else if (finalStatus == ApprovalStatus.WITHDRAWN || finalStatus == ApprovalStatus.CANCELLED) {
+            loan.setStatus(0); // 已撤回/取消，恢复为草稿
+        }
+        
+        // 设置审批完成时间
+        loan.setUpdateTime(LocalDateTime.now());
+        
+        loanMainRepository.save(loan);
+        
+        // 发送通知
+        if (finalStatus == ApprovalStatus.APPROVED) {
+            messageService.sendApprovalMessage(loan.getLoanUserId(), 
+                "借款申请已批准", "您的借款申请已通过审批，等待放款");
+        } else if (finalStatus == ApprovalStatus.REJECTED) {
+            messageService.sendApprovalMessage(loan.getLoanUserId(), 
+                "借款申请被驳回", "您的借款申请被驳回");
+        }
+    }
+    
+    /**
+     * 映射内部状态到审批状态
+     */
+    private ApprovalStatus mapInternalStatusToApprovalStatus(Integer internalStatus) {
+        if (internalStatus == null) return ApprovalStatus.REJECTED;
+        
+        switch (internalStatus) {
+            case 0: return ApprovalStatus.REJECTED; // 草稿
+            case 1: return ApprovalStatus.IN_PROGRESS; // 审批中
+            case 2: return ApprovalStatus.APPROVED; // 已批准，等待放款
+            case 3: return ApprovalStatus.APPROVED; // 已放款
+            case 5: return ApprovalStatus.REJECTED; // 驳回
+            case 4: return ApprovalStatus.CANCELLED; // 已取消
+            default: return ApprovalStatus.REJECTED;
         }
     }
 }

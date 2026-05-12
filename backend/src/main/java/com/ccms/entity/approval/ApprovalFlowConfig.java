@@ -67,6 +67,24 @@ public class ApprovalFlowConfig extends BaseEntity {
      */
     @Column(name = "status", nullable = false)
     private Integer status;
+    
+    /**
+     * 流程描述
+     */
+    @Column(name = "description", length = 500)
+    private String description;
+    
+    /**
+     * 流程版本号
+     */
+    @Column(name = "version", nullable = false)
+    private Integer version = 1;
+    
+    /**
+     * 适用优先级（数字越小优先级越高）
+     */
+    @Column(name = "priority", nullable = false)
+    private Integer priority = 100;
 
     // Getters and Setters
     public String getFlowCode() {
@@ -141,6 +159,30 @@ public class ApprovalFlowConfig extends BaseEntity {
         this.status = status;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
     @Override
     public String toString() {
         return "ApprovalFlowConfig{" +
@@ -153,6 +195,9 @@ public class ApprovalFlowConfig extends BaseEntity {
                 ", deptId=" + deptId +
                 ", feeTypeId=" + feeTypeId +
                 ", status=" + status +
+                ", description='" + description + '\'' +
+                ", version=" + version +
+                ", priority=" + priority +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
                 ", version=" + getVersion() +

@@ -1,12 +1,16 @@
 package com.ccms.repository.approval;
 
 import com.ccms.entity.approval.ApprovalRecord;
+import com.ccms.enums.ApprovalActionEnum;
+import com.ccms.enums.ApprovalStatusEnum;
+import com.ccms.enums.BusinessTypeEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 审批记录表Repository接口
@@ -17,37 +21,38 @@ import java.util.List;
 public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, Long> {
 
     /**
-     * 根据业务ID和业务类型查询审批记录
+     * 根据业务ID和业务类型枚举查询审批记录
      * 
      * @param businessId 业务ID
-     * @param businessType 业务类型
+     * @param businessType 业务类型枚举
      * @return 审批记录列表
      */
-    List<ApprovalRecord> findByBusinessIdAndBusinessType(Long businessId, String businessType);
+    List<ApprovalRecord> findByBusinessIdAndBusinessType(Long businessId, BusinessTypeEnum businessType);
 
     /**
-     * 根据审批人ID查询审批记录
+     * 根据审批状态枚举查询审批记录
      * 
-     * @param approverId 审批人ID
+     * @param approvalStatus 审批状态枚举
      * @return 审批记录列表
      */
-    List<ApprovalRecord> findByApproverId(Long approverId);
+    List<ApprovalRecord> findByApprovalStatus(ApprovalStatusEnum approvalStatus);
 
     /**
-     * 根据审批状态查询审批记录
+     * 根据审批操作枚举查询审批记录
      * 
-     * @param approvalStatus 审批状态：0-待审批，1-审批中，2-已通过，3-已驳回，4-已撤回
+     * @param approvalAction 审批操作枚举
      * @return 审批记录列表
      */
-    List<ApprovalRecord> findByApprovalStatus(Integer approvalStatus);
+    List<ApprovalRecord> findByApprovalAction(ApprovalActionEnum approvalAction);
 
     /**
      * 查询待审批的记录
      * 
      * @param approverId 审批人ID
+     * @param approvalStatus 审批状态枚举
      * @return 待审批记录列表
      */
-    List<ApprovalRecord> findByApproverIdAndApprovalStatus(Long approverId, Integer approvalStatus);
+    List<ApprovalRecord> findByApproverIdAndApprovalStatus(Long approverId, ApprovalStatusEnum approvalStatus);
 
     /**
      * 查询指定业务的最新审批节点

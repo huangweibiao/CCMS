@@ -1,63 +1,47 @@
 package com.ccms.repository.approval;
 
 import com.ccms.entity.approval.ApprovalNode;
+import com.ccms.enums.ApproverTypeEnum;
 import com.ccms.repository.BaseRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApprovalNodeRepository extends BaseRepository<ApprovalNode, Long> {
     
-    List<ApprovalNode> findByProcessId(Long processId);
+    List<ApprovalNode> findByFlowConfigId(Long flowConfigId);
     
-    List<ApprovalNode> findByProcessIdOrderByStepNumber(Long processId);
+    List<ApprovalNode> findByFlowConfigIdOrderByStepNumber(Long flowConfigId);
     
-    ApprovalNode findByProcessIdAndNodeCode(Long processId, String nodeCode);
+    Optional<ApprovalNode> findByFlowConfigIdAndNodeCode(Long flowConfigId, String nodeCode);
     
-    @Query("SELECT an FROM ApprovalNode an WHERE an.processId = :processId AND an.nodeType = :nodeType")
-    List<ApprovalNode> findByProcessIdAndNodeType(@Param("processId") Long processId, @Param("nodeType") String nodeType);
+    @Query("SELECT an FROM ApprovalNode an WHERE an.flowConfigId = :flowConfigId AND an.approverType = :approverType")
+    List<ApprovalNode> findByFlowConfigIdAndApproverType(@Param("flowConfigId") Long flowConfigId, @Param("approverType") ApproverTypeEnum approverType);
     
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.processId = :processId")
-    Long countByProcessId(@Param("processId") Long processId);
+    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.flowConfigId = :flowConfigId")
+    Long countByFlowConfigId(@Param("flowConfigId") Long flowConfigId);
     
-    // 添加ApprovalServiceImpl中调用的自定义方法
-    @Query("SELECT an FROM ApprovalNode an WHERE an.processId = :processId AND an.stepNumber = (SELECT ap.currentNode FROM ApprovalProcess ap WHERE ap.id = :processId)")
-    ApprovalNode findCurrentNodeByProcessId(@Param("processId") Long processId);
+    // 根据当前步骤查找节点
+    @Query("SELECT an FROM ApprovalNode an WHERE an.flowConfigId = :flowConfigId AND an.stepNumber = :stepNumber")
+    Optional<ApprovalNode> findByFlowConfigIdAndStepNumber(@Param("flowConfigId") Long flowConfigId, @Param("stepNumber") Integer stepNumber);
     
-    // 添加统计方法
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.processTime BETWEEN :startDate AND :endDate")
-    Long countByApproverIdAndDateRange(@Param("approverId") Long approverId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    // 查找下一个节点
+    @Query("SELECT an FROM ApprovalNode an WHERE an.flowConfigId = :flowConfigId AND an.stepNumber = (SELECT an2.stepNumber + 1 FROM ApprovalNode an2 WHERE an2.flowConfigId = :flowConfigId ORDER BY an2.stepNumber DESC LIMIT 1)")
+    Optional<ApprovalNode> findNextNodeByFlowConfigId(@Param("flowConfigId") Long flowConfigId);
+
+    // 根据步骤号排序获取所有节点
+    @Query("SELECT an FROM ApprovalNode an WHERE an.flowConfigId = :flowConfigId ORDER BY an.stepNumber ASC")
+    List<ApprovalNode> findByFlowConfigIdOrderByStepNumberAsc(@Param("flowConfigId") Long flowConfigId);
     
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 0 AND an.processTime BETWEEN :startDate AND :endDate")
-    Long countPendingByApproverIdAndDateRange(@Param("approverId") Long approverId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    // 查找第一个节点
+    @Query("SELECT an FROM ApprovalNode an WHERE an.flowConfigId = :flowConfigId ORDER BY an.stepNumber ASC LIMIT 1")
+    Optional<ApprovalNode> findFirstNodeByFlowConfigId(@Param("flowConfigId") Long flowConfigId);
     
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 1 AND an.processTime BETWEEN :startDate AND :endDate")
-    Long countApprovedByApproverIdAndDateRange(@Param("approverId") Long approverId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
-    
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 2 AND an.processTime BETWEEN :startDate AND :endDate")
-    Long countRejectedByApproverIdAndDateRange(@Param("approverId") Long approverId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
-    
-    @Query("SELECT an FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status IN (1, 2) AND an.processTime BETWEEN :startDate AND :endDate")
-    List<ApprovalNode> findProcessedByApproverIdAndDateRange(@Param("approverId") Long approverId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
-    
-    @Query("SELECT an FROM ApprovalNode an WHERE an.processId = :processId AND an.approverId = :approverId")
-    ApprovalNode findByProcessIdAndApproverId(@Param("processId") Long processId, @Param("approverId") Long approverId);
-    
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 0")
-    Long countPendingByApproverId(@Param("approverId") Long approverId);
-    
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 1")
-    Long countApprovedByApproverId(@Param("approverId") Long approverId);
-    
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = 2")
-    Long countRejectedByApproverId(@Param("approverId") Long approverId);
-    
-    @Query("SELECT COUNT(an) FROM ApprovalNode an WHERE an.approverId = :approverId")
-    Long countTotalByApproverId(@Param("approverId") Long approverId);
-    
-    // 添加缺失的方法
-    ApprovalNode findByProcessIdAndNodeLevel(Long processId, Integer nodeLevel);
+    // 根据审批人ID和状态查找节点
+    @Query("SELECT an FROM ApprovalNode an WHERE an.approverId = :approverId AND an.status = :status")
+    List<ApprovalNode> findByApproverIdAndStatus(@Param("approverId") Long approverId, @Param("status") Integer status);
 }

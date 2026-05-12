@@ -1,0 +1,245 @@
+# 性能优化配置文件
+# 压力测试和性能调优相关配置
+
+spring:
+  # JPA配置
+  jpa:
+    properties:
+      hibernate:
+        # 启用二级缓存
+        cache:
+          use_second_level_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+          use_query_cache: true
+        # 批次处理优化
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+    
+  # Redis缓存配置（性能优化）
+  redis:
+    lettuce:
+      pool:
+        max-active: 50
+        max-idle: 20
+        min-idle: 5
+        max-wait: 3000ms
+    timeout: 5000ms
+    
+  # Spring Cache配置
+  cache:
+    type: redis
+    redis:
+      # Redis缓存配置
+      time-to-live: 300000  # 默认5分钟
+      key-prefix: approval:
+      use-key-prefix: true
+      cache-null-values: false
+      # 性能监控缓存统计
+      enable-statistics: true
+      metrics:
+        enabled: true
+        step: PT1M
+
+  # 数据库连接池优化
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      leak-detection-threshold: 60000
+
+  # 异步处理配置
+  task:
+    execution:
+      pool:
+        # 通用异步执行器
+        core-size: 5
+        max-size: 20
+        queue-capacity: 100
+        keep-alive: 60s
+        thread-name-prefix: approval-async-
+        # 审批异步执行器
+        approval-async:
+          core-size: 10
+          max-size: 50
+          queue-capacity: 100
+          keep-alive: 60
+          thread-name-prefix: approval-async-
+        # 审批日志执行器
+        approval-log:
+          core-size: 5
+          max-size: 20
+          queue-capacity: 1000
+          keep-alive: 60
+          thread-name-prefix: approval-log-
+
+# 审批模块性能配置
+approval:
+  performance:
+    # 缓存预热配置
+    cache-warmup:
+      # 是否启用缓存预热
+      enabled: true
+      # 预热时机：应用启动时
+      on-startup: true
+      # 预热时机：定时任务预热
+      schedule: "0 0 6 * * ?"  # 每天6点执行
+      # 预加载数据大小限制
+      max-warmup-size: 1000
+    
+    # 批量操作配置
+    batch-operation:
+      # 批量查询大小
+      query-batch-size: 50
+      # 批量写入大小
+      write-batch-size: 100
+      # 并发线程数
+      concurrent-threads: 10
+    
+    # 缓存清理策略
+    cache-cleanup:
+      # 内存使用阈值（百分比）
+      memory-threshold: 80
+      # 清理频率（分钟）
+      cleanup-interval: 30
+      # 保留热点数据的数量
+      keep-hot-data: 500
+      # 清理策略：LRU（最近最少使用）
+      strategy: LRU
+    
+    # 性能监控配置
+    monitoring:
+      # 指标收集间隔（秒）
+      metrics-interval: 60
+      # 监控端点
+      endpoints:
+        cache-stats: true
+        thread-pool-stats: true
+        database-stats: true
+        jvm-stats: true
+      # 报警阈值配置
+      alerts:
+        # 响应时间阈值（毫秒）
+        response-time-threshold: 1000
+        # CPU使用率阈值（百分比）
+        cpu-usage-threshold: 80
+        # 内存使用率阈值（百分比）
+        memory-usage-threshold: 85
+        # 数据库连接池使用率阈值（百分比）
+        db-connection-threshold: 90
+    
+    # 调优参数
+    optimization:
+      # 线程池调优
+      thread-pools:
+        # CPU密集型任务线程数 = CPU核数 + 1
+        cpu-intensive: 8
+        # IO密集型任务线程数 = CPU核数 * 2
+        io-intensive: 16
+        # 缓存更新线程数
+        cache-update: 4
+      
+      # 缓存调优
+      cache:
+        # 流程配置缓存时间（分钟）
+        flow-config-ttl: 1440  # 24小时
+        # 审批实例缓存时间（分钟）
+        instance-ttl: 120      # 2小时
+        # 审批记录缓存时间（分钟）
+        record-ttl: 60         # 1小时
+        # 统计数据缓存时间（分钟）
+        statistics-ttl: 5      # 5分钟
+        
+      # 数据库调优
+      database:
+        # 批量提交大小
+        batch-size: 500
+        # 连接池配置
+        connection-pool:
+          max-size: 20
+          min-idle: 5
+          max-lifetime: 1800000  # 30分钟
+          connection-timeout: 30000  # 30秒
+    
+    # 压力测试配置
+    stress-test:
+      # 并发用户数
+      concurrent-users: 50
+      # 每个用户的操作次数
+      operations-per-user: 20
+      # 测试持续时间（秒）
+      duration: 300
+      # 操作间隔时间（毫秒）
+      operation-interval: 1000
+      # 是否启用性能测试
+      enabled: false
+    
+    # 性能调优配置
+    tuning:
+      auto-optimize-cache: true
+      clean-stale-cache-interval: 300s
+      check-index-usage-interval: 600s
+      memory-gc-optimize-interval: 900s
+
+test:
+  performance:
+    # 性能测试配置
+    test:
+      # 压力测试次数
+      iterations: 3
+      # 预热次数
+      warmup-iterations: 1
+      # 线程数
+      threads: 10
+      # 每次测试操作次数
+      operations: 10000
+    
+    # 断言配置
+    assertions:
+      # 平均响应时间阈值（毫秒）
+      avg-response-time: 500
+      # 99%响应时间阈值（毫秒）
+      p99-response-time: 1000
+      # 吞吐量阈值（操作/秒）
+      throughput: 100
+      # 错误率阈值（百分比）
+      error-rate: 1
+
+# 日志配置（性能相关）
+logging:
+  level:
+    com.ccms: INFO
+    # 性能监控相关日志
+    com.ccms.performance: DEBUG
+    com.ccms.cache: DEBUG
+    com.ccms.async: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Actuator端点配置（性能监控）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,caches
+  endpoint:
+    health:
+      show-details: when_authorized
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      simple:
+        enabled: true
+    # 自定义指标
+    enable:
+      jvm: true
+      system: true
+      cache: true
+      hikaricp: true

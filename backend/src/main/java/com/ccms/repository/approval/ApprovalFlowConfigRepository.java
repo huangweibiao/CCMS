@@ -1,6 +1,7 @@
 package com.ccms.repository.approval;
 
 import com.ccms.entity.approval.ApprovalFlowConfig;
+import com.ccms.enums.BusinessTypeEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,12 +35,12 @@ public interface ApprovalFlowConfigRepository extends JpaRepository<ApprovalFlow
     Optional<ApprovalFlowConfig> findByFlowName(String flowName);
 
     /**
-     * 根据业务类型查询配置
+     * 根据业务类型枚举查询配置
      * 
-     * @param businessType 业务类型：1-预算编制，2-预算调整，3-费用申请，4-费用核销
+     * @param businessType 业务类型枚举
      * @return 流程配置列表
      */
-    List<ApprovalFlowConfig> findByBusinessType(Integer businessType);
+    List<ApprovalFlowConfig> findByBusinessType(BusinessTypeEnum businessType);
 
     /**
      * 根据状态查询配置
@@ -59,11 +60,11 @@ public interface ApprovalFlowConfigRepository extends JpaRepository<ApprovalFlow
     /**
      * 根据业务类型和状态查询配置
      * 
-     * @param businessType 业务类型
+     * @param businessType 业务类型枚举
      * @param status 状态
      * @return 流程配置
      */
-    Optional<ApprovalFlowConfig> findByBusinessTypeAndStatus(Integer businessType, Integer status);
+    Optional<ApprovalFlowConfig> findByBusinessTypeAndStatus(BusinessTypeEnum businessType, Integer status);
 
     /**
      * 检查流程编码是否存在
@@ -77,21 +78,47 @@ public interface ApprovalFlowConfigRepository extends JpaRepository<ApprovalFlow
      * 根据部门ID查询适用的流程配置
      * 
      * @param deptId 部门ID
-     * @param businessType 业务类型
+     * @param businessType 业务类型枚举
      * @param status 状态
      * @return 流程配置列表
      */
     @Query("SELECT afc FROM ApprovalFlowConfig afc WHERE (afc.applicableDeptIds LIKE %:deptId% OR afc.applicableDeptIds = '' OR afc.applicableDeptIds IS NULL) AND afc.businessType = :businessType AND afc.status = :status")
-    List<ApprovalFlowConfig> findApplicableFlowConfigs(@Param("deptId") Long deptId, @Param("businessType") Integer businessType, @Param("status") Integer status);
+    List<ApprovalFlowConfig> findApplicableFlowConfigs(@Param("deptId") Long deptId, @Param("businessType") BusinessTypeEnum businessType, @Param("status") Integer status);
 
     /**
      * 根据最小金额阈值查询适用于特定金额的流程配置
      * 
-     * @param businessType 业务类型
+     * @param businessType 业务类型枚举
      * @param amount 金额
      * @param status 状态
      * @return 流程配置列表
      */
     @Query("SELECT afc FROM ApprovalFlowConfig afc WHERE afc.businessType = :businessType AND afc.minAmountThreshold <= :amount AND afc.status = :status ORDER BY afc.minAmountThreshold DESC")
-    List<ApprovalFlowConfig> findFlowConfigsByAmountThreshold(@Param("businessType") Integer businessType, @Param("amount") java.math.BigDecimal amount, @Param("status") Integer status);
+    List<ApprovalFlowConfig> findFlowConfigsByAmountThreshold(@Param("businessType") BusinessTypeEnum businessType, @Param("amount") java.math.BigDecimal amount, @Param("status") Integer status);
+
+    /**
+     * 根据版本号查询流程配置（降序排列，获取最新版本）
+     * 
+     * @param flowCode 流程编码
+     * @return 流程配置列表
+     */
+    List<ApprovalFlowConfig> findByFlowCodeOrderByVersionDesc(String flowCode);
+
+    /**
+     * 根据流程编码和版本号查询配置
+     * 
+     * @param flowCode 流程编码
+     * @param version 版本号
+     * @return 流程配置
+     */
+    Optional<ApprovalFlowConfig> findByFlowCodeAndVersion(String flowCode, Integer version);
+
+    /**
+     * 查询最新的流程配置版本
+     * 
+     * @param flowCode 流程编码
+     * @return 最新版本的流程配置
+     */
+    @Query("SELECT afc FROM ApprovalFlowConfig afc WHERE afc.flowCode = :flowCode ORDER BY afc.version DESC LIMIT 1")
+    Optional<ApprovalFlowConfig> findLatestVersionByFlowCode(@Param("flowCode") String flowCode);
 }

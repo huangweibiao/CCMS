@@ -1,6 +1,7 @@
 package com.ccms.entity.approval;
 
 import com.ccms.entity.BaseEntity;
+import com.ccms.enums.ApprovalStatusEnum;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -39,10 +40,34 @@ public class ApprovalInstance extends BaseEntity {
     private String businessType;
     
     /**
-     * 状态：0-运行中 1-已通过 2-已驳回 3-已撤销
+     * 审批状态（使用枚举，存储为整数）
      */
     @Column(name = "status", nullable = false)
     private Integer status;
+    
+    /**
+     * 总节点数
+     */
+    @Column(name = "total_nodes")
+    private Integer totalNodes;
+    
+    /**
+     * 已处理节点数
+     */
+    @Column(name = "processed_nodes")
+    private Integer processedNodes = 0;
+    
+    /**
+     * 审批标题/摘要
+     */
+    @Column(name = "approval_title", length = 200)
+    private String approvalTitle;
+    
+    /**
+     * 紧急程度：1-普通 2-紧急 3-特急
+     */
+    @Column(name = "urgency_level")
+    private Integer urgencyLevel = 1;
     
     /**
      * 当前节点
@@ -119,12 +144,74 @@ public class ApprovalInstance extends BaseEntity {
         this.createBy = createBy;
     }
 
+    public String getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(String createBy) {
+        this.createBy = createBy;
+    }
+
     public LocalDateTime getFinishTime() {
         return finishTime;
     }
 
     public void setFinishTime(LocalDateTime finishTime) {
         this.finishTime = finishTime;
+    }
+
+    // 枚举状态相关方法
+    public ApprovalStatusEnum getApprovalStatus() {
+        return ApprovalStatusEnum.getByCode(status);
+    }
+
+    public void setApprovalStatus(ApprovalStatusEnum statusEnum) {
+        this.status = statusEnum != null ? statusEnum.getCode() : null;
+    }
+
+    public Integer getTotalNodes() {
+        return totalNodes;
+    }
+
+    public void setTotalNodes(Integer totalNodes) {
+        this.totalNodes = totalNodes;
+    }
+
+    public Integer getProcessedNodes() {
+        return processedNodes;
+    }
+
+    public void setProcessedNodes(Integer processedNodes) {
+        this.processedNodes = processedNodes;
+    }
+
+    public String getApprovalTitle() {
+        return approvalTitle;
+    }
+
+    public void setApprovalTitle(String approvalTitle) {
+        this.approvalTitle = approvalTitle;
+    }
+
+    public Integer getUrgencyLevel() {
+        return urgencyLevel;
+    }
+
+    public void setUrgencyLevel(Integer urgencyLevel) {
+        this.urgencyLevel = urgencyLevel;
+    }
+
+    // 业务逻辑方法
+    public boolean isFinalStatus() {
+        ApprovalStatusEnum statusEnum = getApprovalStatus();
+        return statusEnum != null && statusEnum.isFinalStatus();
+    }
+
+    public void markAsCompleted() {
+        this.finishTime = LocalDateTime.now();
+        if (totalNodes != null && processedNodes < totalNodes) {
+            this.processedNodes = totalNodes;
+        }
     }
 
     @Override

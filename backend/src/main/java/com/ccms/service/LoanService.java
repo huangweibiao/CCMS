@@ -1,12 +1,19 @@
 package com.ccms.service;
 
+import com.ccms.dto.ApprovalRequest;
 import com.ccms.entity.expense.LoanMain;
+import com.ccms.entity.approval.ApprovalInstance;
+import com.ccms.entity.approval.ApprovalFlowConfig;
+import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalAction;
+import com.ccms.enums.BusinessType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 借款服务接口
@@ -102,4 +109,98 @@ public interface LoanService {
      * 统计指定日期范围内的借款金额
      */
     BigDecimal getLoanAmountBetweenDates(LocalDate startDate, LocalDate endDate);
+    
+    // ========== 审批流程集成方法 ==========
+    
+    /**
+     * 提交借款申请审批
+     */
+    ApprovalInstance submitForApproval(Long loanId, Long applicantId, String title);
+    
+    /**
+     * 获取借款申请的审批状态
+     */
+    ApprovalStatus getApprovalStatus(Long loanId);
+    
+    /**
+     * 获取借款申请的审批记录
+     */
+    List<Map<String, Object>> getApprovalRecords(Long loanId);
+    
+    /**
+     * 审批借款申请（集成审批流程）
+     */
+    boolean approveLoan(Long loanId, ApprovalAction action, String comment);
+    
+    /**
+     * 检查借款申请是否在审批中
+     */
+    boolean isUnderApproval(Long loanId);
+    
+    /**
+     * 处理审批完成回调
+     */
+    void onApprovalCompleted(Long loanId, ApprovalStatus finalStatus);
+    
+    /**
+     * 借款业务审批实现
+     */
+    class LoanApprovalService extends BaseApprovalService {
+        private final LoanService loanService;
+        
+        public LoanApprovalService(ApprovalFlowService approvalFlowService, LoanService loanService) {
+            super();
+            this.loanService = loanService;
+        }
+        
+        @Override
+        public BusinessType getBusinessType() {
+            return BusinessType.LOAN;
+        }
+        
+        @Override
+        protected boolean validateBeforeCreate(ApprovalRequest request, Map<String, Object> context) {
+            LoanMain loan = loanService.getLoanById(Long.parseLong(request.getBusinessId()));
+            return loan != null && !loanService.isUnderApproval(Long.parseLong(request.getBusinessId()));
+        }
+        
+        @Override
+        protected void handleApprovalCompleted(ApprovalInstance instance, ApprovalStatus finalStatus) {
+            loanService.onApprovalCompleted(Long.parseLong(instance.getBusinessId()), finalStatus);
+        }
+        
+        @Override
+        protected void handleApprovalProgress(ApprovalInstance instance, Map<String, Object> context) {
+            // 审批进度处理，可发送通知等
+        }
+        
+        @Override
+        protected Map<String, Object> buildApprovalContext(ApprovalRequest request) {
+            LoanMain loan = loanService.getLoanById(Long.parseLong(request.getBusinessId()));
+            return Map.of(
+                "amount", loan.getLoanAmount(),
+                "userId", loan.getApplicantId(),
+                "loanType", loan.getLoanType(),
+                "loanPeriod", loan.getLoanPeriod()
+            );
+        }
+        
+        @Override
+        protected boolean preMatchFlowConfig(ApprovalRequest request, Map<String, Object> context) {
+            return true;
+        }
+        
+        @Override
+        protected ApprovalFlowConfig getDefaultFlowConfig() {
+            // 返回借款业务默认流程配置
+            return approvalFlowService.getDefaultFlowConfig(BusinessType.LOAN);
+        }
+        
+        @Override
+        protected Long getCurrentUserId() {
+            // 从认证上下文中获取当前用户ID
+            // 这里需要根据实际认证系统实现
+            return 1L; // 临时返回固定值
+        }
+    }
 }

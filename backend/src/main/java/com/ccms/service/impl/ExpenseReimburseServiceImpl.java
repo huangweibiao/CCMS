@@ -5,12 +5,23 @@ import com.ccms.entity.expense.ReimburseItem;
 import com.ccms.entity.expense.ReimburseAttachment;
 import com.ccms.entity.expense.ExpenseReimburseDetail;
 import com.ccms.entity.expense.ExpenseInvoice;
+import com.ccms.entity.approval.ApprovalInstance;
+import com.ccms.entity.approval.ApprovalFlowConfig;
+import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.repository.expense.ExpenseReimburseRepository;
 import com.ccms.repository.expense.ReimburseItemRepository;
 import com.ccms.repository.expense.ReimburseAttachmentRepository;
 import com.ccms.repository.expense.ExpenseReimburseDetailRepository;
 import com.ccms.repository.expense.ExpenseInvoiceRepository;
+import com.ccms.repository.approval.ApprovalInstanceRepository;
+import com.ccms.repository.approval.ApprovalFlowConfigRepository;
+import com.ccms.repository.approval.ApprovalRecordRepository;
 import com.ccms.service.ExpenseReimburseService;
+import com.ccms.service.ApprovalFlowService;
+import com.ccms.dto.ApprovalRequest;
+import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalAction;
+import com.ccms.enums.BusinessTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -41,18 +52,30 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
     private final ReimburseAttachmentRepository reimburseAttachmentRepository;
     private final ExpenseReimburseDetailRepository expenseReimburseDetailRepository;
     private final ExpenseInvoiceRepository expenseInvoiceRepository;
+    private final ApprovalInstanceRepository approvalInstanceRepository;
+    private final ApprovalFlowConfigRepository approvalFlowConfigRepository;
+    private final ApprovalRecordRepository approvalRecordRepository;
+    private final ApprovalFlowService approvalFlowService;
 
     @Autowired
     public ExpenseReimburseServiceImpl(ExpenseReimburseRepository expenseReimburseRepository,
                                      ReimburseItemRepository reimburseItemRepository,
                                      ReimburseAttachmentRepository reimburseAttachmentRepository,
                                      ExpenseReimburseDetailRepository expenseReimburseDetailRepository,
-                                     ExpenseInvoiceRepository expenseInvoiceRepository) {
+                                     ExpenseInvoiceRepository expenseInvoiceRepository,
+                                     ApprovalInstanceRepository approvalInstanceRepository,
+                                     ApprovalFlowConfigRepository approvalFlowConfigRepository,
+                                     ApprovalRecordRepository approvalRecordRepository,
+                                     ApprovalFlowService approvalFlowService) {
         this.expenseReimburseRepository = expenseReimburseRepository;
         this.reimburseItemRepository = reimburseItemRepository;
         this.reimburseAttachmentRepository = reimburseAttachmentRepository;
         this.expenseReimburseDetailRepository = expenseReimburseDetailRepository;
         this.expenseInvoiceRepository = expenseInvoiceRepository;
+        this.approvalInstanceRepository = approvalInstanceRepository;
+        this.approvalFlowConfigRepository = approvalFlowConfigRepository;
+        this.approvalRecordRepository = approvalRecordRepository;
+        this.approvalFlowService = approvalFlowService;
     }
 
     @Override
@@ -653,6 +676,145 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
      */
     private String generateReimburseCode() {
         return "REIMBURSE_" + System.currentTimeMillis();
+    }
+    
+    // ========== 审批流程集成方法 ==========
+    
+    @Override
+    public ApprovalInstance submitExpenseReimburseForApproval(Long reimburseId, Long applicantId, String title) {
+        ExpenseReimburse reimburse = getExpenseReimburseById(reimburseId);
+        if (reimburse == null) {
+            throw new RuntimeException("费用报销申请不存在");
+        }
+        
+        // 检查是否在审批中
+        if (isUnderApproval(reimburseId)) {
+            throw new RuntimeException("费用报销申请已在审批中");
+        }
+        
+        // 创建审批请求
+        ApprovalRequest request = new ApprovalRequest();
+        request.setBusinessId(reimburseId.toString());
+        request.setBusinessType(BusinessTypeEnum.EXPENSE_REIMBURSE);
+        request.setApplicantId(applicantId);
+        request.setTitle(title != null ? title : "费用报销申请审批-" + reimburse.getReimburseNo());
+        request.setDescription("费用报销申请审批流程");
+        
+        // 提交审批流程
+        ApprovalInstance approvalInstance = approvalFlowService.createApprovalInstance(request);
+        
+        // 更新报销申请状态为审批中
+        reimburse.setStatus(1); // 审批中
+        reimburse.setApprovalStatus(1); // 审批中
+        expenseReimburseRepository.save(reimburse);
+        
+        return approvalInstance;
+    }
+    
+    @Override
+    public void withdrawExpenseReimburseApproval(Long reimburseId, String remarks) {
+        ExpenseReimburse reimburse = getExpenseReimburseById(reimburseId);
+        if (reimburse == null) {
+            throw new RuntimeException("费用报销申请不存在");
+        }
+        
+        // 撤回审批流程
+        approvalFlowService.withdrawApprovalInstance(reimburseId.toString(), remarks);
+        
+        // 更新报销申请状态为草稿
+        reimburse.setStatus(0); // 草稿
+        reimburse.setApprovalStatus(0); // 待提交
+        expenseReimburseRepository.save(reimburse);
+    }
+    
+    @Override
+    public ApprovalStatus getApprovalStatus(Long reimburseId) {
+        // 查找关联的审批实例
+        Optional<ApprovalInstance> instanceOpt = approvalInstanceRepository.findByBusinessId(reimburseId.toString());
+        if (instanceOpt.isPresent()) {
+            ApprovalInstance instance = instanceOpt.get();
+            return ApprovalStatus.valueOf(instance.getStatus());
+        }
+        
+        // 如果没有审批实例，获取报销申请自己的状态
+        ExpenseReimburse reimburse = getExpenseReimburseById(reimburseId);
+        if (reimburse == null) {
+            return ApprovalStatus.REJECTED; // 默认拒绝状态
+        }
+        
+        // 映射内部状态到审批状态
+        return mapInternalStatusToApprovalStatus(reimburse.getApprovalStatus());
+    }
+    
+    @Override
+    public List<Map<String, Object>> getApprovalRecords(Long reimburseId) {
+        List<Map<String, Object>> records = new ArrayList<>();
+        
+        // 获取审批记录
+        List<ApprovalRecord> approvalRecords = approvalRecordRepository.findByBusinessId(reimburseId.toString());
+        for (ApprovalRecord record : approvalRecords) {
+            Map<String, Object> recordMap = new HashMap<>();
+            recordMap.put("approverId", record.getApproverId());
+            recordMap.put("action", ApprovalAction.valueOf(record.getAction()));
+            recordMap.put("remarks", record.getRemarks());
+            recordMap.put("approvalTime", record.getApprovalTime());
+            records.add(recordMap);
+        }
+        
+        return records;
+    }
+    
+    @Override
+    public boolean isUnderApproval(Long reimburseId) {
+        ApprovalStatus status = getApprovalStatus(reimburseId);
+        return status == ApprovalStatus.PENDING || status == ApprovalStatus.IN_PROGRESS;
+    }
+    
+    @Override
+    public void onApprovalCompleted(Long reimburseId, ApprovalStatus finalStatus) {
+        ExpenseReimburse reimburse = getExpenseReimburseById(reimburseId);
+        if (reimburse == null) {
+            throw new RuntimeException("费用报销申请不存在");
+        }
+        
+        // 根据最终审批状态更新报销申请状态
+        reimburse.setStatus(mapApprovalStatusToInternalStatus(finalStatus));
+        reimburse.setApprovalStatus(mapApprovalStatusToInternalStatus(finalStatus));
+        
+        // 设置审批完成时间
+        reimburse.setApprovedTime(LocalDateTime.now());
+        
+        expenseReimburseRepository.save(reimburse);
+        
+        // TODO: 发送通知，更新相关状态等
+    }
+    
+    /**
+     * 映射内部状态到审批状态
+     */
+    private ApprovalStatus mapInternalStatusToApprovalStatus(Integer internalStatus) {
+        if (internalStatus == null) return ApprovalStatus.REJECTED;
+        
+        switch (internalStatus) {
+            case 0: return ApprovalStatus.REJECTED; // 待提交
+            case 1: return ApprovalStatus.IN_PROGRESS; // 审批中
+            case 2: return ApprovalStatus.APPROVED; // 审批通过
+            case 3: return ApprovalStatus.REJECTED; // 审批拒绝
+            default: return ApprovalStatus.REJECTED;
+        }
+    }
+    
+    /**
+     * 映射审批状态到内部状态
+     */
+    private Integer mapApprovalStatusToInternalStatus(ApprovalStatus approvalStatus) {
+        switch (approvalStatus) {
+            case APPROVED: return 2; // 审批通过
+            case REJECTED: return 3; // 审批拒绝
+            case WITHDRAWN: return 0; // 已撤回（恢复为草稿）
+            case CANCELLED: return 4; // 已取消
+            default: return 1; // 审批中
+        }
     }
     
     // ========== Controller需要的额外方法 ==========

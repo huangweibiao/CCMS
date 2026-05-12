@@ -1,6 +1,8 @@
 package com.ccms.repository.approval;
 
 import com.ccms.entity.approval.ApprovalInstance;
+import com.ccms.enums.ApprovalStatusEnum;
+import com.ccms.enums.BusinessTypeEnum;
 import com.ccms.repository.BaseRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,19 +17,19 @@ import java.util.Optional;
 public interface ApprovalInstanceRepository extends BaseRepository<ApprovalInstance, Long> {
     
     /**
-     * 根据业务ID和业务类型查找审批实例
+     * 根据业务ID和业务类型枚举查找审批实例
      */
-    Optional<ApprovalInstance> findByBusinessIdAndBusinessType(Long businessId, String businessType);
+    Optional<ApprovalInstance> findByBusinessIdAndBusinessType(Long businessId, BusinessTypeEnum businessType);
     
     /**
-     * 根据业务类型查找审批实例列表
+     * 根据业务类型枚举查找审批实例列表
      */
-    List<ApprovalInstance> findByBusinessType(String businessType);
+    List<ApprovalInstance> findByBusinessType(BusinessTypeEnum businessType);
     
     /**
-     * 根据状态查找审批实例
+     * 根据状态枚举查找审批实例
      */
-    List<ApprovalInstance> findByStatus(Integer status);
+    List<ApprovalInstance> findByStatus(ApprovalStatusEnum status);
     
     /**
      * 根据申请人ID查找审批实例
@@ -59,11 +61,34 @@ public interface ApprovalInstanceRepository extends BaseRepository<ApprovalInsta
     /**
      * 根据状态统计审批实例详细信息
      */
-    @Query("SELECT ai.status, COUNT(ai), AVG(TIMESTAMPDIFF(DAY, ai.createTime, ai.approveTime)) FROM ApprovalInstance ai WHERE ai.approveTime IS NOT NULL AND ai.createTime BETWEEN :startTime AND :endTime GROUP BY ai.status")
+    @Query("SELECT ai.status, COUNT(ai), AVG(TIMESTAMPDIFF(DAY, ai.createTime, ai.finishTime)) FROM ApprovalInstance ai WHERE ai.finishTime IS NOT NULL AND ai.createTime BETWEEN :startTime AND :endTime GROUP BY ai.status")
     List<Object[]> findApprovalStatsByTimeRange(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
     
     /**
      * 根据业务类型和业务ID查找最新的审批实例
      */
-    Optional<ApprovalInstance> findTopByBusinessTypeAndBusinessIdOrderByCreateTimeDesc(String businessType, Long businessId);
+    Optional<ApprovalInstance> findTopByBusinessTypeAndBusinessIdOrderByCreateTimeDesc(BusinessTypeEnum businessType, Long businessId);
+    
+    /**
+     * 根据流程配置ID查找审批实例
+     */
+    List<ApprovalInstance> findByFlowConfigId(Long flowConfigId);
+    
+    /**
+     * 查找未完成的审批实例
+     */
+    @Query("SELECT ai FROM ApprovalInstance ai WHERE ai.status IN (0, 1)")
+    List<ApprovalInstance> findUnfinishedInstances();
+    
+    /**
+     * 查找指定时间段内处理的审批实例
+     */
+    @Query("SELECT ai FROM ApprovalInstance ai WHERE ai.finishTime IS NOT NULL AND ai.finishTime BETWEEN :startTime AND :endTime")
+    List<ApprovalInstance> findCompletedInstancesInTimeRange(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+    
+    /**
+     * 计算平均审批时长
+     */
+    @Query("SELECT AVG(TIMESTAMPDIFF(SECOND, ai.createTime, ai.finishTime)) FROM ApprovalInstance ai WHERE ai.finishTime IS NOT NULL AND ai.createTime BETWEEN :startTime AND :endTime")
+    Double findAverageApprovalDuration(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 }

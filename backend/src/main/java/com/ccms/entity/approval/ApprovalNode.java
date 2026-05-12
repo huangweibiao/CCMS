@@ -3,11 +3,28 @@ package com.ccms.entity.approval;
 import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 
+/**
+ * 审批节点表实体类
+ * 对应表名：approval_node
+ * 
+ * @author 系统生成
+ */
+
 @Entity
 @Table(name = "approval_node")
 public class ApprovalNode extends BaseEntity {
     
-    @Column(name = "process_id", nullable = false)
+    /**
+     * 审批流配置ID
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "flow_config_id", nullable = false)
+    private ApprovalFlowConfig flowConfig;
+    
+    /**
+     * 流程ID（兼容原有字段）
+     */
+    @Column(name = "process_id")
     private Long processId;
     
     @Column(name = "node_code", nullable = false, length = 50)
@@ -56,6 +73,14 @@ public class ApprovalNode extends BaseEntity {
     private Integer nodeLevel;
     
     // Getters and Setters
+    public ApprovalFlowConfig getFlowConfig() {
+        return flowConfig;
+    }
+    
+    public void setFlowConfig(ApprovalFlowConfig flowConfig) {
+        this.flowConfig = flowConfig;
+    }
+
     public Long getProcessId() {
         return processId;
     }

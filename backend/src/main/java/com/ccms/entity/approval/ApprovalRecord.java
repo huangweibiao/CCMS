@@ -1,6 +1,7 @@
 package com.ccms.entity.approval;
 
 import com.ccms.entity.BaseEntity;
+import com.ccms.enums.ApprovalActionEnum;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -99,25 +100,7 @@ public class ApprovalRecord extends BaseEntity {
     private Long transferTo;
     
     /**
-     * 进程ID - 添加ApprovalServiceImpl调用时需要的字段
-     */
-    @Transient  // 标记为非持久化字段，因为数据库中可能没有这个字段
-    private Long processId;
-    
-    @Transient
-    private Long nodeId;
-    
-    @Transient
-    private Boolean approved;
-    
-    @Transient
-    private Boolean skipped;
-    
-    @Transient
-    private String comment;
-    
-    /**
-     * 审批状态 - 修正业务类型参数
+     * 审批状态
      */
     @Column(name = "approval_status")
     private Integer approvalStatus;
@@ -128,19 +111,34 @@ public class ApprovalRecord extends BaseEntity {
     @Column(name = "node_order")
     private Integer nodeOrder;
     
-    // Additional methods for ApprovalFlowEngine compatibility
-    public com.ccms.entity.approval.ApprovalFlowConfig getApprovalConfig() {
-        // 这个方法需要返回ApprovalFlowConfig对象
-        // 在实际实现中，应该通过服务层获取对应的配置对象
-        // 这里为了编译通过，返回null
-        return null;
+    /**
+     * 审批人名称
+     */
+    @Column(name = "approver_name", length = 100)
+    private String approverName;
+    
+    /**
+     * 处理时长（小时）
+     */
+    @Column(name = "processing_time")
+    private Double processingTime;
+    
+    /**
+     * 是否自动审批
+     */
+    @Column(name = "is_auto_approved")
+    private Boolean autoApproved = false;
+    
+    // 枚举相关方法
+    public ApprovalActionEnum getApprovalActionEnum() {
+        return ApprovalActionEnum.getByCode(approvalAction);
     }
 
-    public void setApprovalConfig(com.ccms.entity.approval.ApprovalFlowConfig config) {
-        this.approvalConfigId = config != null ? config.getId() : null;
+    public void setApprovalActionEnum(ApprovalActionEnum actionEnum) {
+        this.approvalAction = actionEnum != null ? actionEnum.getCode() : null;
     }
-    
-    // 添加获取配置ID的方法
+
+    // Getters and Setters
     public Long getApprovalConfigId() {
         return approvalConfigId;
     }
@@ -181,85 +179,46 @@ public class ApprovalRecord extends BaseEntity {
         this.applyTime = applyTime;
     }
     
-    public void setApprovalComment(String comment) {
-        this.approvalRemark = comment;
-    }
-    
-    /**
-     * 设置进程ID的方法
-     */
-    public void setProcessId(Long processId) {
-        this.processId = processId;
-    }
-    
-    /**
-     * 获取进程ID的方法
-     */
-    public Long getProcessId() {
-        return processId;
-    }
-    
-    /**
-     * 获取审批状态的方法
-     */
     public Integer getApprovalStatus() {
         return approvalStatus;
     }
     
-    /**
-     * 设置审批状态的方法
-     */
     public void setApprovalStatus(Integer approvalStatus) {
         this.approvalStatus = approvalStatus;
     }
     
-    /**
-     * 获取节点排序的方法
-     */
     public Integer getNodeOrder() {
         return nodeOrder;
     }
     
-    /**
-     * 设置节点排序的方法
-     */
     public void setNodeOrder(Integer nodeOrder) {
         this.nodeOrder = nodeOrder;
     }
-    
-    public Long getNodeId() {
-        return nodeId;
-    }
-    
-    public void setNodeId(Long nodeId) {
-        this.nodeId = nodeId;
-    }
-    
-    public Boolean getApproved() {
-        return approved;
-    }
-    
-    public void setApproved(Boolean approved) {
-        this.approved = approved;
-    }
-    
-    public Boolean getSkipped() {
-        return skipped;
-    }
-    
-    public void setSkipped(Boolean skipped) {
-        this.skipped = skipped;
-    }
-    
-    public String getComment() {
-        return comment;
-    }
-    
-    public void setComment(String comment) {
-        this.comment = comment;
+
+    public String getApproverName() {
+        return approverName;
     }
 
-    // Getters and Setters
+    public void setApproverName(String approverName) {
+        this.approverName = approverName;
+    }
+
+    public Double getProcessingTime() {
+        return processingTime;
+    }
+
+    public void setProcessingTime(Double processingTime) {
+        this.processingTime = processingTime;
+    }
+
+    public Boolean getAutoApproved() {
+        return autoApproved;
+    }
+
+    public void setAutoApproved(Boolean autoApproved) {
+        this.autoApproved = autoApproved;
+    }
+
     public Long getInstanceId() {
         return instanceId;
     }

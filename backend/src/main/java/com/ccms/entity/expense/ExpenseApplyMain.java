@@ -4,11 +4,24 @@ import com.ccms.entity.BaseEntity;
 import com.ccms.enums.ApplyStatusEnum;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 费用申请单主表实体类
- * 对应表名：ccms_expense_apply_main
+ * 对应表名：expense_apply_main
+ * 
+ * 状态说明：
+ * - 0: 草稿    - 1: 审批中  - 2: 已通过
+ * - 3: 已驳回  - 4: 待支付  - 5: 已支付
+ * - 6: 已作废
+ * 
+ * 主要特性：
+ * - 支持完整的状态流转控制
+ * - 自动金额计算与同步
+ * - 关联明细表的一对多关系
+ * - 集成审批流程管理
  * 
  * @author 系统生成
  */
@@ -62,10 +75,10 @@ public class ExpenseApplyMain extends BaseEntity {
      * 预计使用日期
      */
     @Column(name = "expected_date")
-    private Date expectedDate;
+    private LocalDate expectedDate;
     
     /**
-     * 状态：0-草稿 1-审批中 2-通过 3-驳回 4-作废
+     * 状态：0-草稿 1-审批中 2-已通过 3-已驳回 4-待支付 5-已支付 6-已作废
      */
     @Column(name = "status", nullable = false)
     private Integer status;
@@ -93,6 +106,12 @@ public class ExpenseApplyMain extends BaseEntity {
      */
     @Column(name = "approval_instance_id")
     private Long approvalInstanceId;
+    
+    /**
+     * 费用申请明细列表
+     */
+    @OneToMany(mappedBy = "expenseApplyMain", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ExpenseApplyDetail> expenseApplyDetails;
 
     // Getters and Setters
     public String getApplyNo() {
@@ -151,11 +170,11 @@ public class ExpenseApplyMain extends BaseEntity {
         this.reason = reason;
     }
 
-    public Date getExpectedDate() {
+    public LocalDate getExpectedDate() {
         return expectedDate;
     }
 
-    public void setExpectedDate(Date expectedDate) {
+    public void setExpectedDate(LocalDate expectedDate) {
         this.expectedDate = expectedDate;
     }
 
@@ -197,6 +216,35 @@ public class ExpenseApplyMain extends BaseEntity {
 
     public void setCostCenterId(Long costCenterId) {
         this.costCenterId = costCenterId;
+    }
+
+    public List<ExpenseApplyDetail> getExpenseApplyDetails() {
+        return expenseApplyDetails;
+    }
+
+    public void setExpenseApplyDetails(List<ExpenseApplyDetail> expenseApplyDetails) {
+        this.expenseApplyDetails = expenseApplyDetails;
+    }
+
+    /**
+     * 添加费用申请明细项
+     */
+    public void addExpenseApplyDetail(ExpenseApplyDetail detail) {
+        if (expenseApplyDetails == null) {
+            expenseApplyDetails = new ArrayList<>();
+        }
+        detail.setExpenseApplyMain(this);
+        expenseApplyDetails.add(detail);
+    }
+
+    /**
+     * 移除费用申请明细项
+     */
+    public void removeExpenseApplyDetail(ExpenseApplyDetail detail) {
+        if (expenseApplyDetails != null) {
+            expenseApplyDetails.remove(detail);
+            detail.setExpenseApplyMain(null);
+        }
     }
 
     // 状态管理相关方法
@@ -248,6 +296,123 @@ public class ExpenseApplyMain extends BaseEntity {
         return status != null && 
                (status.equals(ApplyStatusEnum.TO_BE_PAID.getCode()) || 
                 status.equals(ApplyStatusEnum.PAID.getCode()));
+    }
+    
+    /**
+     * 计算申请明细的合计金额
+     */
+    public BigDecimal calculateTotalAmount() {
+        if (expenseApplyDetails == null || expenseApplyDetails.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        
+        BigDecimal total = BigDecimal.ZERO;
+        for (ExpenseApplyDetail detail : expenseApplyDetails) {
+            if (detail.getAmount() != null) {
+                total = total.add(detail.getAmount());
+            }
+        }
+        return total;
+    }
+    
+    /**
+     * 校验申请金额是否与明细合计一致
+     */
+    public boolean isAmountConsistent() {
+        if (applyAmount == null || totalAmount == null) {
+            return false;
+        }
+        
+        // 检查申请金额是否等于明细合计
+        BigDecimal calculatedTotal = calculateTotalAmount();
+        boolean totalMatch = totalAmount.compareTo(calculatedTotal) == 0;
+        
+        // 检查申请金额是否等于合计金额
+        boolean applyMatch = applyAmount.compareTo(totalAmount) == 0;
+        
+        return totalMatch && applyMatch;
+    }
+    
+    /**
+     * 更新金额到明细合计自动同步
+     */
+    public void syncAmountFromDetails() {
+        BigDecimal calculatedTotal = calculateTotalAmount();
+        this.totalAmount = calculatedTotal;
+        this.applyAmount = calculatedTotal;
+    }
+    
+    /**
+     * 校验申请单基本信息是否完整
+     */
+    public boolean validateBasicInfo() {
+        return applyNo != null && !applyNo.trim().isEmpty() &&
+               applyUserId != null &&
+               applyDeptId != null &&
+               applyType != null &&
+               reason != null && !reason.trim().isEmpty() &&
+               status != null;
+    }
+    
+    /**
+     * 校验申请单是否可以提交审批
+     */
+    public boolean canSubmitForApproval() {
+        // 必须是草稿或已驳回状态
+        if (!isEditable()) {
+            return false;
+        }
+        
+        // 基本信息必须完整
+        if (!validateBasicInfo()) {
+            return false;
+        }
+        
+        // 必须至少有一个明细项
+        if (expenseApplyDetails == null || expenseApplyDetails.isEmpty()) {
+            return false;
+        }
+        
+        // 金额必须一致
+        if (!isAmountConsistent()) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * 提交申请单到审批流程
+     */
+    public void submitForApproval() {
+        if (canSubmitForApproval()) {
+            this.status = ApplyStatusEnum.APPROVING.getCode();
+        } else {
+            throw new IllegalStateException("申请单不满足提交审批的条件");
+        }
+    }
+    
+    /**
+     * 获取明细的数量
+     */
+    public int getDetailCount() {
+        return expenseApplyDetails != null ? expenseApplyDetails.size() : 0;
+    }
+    
+    /**
+     * 检查是否有关联的预算项
+     */
+    public boolean hasBudgetItems() {
+        if (expenseApplyDetails == null || expenseApplyDetails.isEmpty()) {
+            return false;
+        }
+        
+        for (ExpenseApplyDetail detail : expenseApplyDetails) {
+            if (detail.getBudgetId() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

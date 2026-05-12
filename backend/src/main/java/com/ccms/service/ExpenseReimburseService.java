@@ -1,10 +1,16 @@
 package com.ccms.service;
 
+import com.ccms.dto.ApprovalRequest;
 import com.ccms.entity.expense.ExpenseReimburse;
 import com.ccms.entity.expense.ReimburseItem;
 import com.ccms.entity.expense.ReimburseAttachment;
 import com.ccms.entity.expense.ExpenseReimburseDetail;
 import com.ccms.entity.expense.ExpenseInvoice;
+import com.ccms.entity.approval.ApprovalInstance;
+import com.ccms.entity.approval.ApprovalFlowConfig;
+import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalAction;
+import com.ccms.enums.BusinessType;
 import org.springframework.data.domain.Page;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,8 +44,19 @@ public interface ExpenseReimburseService {
      * 提交费用报销审批
      * 
      * @param reimburseId 费用报销ID
+     * @param applicantId 申请人ID
+     * @param title 审批标题
+     * @return 审批实例
      */
-    void submitExpenseReimburseForApproval(Long reimburseId);
+    ApprovalInstance submitExpenseReimburseForApproval(Long reimburseId, Long applicantId, String title);
+    
+    /**
+     * 撤回费用报销审批
+     * 
+     * @param reimburseId 费用报销ID
+     * @param remarks 撤回原因
+     */
+    void withdrawExpenseReimburseApproval(Long reimburseId, String remarks);
     
     /**
      * 撤回费用报销申请
@@ -361,6 +378,90 @@ public interface ExpenseReimburseService {
      * 获取状态跟踪
      */
     List<Map<String, Object>> getStatusTracking(Long reimburseId);
+    
+    // ========== 审批流程集成方法 ==========
+    
+    /**
+     * 获取费用报销的审批状态
+     */
+    ApprovalStatus getApprovalStatus(Long reimburseId);
+    
+    /**
+     * 获取费用报销的审批记录
+     */
+    List<Map<String, Object>> getApprovalRecords(Long reimburseId);
+    
+    /**
+     * 检查费用报销是否在审批中
+     */
+    boolean isUnderApproval(Long reimburseId);
+    
+    /**
+     * 处理审批完成回调
+     */
+    void onApprovalCompleted(Long reimburseId, ApprovalStatus finalStatus);
+    
+    /**
+     * 费用报销业务审批实现
+     */
+    class ExpenseReimburseApprovalService extends BaseApprovalService {
+        private final ExpenseReimburseService expenseReimburseService;
+        
+        public ExpenseReimburseApprovalService(ApprovalFlowService approvalFlowService, ExpenseReimburseService expenseReimburseService) {
+            super();
+            this.expenseReimburseService = expenseReimburseService;
+        }
+        
+        @Override
+        public BusinessType getBusinessType() {
+            return BusinessType.EXPENSE_REIMBURSE;
+        }
+        
+        @Override
+        protected boolean validateBeforeCreate(ApprovalRequest request, Map<String, Object> context) {
+            ExpenseReimburse reimburse = expenseReimburseService.getExpenseReimburseById(Long.parseLong(request.getBusinessId()));
+            return reimburse != null && !expenseReimburseService.isUnderApproval(Long.parseLong(request.getBusinessId()));
+        }
+        
+        @Override
+        protected void handleApprovalCompleted(ApprovalInstance instance, ApprovalStatus finalStatus) {
+            expenseReimburseService.onApprovalCompleted(Long.parseLong(instance.getBusinessId()), finalStatus);
+        }
+        
+        @Override
+        protected void handleApprovalProgress(ApprovalInstance instance, Map<String, Object> context) {
+            // 审批进度处理，可发送通知等
+        }
+        
+        @Override
+        protected Map<String, Object> buildApprovalContext(ApprovalRequest request) {
+            ExpenseReimburse reimburse = expenseReimburseService.getExpenseReimburseById(Long.parseLong(request.getBusinessId()));
+            return Map.of(
+                "amount", expenseReimburseService.calculateTotalAmount(Long.parseLong(request.getBusinessId())),
+                "userId", reimburse.getApplicantId(),
+                "deptId", reimburse.getDeptId(),
+                "reimburseType", reimburse.getReimburseType()
+            );
+        }
+        
+        @Override
+        protected boolean preMatchFlowConfig(ApprovalRequest request, Map<String, Object> context) {
+            return true;
+        }
+        
+        @Override
+        protected ApprovalFlowConfig getDefaultFlowConfig() {
+            // 返回费用报销默认流程配置
+            return approvalFlowService.getDefaultFlowConfig(BusinessType.EXPENSE_REIMBURSE);
+        }
+        
+        @Override
+        protected Long getCurrentUserId() {
+            // 从认证上下文中获取当前用户ID
+            // 这里需要根据实际认证系统实现
+            return 1L; // 临时返回固定值
+        }
+    }
     
     /**
      * 导出费用报销
