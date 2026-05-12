@@ -9,19 +9,21 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * 审批异步处理配置类
- * 配置不同类型的异步任务线程池
+ * 轻量级审批异步处理配置类
+ * 配置简化的异步任务线程池（用于特定场景）
+ * @Deprecated 建议使用 com.ccms.config.ApprovalAsyncConfig
  */
 @Configuration
 @EnableAsync
-public class ApprovalAsyncConfig {
+@Deprecated
+public class LegacyAsyncConfig {
 
     /**
      * 审批操作异步执行器
      * 用于处理审批、驳回、转审等核心操作
      */
-    @Bean("approvalTaskExecutor")
-    public Executor approvalTaskExecutor() {
+    @Bean("legacyApprovalTaskExecutor")
+    public Executor legacyApprovalTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(20);

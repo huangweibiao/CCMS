@@ -16,18 +16,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 审批模块缓存配置类
+ * 审批模块基础缓存配置类
  * 配置不同类型的缓存策略和过期时间
  */
 @Configuration
 @EnableCaching
-public class ApprovalCacheConfig {
+public class BasicApprovalCacheConfig {
 
     /**
      * 缓存管理器配置
      */
     @Bean
-    public CacheManager approvalCacheManager(RedisConnectionFactory redisConnectionFactory) {
+    public CacheManager basicApprovalCacheManager(RedisConnectionFactory redisConnectionFactory) {
         // 默认缓存配置
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1)) // 默认1小时过期

@@ -30,8 +30,8 @@ public class ApprovalCacheService {
     /**
      * 缓存审批流程配置
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
     public ApprovalFlowConfig getFlowConfigById(Long id) {
         return null; // 实际由Repository查询
     }
@@ -39,8 +39,8 @@ public class ApprovalCacheService {
     /**
      * 更新审批流程配置缓存
      */
-    @CachePut(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-              key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#config.id)")
+    @CachePut(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+              key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#config.id)")
     public ApprovalFlowConfig updateFlowConfigCache(ApprovalFlowConfig config) {
         return config;
     }
@@ -48,19 +48,19 @@ public class ApprovalCacheService {
     /**
      * 删除审批流程配置缓存
      */
-    @CacheEvict(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-                key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
+    @CacheEvict(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+                key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
     public void evictFlowConfigCache(Long id) {
         // 同时清除相关的列表缓存
-        String listKeyPattern = ApprovalCacheConfig.CacheNames.FLOW_CONFIG_KEY_PREFIX + "list:*";
+        String listKeyPattern = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG_KEY_PREFIX + "list:*";
         redisTemplate.keys(listKeyPattern).forEach(key -> redisTemplate.delete(key));
     }
 
     /**
      * 缓存根据业务类型和类别的流程配置列表
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType, #category)")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType, #category)")
     public List<ApprovalFlowConfig> getFlowConfigsByTypeAndCategory(String businessType, String category) {
         return null; // 实际由Repository查询
     }
@@ -68,8 +68,8 @@ public class ApprovalCacheService {
     /**
      * 缓存审批实例
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.INSTANCE, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateInstanceKey(#id)")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.INSTANCE, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateInstanceKey(#id)")
     public ApprovalInstance getInstanceById(Long id) {
         return null; // 实际由Repository查询
     }
@@ -77,8 +77,8 @@ public class ApprovalCacheService {
     /**
      * 更新审批实例缓存
      */
-    @CachePut(value = ApprovalCacheConfig.CacheNames.INSTANCE, 
-              key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateInstanceKey(#instance.id)")
+    @CachePut(value = BasicApprovalCacheConfig.CacheNames.INSTANCE, 
+              key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateInstanceKey(#instance.id)")
     public ApprovalInstance updateInstanceCache(ApprovalInstance instance) {
         return instance;
     }
@@ -86,19 +86,19 @@ public class ApprovalCacheService {
     /**
      * 删除审批实例缓存
      */
-    @CacheEvict(value = ApprovalCacheConfig.CacheNames.INSTANCE, 
-                key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateInstanceKey(#id)")
+    @CacheEvict(value = BasicApprovalCacheConfig.CacheNames.INSTANCE, 
+                key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateInstanceKey(#id)")
     public void evictInstanceCache(Long id) {
         // 清除相关的状态缓存
-        String statusKey = ApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + id;
+        String statusKey = BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + id;
         redisTemplate.delete(statusKey);
     }
 
     /**
      * 缓存审批记录
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.RECORD, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateRecordKey(#id)")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.RECORD, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateRecordKey(#id)")
     public ApprovalRecord getRecordById(Long id) {
         return null; // 实际由Repository查询
     }
@@ -107,7 +107,7 @@ public class ApprovalCacheService {
      * 缓存审批统计数据
      */
     public Map<String, Object> getApprovalStatistics(String type, String period) {
-        String key = ApprovalCacheConfig.CacheKeyGenerator.generateStatisticsKey(type, period);
+        String key = BasicApprovalCacheConfig.CacheKeyGenerator.generateStatisticsKey(type, period);
         
         @SuppressWarnings("unchecked")
         Map<String, Object> cachedStats = (Map<String, Object>) redisTemplate.opsForValue().get(key);
@@ -129,7 +129,7 @@ public class ApprovalCacheService {
      * 清除审批统计数据缓存
      */
     public void clearStatisticsCache(String type, String period) {
-        String key = ApprovalCacheConfig.CacheKeyGenerator.generateStatisticsKey(type, period);
+        String key = BasicApprovalCacheConfig.CacheKeyGenerator.generateStatisticsKey(type, period);
         redisTemplate.delete(key);
     }
 
@@ -137,7 +137,7 @@ public class ApprovalCacheService {
      * 缓存审批条件配置
      */
     public Object getApprovalConditions(String businessType) {
-        String key = ApprovalCacheConfig.CacheKeyGenerator.generateConditionsKey(businessType);
+        String key = BasicApprovalCacheConfig.CacheKeyGenerator.generateConditionsKey(businessType);
         
         Object conditions = redisTemplate.opsForValue().get(key);
         if (conditions != null) {
@@ -157,7 +157,7 @@ public class ApprovalCacheService {
      * 设置审批实例状态缓存（用于快速状态查询）
      */
     public void setInstanceStatusCache(Long instanceId, String status) {
-        String key = ApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + instanceId;
+        String key = BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + instanceId;
         redisTemplate.opsForValue().set(key, status, 10, TimeUnit.MINUTES);
     }
 
@@ -165,7 +165,7 @@ public class ApprovalCacheService {
      * 获取审批实例状态缓存
      */
     public String getInstanceStatusCache(Long instanceId) {
-        String key = ApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + instanceId;
+        String key = BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + instanceId;
         return (String) redisTemplate.opsForValue().get(key);
     }
 
@@ -182,9 +182,9 @@ public class ApprovalCacheService {
      */
     public Map<String, Object> getCacheStats() {
         // 获取各类缓存的键数量
-        long flowConfigCount = redisTemplate.keys(ApprovalCacheConfig.CacheNames.FLOW_CONFIG_KEY_PREFIX + "*").size();
-        long instanceCount = redisTemplate.keys(ApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "*").size();
-        long recordCount = redisTemplate.keys(ApprovalCacheConfig.CacheNames.RECORD_KEY_PREFIX + "*").size();
+        long flowConfigCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG_KEY_PREFIX + "*").size();
+        long instanceCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "*").size();
+        long recordCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.RECORD_KEY_PREFIX + "*").size();
         
         // 这里可以添加更详细的缓存统计信息
         return Map.of(
@@ -381,7 +381,7 @@ public class ApprovalCacheService {
         // 清理过期的审批实例缓存
         try {
             // 获取所有实例缓存键
-            Set<String> instanceKeys = redisTemplate.keys(ApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "*");
+            Set<String> instanceKeys = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "*");
             
             // 实现基于时间戳的清理逻辑
             // 这里可以添加复杂的过期判断逻辑
@@ -398,7 +398,7 @@ public class ApprovalCacheService {
         // 清理低优先级的缓存（如统计数据缓存）
         try {
             // 清理旧版本的统计数据缓存
-            Set<String> statsKeys = redisTemplate.keys(ApprovalCacheConfig.CacheNames.STATISTICS_KEY_PREFIX + "*");
+            Set<String> statsKeys = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.STATISTICS_KEY_PREFIX + "*");
             for (String key : statsKeys) {
                 // 根据时间判断是否清理
                 // 实现省略

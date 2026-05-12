@@ -228,12 +228,8 @@ class ApprovalServiceFactoryTest {
     void testCheckBusinessStatus_UnknownBusinessType() {
         // 测试未知业务类型的状态检查
         // 使用一个未在工厂中映射的业务类型
-        AssertionError error = assertThrows(
-                AssertionError.class,
-                () -> approvalServiceFactory.checkBusinessStatus(
-                        BusinessTypeEnum.valueOf("EXPENSE_APPLY"), "TEST_005")
-                )
-        );
+        AssertionError error = assertThrows(AssertionError.class, 
+            () -> approvalServiceFactory.checkBusinessStatus(BusinessTypeEnum.valueOf("EXPENSE_APPLY"), "TEST_005"));
 
         // 验证没有调用任何业务服务
         verify(expenseApplyService, never()).checkApprovalStatus(anyString());

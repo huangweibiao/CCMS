@@ -1,6 +1,6 @@
 package com.ccms.repository.approval;
 
-import com.ccms.cache.ApprovalCacheConfig;
+import com.ccms.cache.BasicApprovalCacheConfig;
 import com.ccms.cache.ApprovalCacheService;
 import com.ccms.entity.approval.ApprovalFlowConfig;
 import com.ccms.enums.BusinessTypeEnum;
@@ -30,8 +30,8 @@ public class ApprovalFlowConfigRepositoryImpl {
     /**
      * 根据ID查询流程配置（带缓存）
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
     public Optional<ApprovalFlowConfig> findByIdWithCache(Long id) {
         return approvalFlowConfigRepository.findById(id);
     }
@@ -39,8 +39,8 @@ public class ApprovalFlowConfigRepositoryImpl {
     /**
      * 保存流程配置（更新缓存）
      */
-    @CachePut(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-              key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#config.id)")
+    @CachePut(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+              key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#config.id)")
     public ApprovalFlowConfig saveWithCache(ApprovalFlowConfig config) {
         // 保存前清除相关的列表缓存
         evictRelatedListCaches(config.getBusinessType(), config.getCategory());
@@ -50,8 +50,8 @@ public class ApprovalFlowConfigRepositoryImpl {
     /**
      * 删除流程配置（清除缓存）
      */
-    @CacheEvict(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-                key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
+    @CacheEvict(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+                key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigKey(#id)")
     public void deleteByIdWithCache(Long id) {
         Optional<ApprovalFlowConfig> config = approvalFlowConfigRepository.findById(id);
         config.ifPresent(c -> evictRelatedListCaches(c.getBusinessType(), c.getCategory()));
@@ -61,8 +61,8 @@ public class ApprovalFlowConfigRepositoryImpl {
     /**
      * 根据业务类型查询启用的流程配置（带缓存）
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType.name(), 'all')")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType.name(), 'all')")
     public List<ApprovalFlowConfig> findEnabledByBusinessType(BusinessTypeEnum businessType) {
         return approvalFlowConfigRepository.findByBusinessTypeAndStatus(businessType, 1)
                 .map(List::of)
@@ -72,8 +72,8 @@ public class ApprovalFlowConfigRepositoryImpl {
     /**
      * 根据业务类型、类别和状态查询流程配置（带缓存）
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType.name(), #category)")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType.name(), #category)")
     public List<ApprovalFlowConfig> findByBusinessTypeAndCategoryAndStatus(BusinessTypeEnum businessType, 
                                                                         String category, Integer status) {
         return approvalFlowConfigRepository.findByBusinessType(businessType).stream()
@@ -86,8 +86,8 @@ public class ApprovalFlowConfigRepositoryImpl {
     /**
      * 根据金额阈值查询适用的流程配置（带缓存）
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType.name(), 'amount_' + #amount)")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType.name(), 'amount_' + #amount)")
     public List<ApprovalFlowConfig> findFlowConfigsByAmountThreshold(BusinessTypeEnum businessType, 
                                                                 BigDecimal amount, Integer status) {
         return approvalFlowConfigRepository.findFlowConfigsByAmountThreshold(businessType, amount, status);
@@ -96,8 +96,8 @@ public class ApprovalFlowConfigRepositoryImpl {
     /**
      * 根据部门查询适用的流程配置（带缓存）
      */
-    @Cacheable(value = ApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
-               key = "T(com.ccms.cache.ApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType.name(), 'dept_' + #deptId)")
+    @Cacheable(value = BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG, 
+               key = "T(com.ccms.cache.BasicApprovalCacheConfig$CacheKeyGenerator).generateFlowConfigListKey(#businessType.name(), 'dept_' + #deptId)")
     public List<ApprovalFlowConfig> findApplicableFlowConfigs(Long deptId, BusinessTypeEnum businessType, Integer status) {
         return approvalFlowConfigRepository.findApplicableFlowConfigs(deptId, businessType, status);
     }
