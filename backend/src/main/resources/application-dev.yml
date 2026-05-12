@@ -2,7 +2,7 @@
 spring:
   # 数据源配置
   datasource:
-    url: jdbc:mysql://localhost:3306/ccms_db?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/ccms_db?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
     password: rootadmin
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -22,6 +22,14 @@ spring:
   # 缓存配置
   cache:
     type: redis
+
+  # Redis配置
+  redis:
+    host: localhost
+    port: 6379
+    password: seamwhole
+    database: 0
+    timeout: 3000
   
   # 文件上传配置
   servlet:

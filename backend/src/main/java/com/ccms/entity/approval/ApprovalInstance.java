@@ -31,7 +31,7 @@ public class ApprovalInstance extends BaseEntity {
     /**
      * 流程配置ID（新字段别名）
      */
-    @Transient
+    @Column(name = "flow_config_id")
     private Long flowConfigId;
     
     /**
@@ -49,7 +49,7 @@ public class ApprovalInstance extends BaseEntity {
     /**
      * 申请人ID
      */
-    @Transient
+    @Column(name = "applicant_id")
     private Long applicantId;
     
     /**

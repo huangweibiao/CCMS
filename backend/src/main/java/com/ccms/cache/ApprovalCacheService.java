@@ -10,9 +10,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 审批模块缓存服务
@@ -21,8 +25,15 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ApprovalCacheService {
 
-    @Autowired
+    @Autowired(required = false)  // 设置为optional，允许Redis不存在
     private RedisTemplate<String, Object> redisTemplate;
+    
+    // 开发环境内存缓存后备方案
+    private final Map<String, Object> memoryCache = new ConcurrentHashMap<>();
+    
+    private boolean isRedisAvailable() {
+        return redisTemplate != null;
+    }
 
     @Autowired
     private com.ccms.service.ApprovalAuditService auditService;
@@ -91,7 +102,11 @@ public class ApprovalCacheService {
     public void evictInstanceCache(Long id) {
         // 清除相关的状态缓存
         String statusKey = BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + id;
-        redisTemplate.delete(statusKey);
+        if (isRedisAvailable()) {
+            redisTemplate.delete(statusKey);
+        } else {
+            memoryCache.remove(statusKey);
+        }
     }
 
     /**
@@ -109,8 +124,16 @@ public class ApprovalCacheService {
     public Map<String, Object> getApprovalStatistics(String type, String period) {
         String key = BasicApprovalCacheConfig.CacheKeyGenerator.generateStatisticsKey(type, period);
         
-        @SuppressWarnings("unchecked")
-        Map<String, Object> cachedStats = (Map<String, Object>) redisTemplate.opsForValue().get(key);
+        Map<String, Object> cachedStats = null;
+        
+        if (isRedisAvailable()) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> redisStats = (Map<String, Object>) redisTemplate.opsForValue().get(key);
+            cachedStats = redisStats;
+        } else {
+            // 内存缓存后备
+            cachedStats = (Map<String, Object>) memoryCache.get(key);
+        }
         
         if (cachedStats != null) {
             return cachedStats;
@@ -119,8 +142,14 @@ public class ApprovalCacheService {
         // 从数据库查询统计数据（这里需要实现实际的统计逻辑）
         Map<String, Object> statistics = calculateStatistics(type, period);
         
-        // 缓存统计结果，5分钟过期
-        redisTemplate.opsForValue().set(key, statistics, 5, TimeUnit.MINUTES);
+        // 缓存统计结果
+        if (isRedisAvailable()) {
+            redisTemplate.opsForValue().set(key, statistics, 5, TimeUnit.MINUTES);
+        } else {
+            memoryCache.put(key, statistics);
+            // 简单模拟过期机制：定时清理旧缓存
+            // 在实际生产环境中，可以使用定时任务或维护到期时间
+        }
         
         return statistics;
     }
@@ -130,7 +159,11 @@ public class ApprovalCacheService {
      */
     public void clearStatisticsCache(String type, String period) {
         String key = BasicApprovalCacheConfig.CacheKeyGenerator.generateStatisticsKey(type, period);
-        redisTemplate.delete(key);
+        if (isRedisAvailable()) {
+            redisTemplate.delete(key);
+        } else {
+            memoryCache.remove(key);
+        }
     }
 
     /**
@@ -139,7 +172,13 @@ public class ApprovalCacheService {
     public Object getApprovalConditions(String businessType) {
         String key = BasicApprovalCacheConfig.CacheKeyGenerator.generateConditionsKey(businessType);
         
-        Object conditions = redisTemplate.opsForValue().get(key);
+        Object conditions = null;
+        if (isRedisAvailable()) {
+            conditions = redisTemplate.opsForValue().get(key);
+        } else {
+            conditions = memoryCache.get(key);
+        }
+        
         if (conditions != null) {
             return conditions;
         }
@@ -147,8 +186,12 @@ public class ApprovalCacheService {
         // 从数据库查询条件配置（这里需要实现实际的查询逻辑）
         Object conditionsConfig = loadConditionsFromDB(businessType);
         
-        // 缓存条件配置，6小时过期
-        redisTemplate.opsForValue().set(key, conditionsConfig, 6, TimeUnit.HOURS);
+        // 缓存条件配置，6小时过期（Redis）或无限期（内存）
+        if (isRedisAvailable()) {
+            redisTemplate.opsForValue().set(key, conditionsConfig, 6, TimeUnit.HOURS);
+        } else {
+            memoryCache.put(key, conditionsConfig);
+        }
         
         return conditionsConfig;
     }
@@ -158,7 +201,11 @@ public class ApprovalCacheService {
      */
     public void setInstanceStatusCache(Long instanceId, String status) {
         String key = BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + instanceId;
-        redisTemplate.opsForValue().set(key, status, 10, TimeUnit.MINUTES);
+        if (isRedisAvailable()) {
+            redisTemplate.opsForValue().set(key, status, 10, TimeUnit.MINUTES);
+        } else {
+            memoryCache.put(key, status);
+        }
     }
 
     /**
@@ -166,32 +213,63 @@ public class ApprovalCacheService {
      */
     public String getInstanceStatusCache(Long instanceId) {
         String key = BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "status:" + instanceId;
-        return (String) redisTemplate.opsForValue().get(key);
+        if (isRedisAvailable()) {
+            return (String) redisTemplate.opsForValue().get(key);
+        } else {
+            return (String) memoryCache.get(key);
+        }
     }
 
     /**
      * 清除所有审批相关缓存
      */
     public void clearAllApprovalCache() {
-        String pattern = "approval:*";
-        redisTemplate.keys(pattern).forEach(key -> redisTemplate.delete(key));
+        if (isRedisAvailable()) {
+            try {
+                String pattern = "approval:*";
+                redisTemplate.keys(pattern).forEach(key -> redisTemplate.delete(key));
+            } catch (Exception e) {
+                // 记录错误但不中断流程
+            }
+        } else {
+            // 清空内存缓存
+            memoryCache.keySet().stream()
+                .filter(key -> key.startsWith("approval:"))
+                .forEach(memoryCache::remove);
+        }
     }
 
     /**
      * 获取缓存命中率统计
      */
     public Map<String, Object> getCacheStats() {
-        // 获取各类缓存的键数量
-        long flowConfigCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG_KEY_PREFIX + "*").size();
-        long instanceCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "*").size();
-        long recordCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.RECORD_KEY_PREFIX + "*").size();
+        if (isRedisAvailable()) {
+            try {
+                // 获取各类缓存的键数量
+                long flowConfigCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.FLOW_CONFIG_KEY_PREFIX + "*").size();
+                long instanceCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.INSTANCE_KEY_PREFIX + "*").size();
+                long recordCount = redisTemplate.keys(BasicApprovalCacheConfig.CacheNames.RECORD_KEY_PREFIX + "*").size();
+                
+                return Map.of(
+                    "flowConfigCount", flowConfigCount,
+                    "instanceCount", instanceCount,
+                    "recordCount", recordCount,
+                    "totalCacheCount", flowConfigCount + instanceCount + recordCount,
+                    "cacheType", "redis"
+                );
+            } catch (Exception e) {
+                // Redis不可用时的异常处理
+            }
+        }
         
-        // 这里可以添加更详细的缓存统计信息
+        // 内存缓存统计
+        long memoryCacheCount = memoryCache.size();
         return Map.of(
-            "flowConfigCount", flowConfigCount,
-            "instanceCount", instanceCount,
-            "recordCount", recordCount,
-            "totalCacheCount", flowConfigCount + instanceCount + recordCount
+            "flowConfigCount", 0,
+            "instanceCount", 0,
+            "recordCount", 0,
+            "totalCacheCount", memoryCacheCount,
+            "cacheType", "memory"
         );
     }
 

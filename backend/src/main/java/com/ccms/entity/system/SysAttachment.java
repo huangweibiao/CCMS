@@ -93,11 +93,7 @@ public class SysAttachment extends BaseEntity {
     @Column(name = "download_count", nullable = false)
     private Integer downloadCount = 0;
     
-    /**
-     * 是否已删除（0:正常, 1:已删除）
-     */
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
+
     
     /**
      * 最后下载时间
@@ -236,13 +232,7 @@ public class SysAttachment extends BaseEntity {
         this.downloadCount = downloadCount;
     }
 
-    public Boolean getIsDeleted() {
-        return isDeleted;
-    }
 
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
 
     public LocalDateTime getLastDownloadTime() {
         return lastDownloadTime;
@@ -285,7 +275,7 @@ public class SysAttachment extends BaseEntity {
                 ", uploadUserId=" + uploadUserId +
                 ", isPublic=" + isPublic +
                 ", downloadCount=" + downloadCount +
-                ", isDeleted=" + isDeleted +
+                ", deleted=" + getDeleted() +
                 ", lastDownloadTime=" + lastDownloadTime +
                 ", deleteTime=" + deleteTime +
                 ", deletedBy='" + deletedBy + '\'' +

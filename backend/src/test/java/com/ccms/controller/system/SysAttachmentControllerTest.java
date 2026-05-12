@@ -42,14 +42,14 @@ class SysAttachmentControllerTest extends ControllerTestBase {
         attachment.setUploadUserId(1L);
         attachment.setIsPublic(false);
         attachment.setDownloadCount(0);
-        attachment.setIsDeleted(false);
+        attachment.setDeleted(false);
         return attachment;
     }
 
     @Test
     void shouldReturnAttachmentList() throws Exception {
         SysAttachment attachment = createTestAttachment(1L, "test.pdf");
-        when(attachmentRepository.findByIsDeleted(false))
+        when(attachmentRepository.findByDeleted(false))
                 .thenReturn(Collections.singletonList(attachment));
 
         performGet("/api/system/attachments")

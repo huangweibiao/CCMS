@@ -50,8 +50,8 @@ public interface SysAttachmentRepository extends JpaRepository<SysAttachment, Lo
     /**
      * 查询未删除的附件
      *
-     * @param isDeleted 是否已删除
+     * @param deleted 是否已删除
      * @return 附件列表
      */
-    List<SysAttachment> findByIsDeleted(Boolean isDeleted);
+    List<SysAttachment> findByDeleted(Boolean deleted);
 }

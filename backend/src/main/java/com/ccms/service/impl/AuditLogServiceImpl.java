@@ -144,7 +144,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Override
     public Page<AuditLog> getEntityAuditHistory(String entityType, Long entityId, Pageable pageable) {
-        return auditLogRepository.findByEntityTypeAndEntityIdOrderByCreatedTimeDesc(entityType, entityId, pageable);
+        return auditLogRepository.findByEntityTypeAndEntityIdOrderByCreateTimeDesc(entityType, entityId, pageable);
     }
 
     @Override
@@ -230,7 +230,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Transactional
     public int cleanupExpiredLogs(int retentionDays) {
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(retentionDays);
-        int deletedCount = auditLogRepository.deleteByCreatedTimeBefore(cutoffDate);
+        int deletedCount = auditLogRepository.deleteByCreateTimeBefore(cutoffDate);
         log.info("清理过期审计日志: 保留天数={}, 清理数量={}", retentionDays, deletedCount);
         return deletedCount;
     }

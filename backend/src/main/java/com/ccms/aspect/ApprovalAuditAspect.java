@@ -1,6 +1,6 @@
 package com.ccms.aspect;
 
-import com.ccms.service.audit.ApprovalAuditService;
+import com.ccms.service.ApprovalAuditHelperService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class ApprovalAuditAspect {
 
     @Autowired
-    private ApprovalAuditService approvalAuditService;
+    private ApprovalAuditHelperService approvalAuditService;
 
     /**
      * 拦截审批流程配置相关操作

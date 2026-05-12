@@ -1,8 +1,8 @@
 package com.ccms.controller.audit;
 
-import com.ccms.audit.ApprovalAuditLog;
 import com.ccms.dto.PageResponse;
-import com.ccms.service.audit.ApprovalAuditService;
+import com.ccms.entity.approval.ApprovalAuditLog;
+import com.ccms.service.ApprovalAuditService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

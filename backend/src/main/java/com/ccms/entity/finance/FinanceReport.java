@@ -153,40 +153,10 @@ public class FinanceReport extends BaseEntity {
     private Integer downloadCount;
 
     /**
-     * 是否已删除
-     */
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
-
-    /**
      * 备注
      */
     @Column(name = "remark", length = 1024, columnDefinition = "TEXT")
     private String remark;
-
-    /**
-     * 创建时间
-     */
-    @Column(name = "create_time", nullable = false)
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    @Column(name = "update_time", nullable = false)
-    private LocalDateTime updateTime;
-
-    /**
-     * 创建人
-     */
-    @Column(name = "create_by", nullable = false)
-    private Long createBy;
-
-    /**
-     * 更新人
-     */
-    @Column(name = "update_by", nullable = false)
-    private Long updateBy;
 
     // Getter and Setter methods
     public Long getReportId() { return reportId; }
@@ -249,21 +219,6 @@ public class FinanceReport extends BaseEntity {
     public Integer getDownloadCount() { return downloadCount; }
     public void setDownloadCount(Integer downloadCount) { this.downloadCount = downloadCount; }
 
-    public Boolean getIsDeleted() { return isDeleted; }
-    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
-
     public String getRemark() { return remark; }
     public void setRemark(String remark) { this.remark = remark; }
-
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
-
-    public LocalDateTime getUpdateTime() { return updateTime; }
-    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
-
-    public Long getCreateBy() { return createBy; }
-    public void setCreateBy(Long createBy) { this.createBy = createBy; }
-
-    public Long getUpdateBy() { return updateBy; }
-    public void setUpdateBy(Long updateBy) { this.updateBy = updateBy; }
 }

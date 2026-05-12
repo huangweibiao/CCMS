@@ -44,7 +44,7 @@ public class SysAttachmentController {
         } else if (businessType != null) {
             attachments = attachmentRepository.findByBusinessType(businessType);
         } else {
-            attachments = attachmentRepository.findByIsDeleted(false);
+            attachments = attachmentRepository.findByDeleted(false);
         }
         return ResponseEntity.ok(attachments);
     }
@@ -100,7 +100,7 @@ public class SysAttachmentController {
             attachment.setUploadUserId(1L); // TODO: 从当前用户获取
             attachment.setIsPublic(false);
             attachment.setDownloadCount(0);
-            attachment.setIsDeleted(false);
+            attachment.setDeleted(false);
 
             SysAttachment saved = attachmentRepository.save(attachment);
             return ResponseEntity.ok(saved);
@@ -116,7 +116,7 @@ public class SysAttachmentController {
     public ResponseEntity<Void> deleteAttachment(@PathVariable Long attachmentId) {
         return attachmentRepository.findById(attachmentId)
                 .map(attachment -> {
-                    attachment.setIsDeleted(true);
+                    attachment.setDeleted(true);
                     attachment.setDeleteTime(LocalDateTime.now());
                     attachmentRepository.save(attachment);
                     return ResponseEntity.ok().<Void>build();

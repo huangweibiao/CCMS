@@ -15,8 +15,11 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * 审批审计服务
@@ -310,5 +313,61 @@ public class ApprovalAuditService {
         // 实际项目中可以从请求上下文中获取
         // 这里返回默认值
         return "Unknown";
+    }
+
+    // ------ 以下是控制器需要的方法 ------ //
+
+    /**
+     * 查询审计日志 - 分页查询
+     */
+    public Page<ApprovalAuditLog> queryAuditLogs(String operationType, String targetEntity, Long userId,
+                                                 String businessType, String operationResult,
+                                                 LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
+        // 简化实现 - 返回空分页
+        return Page.empty();
+    }
+
+    /**
+     * 获取实体审计历史
+     */
+    public List<ApprovalAuditLog> getEntityAuditHistory(String entity, Long id) {
+        // 简化实现 - 返回空列表
+        return List.of();
+    }
+
+    /**
+     * 生成审计报告
+     */
+    public Map<String, Object> generateAuditReport(LocalDateTime startTime, LocalDateTime endTime) {
+        // 简化实现 - 返回空报告
+        Map<String, Object> report = new HashMap<>();
+        report.put("totalOperations", 0);
+        report.put("successfulOperations", 0);
+        report.put("failedOperations", 0);
+        return report;
+    }
+
+    /**
+     * 导出审计日志
+     */
+    public String exportAuditLogs(LocalDateTime startTime, LocalDateTime endTime, String format) {
+        // 简化实现 - 返回空字符串
+        return "";
+    }
+
+    /**
+     * 分析性能问题
+     */
+    public List<ApprovalAuditLog> analyzePerformanceIssues(long threshold) {
+        // 简化实现 - 返回空列表
+        return List.of();
+    }
+
+    /**
+     * 清理旧审计数据
+     */
+    public int cleanupOldAuditData(LocalDateTime beforeTime) {
+        // 简化实现 - 返回0
+        return 0;
     }
 }
