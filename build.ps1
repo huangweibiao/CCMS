@@ -1,239 +1,199 @@
-# CCMS 完整打包脚本
-# 功能：前端打包 → 复制到后端资源目录 → 后端打包 → 生成完整部署包
+# CCMS企业费控管理系统打包脚本
+# 优化版本：参考WMS脚本结构，增强可读性和流程清晰度
+# ==========================================
 
 param(
     [string]$Version = "1.0.0",
     [string]$OutputDir = "./dist",
     [switch]$SkipFrontend = $false,
-    [switch]$SkipBackend = $false,
-    [switch]$SkipTests = $true
+    [switch]$SkipBackend = $false
 )
+
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "CCMS企业费控管理系统打包脚本" -ForegroundColor Cyan
+Write-Host "版本: $Version" -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host ""
 
 # 设置错误处理
 $ErrorActionPreference = "Stop"
 
-# 颜色定义
-$Green = "Green"
-$Yellow = "Yellow"
-$Red = "Red"
-$Cyan = "Cyan"
+# 工具变量
+$BackendDir = "backend"
+$FrontendDir = "frontend"
+$StaticDir = "$BackendDir\src\main\resources\static"
 
-# 日志函数
-function Write-Info {
-    param([string]$Message)
-    Write-Host "[INFO] $Message" -ForegroundColor $Cyan
-}
+# 步骤1: 检查必要工具
+Write-Host "[1/5] 正在检查必要工具..." -ForegroundColor Yellow
+$tools = @(
+    @{ Name = "node"; DisplayName = "Node.js" },
+    @{ Name = "npm"; DisplayName = "npm" },
+    @{ Name = "mvn"; DisplayName = "Maven" },
+    @{ Name = "java"; DisplayName = "Java" }
+)
 
-function Write-Success {
-    param([string]$Message)
-    Write-Host "[SUCCESS] $Message" -ForegroundColor $Green
-}
-
-function Write-Warning {
-    param([string]$Message)
-    Write-Host "[WARNING] $Message" -ForegroundColor $Yellow
-}
-
-function Write-Error {
-    param([string]$Message)
-    Write-Host "[ERROR] $Message" -ForegroundColor $Red
-}
-
-# 检查命令是否存在
-function Test-Command {
-    param([string]$Command)
-    $exists = $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
-    return $exists
-}
-
-# 检查必要工具
-function Check-Prerequisites {
-    Write-Info "检查必要工具..."
-    
-    $requiredTools = @(
-        @{ Name = "node"; DisplayName = "Node.js" },
-        @{ Name = "npm"; DisplayName = "npm" },
-        @{ Name = "mvn"; DisplayName = "Maven" },
-        @{ Name = "java"; DisplayName = "Java" }
-    )
-    
-    $allGood = $true
-    foreach ($tool in $requiredTools) {
-        if (Test-Command $tool.Name) {
-            Write-Success "$($tool.DisplayName) 已安装"
-        } else {
-            Write-Error "$($tool.DisplayName) 未安装或未添加到PATH"
-            $allGood = $false
-        }
-    }
-    
-    if (-not $allGood) {
-        throw "缺少必要的工具，请安装后重试"
+$allToolsAvailable = $true
+foreach ($tool in $tools) {
+    if ($null -eq (Get-Command $tool.Name -ErrorAction SilentlyContinue)) {
+        Write-Host "      ❌ $($tool.DisplayName) 未安装或未添加到PATH" -ForegroundColor Red
+        $allToolsAvailable = $false
+    } else {
+        Write-Host "      ✅ $($tool.DisplayName) 已安装" -ForegroundColor Green
     }
 }
 
-# 前端打包
-function Build-Frontend {
-    Write-Info "========== 开始前端打包 =========="
+if (-not $allToolsAvailable) {
+    Write-Host "      依赖检查失败，请安装必要的工具后重试" -ForegroundColor Red
+    exit 1
+}
+Write-Host "      工具检查完成" -ForegroundColor Green
+Write-Host ""
+
+# 步骤2: 清除历史打包文件
+Write-Host "[2/5] 正在清除历史打包文件..." -ForegroundColor Yellow
+if (Test-Path "$FrontendDir\dist") {
+    Remove-Item -Recurse -Force "$FrontendDir\dist"
+    Write-Host "      已清除前端dist目录" -ForegroundColor Green
+}
+
+if (Test-Path "$StaticDir") {
+    Remove-Item -Recurse -Force "$StaticDir"
+    Write-Host "      已清除后端static目录" -ForegroundColor Green
+}
+
+if (Test-Path "$BackendDir\target") {
+    Remove-Item -Recurse -Force "$BackendDir\target" -ErrorAction SilentlyContinue
+    Write-Host "      已清除后端target目录" -ForegroundColor Green
+}
+
+if (Test-Path $OutputDir) {
+    Remove-Item -Recurse -Force $OutputDir
+    Write-Host "      已清除部署目录" -ForegroundColor Green
+}
+
+Write-Host "      清除完成" -ForegroundColor Green
+Write-Host ""
+
+# 步骤3: 构建前端项目并复制到后端
+if (-not $SkipFrontend) {
+    Write-Host "[3/5] 正在构建前端项目并整合到后端..." -ForegroundColor Yellow
     
-    $frontendDir = "./frontend"
-    if (-not (Test-Path $frontendDir)) {
-        throw "前端目录不存在: $frontendDir"
-    }
-    
-    Push-Location $frontendDir
-    
+    # 前端构建
+    Set-Location $FrontendDir
     try {
-        # 检查node_modules
-        if (-not (Test-Path "./node_modules")) {
-            Write-Info "安装前端依赖..."
-            npm install
-            if ($LASTEXITCODE -ne 0) {
-                throw "前端依赖安装失败"
-            }
+        # 安装依赖
+        Write-Host "      安装前端依赖..." -ForegroundColor Cyan
+        npm install
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "      前端依赖安装失败！" -ForegroundColor Red
+            Set-Location ..
+            exit 1
         }
-        
-        # 执行打包
-        Write-Info "执行前端打包..."
+
+        # 执行构建
+        Write-Host "      执行前端打包..." -ForegroundColor Cyan
         npm run build
         if ($LASTEXITCODE -ne 0) {
-            throw "前端打包失败"
+            Write-Host "      前端构建失败！" -ForegroundColor Red
+            Set-Location ..
+            exit 1
         }
-        
-        # 检查打包结果
+
+        # 检查构建结果
         if (-not (Test-Path "./dist/index.html")) {
-            throw "前端打包结果不完整，缺少index.html"
+            Write-Host "      前端打包结果不完整！" -ForegroundColor Red
+            Set-Location ..
+            exit 1
         }
-        
+
         $distSize = (Get-ChildItem ./dist -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
-        Write-Success "前端打包完成，大小: $([math]::Round($distSize, 2)) MB"
+        Write-Host "      前端构建完成 ($([math]::Round($distSize, 2)) MB)" -ForegroundColor Green
         
-    } finally {
-        Pop-Location
+    } catch {
+        Write-Host "      前端构建出错: $_" -ForegroundColor Red
+        Set-Location ..
+        exit 1
     }
-}
+    Set-Location ..
 
-# 复制前端资源到后端
-function Copy-FrontendToBackend {
-    Write-Info "========== 复制前端资源到后端 =========="
-    
-    $sourceDir = "./frontend/dist"
-    $targetDir = "./backend/src/main/resources/static"
-    
-    if (-not (Test-Path $sourceDir)) {
-        throw "前端打包目录不存在: $sourceDir"
+    # 复制前端文件到后端
+    Write-Host "      复制前端资源到后端..." -ForegroundColor Cyan
+    if (-not (Test-Path $StaticDir)) {
+        New-Item -ItemType Directory -Path $StaticDir -Force | Out-Null
     }
-    
-    # 清理旧文件
-    if (Test-Path $targetDir) {
-        Write-Info "清理旧的前端资源..."
-        Remove-Item -Path $targetDir -Recurse -Force
-    }
-    
-    # 创建目标目录
-    New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
-    
-    # 复制文件
-    Write-Info "复制前端文件到后端资源目录..."
-    Copy-Item -Path "$sourceDir/*" -Destination $targetDir -Recurse -Force
-    
-    $fileCount = (Get-ChildItem $targetDir -Recurse -File).Count
-    Write-Success "前端资源复制完成，共 $fileCount 个文件"
+    Copy-Item -Path "$FrontendDir\dist\*" -Destination $StaticDir -Recurse -Force
+    $fileCount = (Get-ChildItem $StaticDir -Recurse -File).Count
+    Write-Host "      前端资源整合完成 ($fileCount 个文件)" -ForegroundColor Green
+} else {
+    Write-Host "[3/5] 跳过前端打包..." -ForegroundColor Yellow
+    Write-Host "      使用现有的前端资源" -ForegroundColor Green
 }
+Write-Host ""
 
-# 后端打包
-function Build-Backend {
-    param([bool]$SkipTests = $true)
-    
-    Write-Info "========== 开始后端打包 =========="
-    
-    $backendDir = "./backend"
-    if (-not (Test-Path $backendDir)) {
-        throw "后端目录不存在: $backendDir"
-    }
-    
-    Push-Location $backendDir
-    
+# 步骤4: 打包后端项目（包含前端资源）
+if (-not $SkipBackend) {
+    Write-Host "[4/5] 正在打包后端项目（包含前端资源）..." -ForegroundColor Yellow
+    Set-Location $BackendDir
     try {
-        # 清理旧的target目录（带重试机制）
-        if (Test-Path "./target") {
-            Write-Info "清理旧的构建目录..."
-            
-            # 先尝试优雅清理，如果失败则跳过
-            try {
-                Remove-Item -Path "./target" -Recurse -Force -ErrorAction Stop
-                Write-Info "成功清理旧的构建目录"
-            } catch {
-                Write-Warning "无法完全删除target目录（可能有进程锁定），将尝试使用Maven clean命令清理"
-                # 尝试使用Maven clean来清理
-                & mvn clean -q
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Warning "Maven clean也失败，将跳过预清理直接打包"
-                }
-            }
-        }
-        
-        # 执行Maven打包
-        Write-Info "执行Maven打包..."
-        $mvnArgs = @("clean", "package")
-        
-        if ($SkipTests) {
-            $mvnArgs += "-DskipTests=true"
-            $mvnArgs += "-Dmaven.test.skip=true"
-        }
-        
-        & mvn $mvnArgs
-        
+        Write-Host "      执行Maven打包..." -ForegroundColor Cyan
+        mvn clean package -DskipTests
         if ($LASTEXITCODE -ne 0) {
-            throw "后端打包失败"
+            Write-Host "      后端打包失败！" -ForegroundColor Red
+            Set-Location ..
+            exit 1
         }
-        
-        # 检查打包结果
-        $jarFile = "./target/ccms-backend-$Version.jar"
-        if (-not (Test-Path $jarFile)) {
-            # 尝试查找Spring Boot生成的jar文件
-            $jarFiles = Get-ChildItem "./target" -Filter "ccms-backend*.jar" | Where-Object { $_.Name -notlike "*sources*" -and $_.Name -notlike "*original*" }
-            if ($jarFiles.Count -eq 0) {
-                throw "后端打包结果不存在: 没有找到ccms-backend的jar文件"
-            }
-            $jarFile = $jarFiles[0].FullName
+
+        # 查找打包结果
+        $jarFiles = Get-ChildItem "./target" -Filter "ccms-backend*.jar" | Where-Object { $_.Name -notlike "*sources*" -and $_.Name -notlike "*original*" }
+        if ($jarFiles.Count -eq 0) {
+            Write-Host "      未找到打包结果！" -ForegroundColor Red
+            Set-Location ..
+            exit 1
         }
-        
+
+        $jarFile = $jarFiles[0].FullName
         $jarSize = (Get-Item $jarFile).Length / 1MB
-        Write-Success "后端打包完成，大小: $([math]::Round($jarSize, 2)) MB"
+        Write-Host "      后端打包完成 ($([math]::Round($jarSize, 2)) MB)" -ForegroundColor Green
         
-    } finally {
-        Pop-Location
+    } catch {
+        Write-Host "      后端打包出错: $_" -ForegroundColor Red
+        Set-Location ..
+        exit 1
     }
+    Set-Location ..
+} else {
+    Write-Host "[4/5] 跳过后端打包..." -ForegroundColor Yellow
+    Write-Host "      使用现有的后端打包结果" -ForegroundColor Green
+}
+Write-Host ""
+
+# 步骤5: 创建部署包
+Write-Host "[5/5] 正在创建部署包..." -ForegroundColor Yellow
+
+# 创建部署目录
+$deployDir = "$OutputDir/ccms-$Version"
+New-Item -ItemType Directory -Path $deployDir -Force | Out-Null
+
+# 复制JAR文件
+$jarSource = "$BackendDir\target\ccms-backend-$Version.jar"
+if (-not (Test-Path $jarSource)) {
+    $jarFiles = Get-ChildItem "$BackendDir\target" -Filter "ccms-backend*.jar" | Where-Object { $_.Name -notlike "*sources*" -and $_.Name -notlike "*original*" }
+    if ($jarFiles.Count -eq 0) {
+        Write-Host "      未找到JAR文件！" -ForegroundColor Red
+        exit 1
+    }
+    $jarSource = $jarFiles[0].FullName
 }
 
-# 创建部署包
-function Create-DeploymentPackage {
-    Write-Info "========== 创建部署包 =========="
-    
-    # 创建输出目录
-    $deployDir = "$OutputDir/ccms-$Version"
-    if (Test-Path $deployDir) {
-        Remove-Item -Path $deployDir -Recurse -Force
-    }
-    New-Item -ItemType Directory -Path $deployDir -Force | Out-Null
-    
-    # 复制JAR文件
-    $jarSource = "./backend/target/ccms-backend-$Version.jar"
-    if (-not (Test-Path $jarSource)) {
-        # 查找实际的jar文件
-        $jarFiles = Get-ChildItem "./backend/target" -Filter "ccms-backend*.jar" | Where-Object { $_.Name -notlike "*sources*" -and $_.Name -notlike "*original*" }
-        if ($jarFiles.Count -eq 0) {
-            throw "后端JAR文件不存在: 没有找到ccms-backend的jar文件"
-        }
-        $jarSource = $jarFiles[0].FullName
-    }
-    $jarTarget = "$deployDir/ccms-backend-$Version.jar"
-    Copy-Item -Path $jarSource -Destination $jarTarget -Force
-    Write-Info "复制JAR文件: $jarTarget"
-    
-    # 创建启动脚本
-    $startScript = @"
+$jarTarget = "$deployDir\ccms-backend-$Version.jar"
+Copy-Item -Path $jarSource -Destination $jarTarget -Force
+Write-Host "      复制JAR文件" -ForegroundColor Green
+
+# 创建启动脚本
+Write-Host "      创建启动脚本..." -ForegroundColor Cyan
+
+# Windows启动脚本
+$startScript = @"
 @echo off
 chcp 65001 >nul
 echo ==========================================
@@ -245,17 +205,15 @@ echo.
 set JAVA_OPTS=-Xmx512m -Xms256m -Dfile.encoding=UTF-8
 set JAR_FILE=ccms-backend-$Version.jar
 
-echo 正在启动应用...
-java %JAVA_OPTS% -jar %JAR_FILE% --spring.profiles.active=prod
+ echo 正在启动应用...
+ java %JAVA_OPTS% -jar %JAR_FILE% --spring.profiles.active=prod
 
 pause
 "@
-    
-    $startScript | Out-File -FilePath "$deployDir/start.bat" -Encoding UTF8
-    Write-Info "创建启动脚本: start.bat"
-    
-    # 创建Linux启动脚本
-    $startSh = @"
+$startScript | Out-File -FilePath "$deployDir/start.bat" -Encoding UTF8
+
+# Linux启动脚本
+$startSh = @"
 #!/bin/bash
 
 echo "=========================================="
@@ -270,152 +228,38 @@ JAR_FILE="ccms-backend-$Version.jar"
 echo "正在启动应用..."
 java \$JAVA_OPTS -jar \$JAR_FILE --spring.profiles.active=prod
 "@
-    
-    $startSh | Out-File -FilePath "$deployDir/start.sh" -Encoding UTF8
-    Write-Info "创建Linux启动脚本: start.sh"
-    
-    # 创建配置文件目录
-    $configDir = "$deployDir/config"
-    New-Item -ItemType Directory -Path $configDir -Force | Out-Null
-    
-    # 复制配置文件
-    $configSource = "./backend/src/main/resources/application.yml"
-    if (Test-Path $configSource) {
-        Copy-Item -Path $configSource -Destination $configDir -Force
-        Write-Info "复制配置文件"
-    }
-    
-    # 复制MySQL配置文件示例
-    $mysqlConfigSource = "./docs/deployment-guide.md"
-    if (Test-Path $mysqlConfigSource) {
-        Copy-Item -Path $mysqlConfigSource -Destination $deployDir -Force
-        Write-Info "复制部署文档"
-    }
-    
-    # 创建README
-    $readme = @"
-# CCMS 企业费控管理系统 v$Version
+$startSh | Out-File -FilePath "$deployDir/start.sh" -Encoding UTF8
 
-## 部署说明
+# 创建配置目录
+$configDir = "$deployDir/config"
+New-Item -ItemType Directory -Path $configDir -Force | Out-Null
 
-### 系统要求
-- Java 21 或更高版本
-- MySQL 8.0 或更高版本
-- Redis 6.0 或更高版本（可选）
-
-### 快速启动
-
-#### Windows
-```
-双击 start.bat
-```
-
-#### Linux/Mac
-```bash
-chmod +x start.sh
-./start.sh
-```
-
-### 配置说明
-
-1. 修改 `config/application.yml` 配置数据库连接
-2. 配置JWT密钥和其他安全参数
-3. 配置邮件服务器（可选）
-
-### 默认端口
-- 应用端口: 8080
-- 数据库: 3306
-- Redis: 6379
-
-### 访问地址
-- 前端: http://localhost:8080
-- API文档: http://localhost:8080/swagger-ui.html
-
-## 目录结构
-
-```
-ccms-$Version/
-├── ccms-backend-$Version.jar  # 主程序
-├── start.bat                  # Windows启动脚本
-├── start.sh                   # Linux启动脚本
-├── config/                    # 配置文件目录
-│   └── application.yml
-└── README.md                  # 本文件
-```
-
-## 技术支持
-
-如有问题，请联系技术支持团队。
-"@
-    
-    $readme | Out-File -FilePath "$deployDir/README.md" -Encoding UTF8
-    Write-Info "创建README文件"
-    
-    # 打包为ZIP
-    $zipFile = "$OutputDir/ccms-$Version.zip"
-    if (Test-Path $zipFile) {
-        Remove-Item -Path $zipFile -Force
-    }
-    
-    Compress-Archive -Path $deployDir -DestinationPath $zipFile -Force
-    
-    $zipSize = (Get-Item $zipFile).Length / 1MB
-    Write-Success "部署包创建完成: $zipFile"
-    Write-Info "部署包大小: $([math]::Round($zipSize, 2)) MB"
+# 复制默认配置
+if (Test-Path "$BackendDir/src/main/resources/application.yml") {
+    Copy-Item -Path "$BackendDir/src/main/resources/application.yml" -Destination $configDir -Force
+    Write-Host "      复制配置文件" -ForegroundColor Green
 }
 
-# 打印构建信息
-function Show-BuildInfo {
-    Write-Info "========== 构建信息 =========="
-    Write-Info "版本: $Version"
-    Write-Info "输出目录: $OutputDir"
-    Write-Info "跳过前端: $SkipFrontend"
-    Write-Info "跳过后端: $SkipBackend"
-    Write-Info "跳过测试: $SkipTests"
-    Write-Info "============================"
-}
+# 打包为ZIP
+$zipFile = "$OutputDir/ccms-$Version.zip"
+Compress-Archive -Path $deployDir -DestinationPath $zipFile -Force
+$zipSize = (Get-Item $zipFile).Length / 1MB
 
-# 主函数
-function Main {
-    $startTime = Get-Date
-    
-    try {
-        Show-BuildInfo
-        
-        # 检查前提条件
-        Check-Prerequisites
-        
-        # 前端打包
-        if (-not $SkipFrontend) {
-            Build-Frontend
-            Copy-FrontendToBackend
-        } else {
-            Write-Warning "跳过前端打包"
-        }
-        
-        # 后端打包
-        if (-not $SkipBackend) {
-            Build-Backend -SkipTests $SkipTests
-        } else {
-            Write-Warning "跳过后端打包"
-        }
-        
-        # 创建部署包
-        Create-DeploymentPackage
-        
-        $endTime = Get-Date
-        $duration = $endTime - $startTime
-        
-        Write-Success "========== 构建完成 =========="
-        Write-Info "总耗时: $([math]::Round($duration.TotalMinutes, 2)) 分钟"
-        Write-Info "部署包位置: $OutputDir/ccms-$Version.zip"
-        Write-Success "=============================="
-        
-    } catch {
-        Write-Error "构建失败: $_"
-        exit 1
-    }
-}
+Write-Host "      部署包创建完成" -ForegroundColor Green
+Write-Host ""
 
-# 执行主函数
-Main
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "打包完成！" -ForegroundColor Green
+Write-Host ""
+Write-Host "重要文件信息:" -ForegroundColor Yellow
+Write-Host "  部署包: $zipFile ($([math]::Round($zipSize, 2)) MB)" -ForegroundColor Green
+Write-Host "  主程序: $jarTarget" -ForegroundColor Green
+Write-Host "  部署目录: $deployDir" -ForegroundColor Green
+Write-Host ""
+
+Write-Host "运行命令:" -ForegroundColor Yellow
+Write-Host "  Windows:  cd '$deployDir' && .\\start.bat" -ForegroundColor White
+Write-Host "  Linux:    cd '$deployDir' && chmod +x start.sh && ./start.sh" -ForegroundColor White
+Write-Host "  Java命令: java -jar '$jarTarget' --spring.profiles.active=prod" -ForegroundColor White
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan

@@ -95,7 +95,7 @@ public class DeptController {
         Map<String, Object> result = new HashMap<>();
         
         // 检查编码是否已存在
-        if (sysDeptRepository.existsByDeptCode(dept.getDeptCode())) {
+        if (sysDeptRepository.findByDeptCode(dept.getDeptCode()).isPresent()) {
             result.put("success", false);
             result.put("message", "部门编码已存在");
             return ResponseEntity.badRequest().body(result);

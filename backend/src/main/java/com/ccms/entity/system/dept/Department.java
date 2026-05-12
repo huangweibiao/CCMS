@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
  * 部门组织架构实体类
  */
 @Entity
-@Table(name = "sys_department", uniqueConstraints = {
+@Table(name = "ccms_sys_department", uniqueConstraints = {
     @UniqueConstraint(columnNames = "deptCode")
 })
 public class Department extends BaseEntity {

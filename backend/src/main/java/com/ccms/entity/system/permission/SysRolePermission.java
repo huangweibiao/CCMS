@@ -4,7 +4,7 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "sys_role_permission")
+@Table(name = "ccms_sys_role_permission")
 public class SysRolePermission extends BaseEntity {
     
     @Column(name = "role_id", nullable = false)

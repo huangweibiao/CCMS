@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "expense_type")
+@Table(name = "ccms_expense_type")
 public class ExpenseType extends BaseEntity {
     
     @Column(name = "type_code", nullable = false, unique = true, length = 50)

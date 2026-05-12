@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  * @author 系统生成
  */
 @Entity
-@Table(name = "expense_reimburse_main")
+@Table(name = "ccms_expense_reimburse_main")
 public class ExpenseReimburseMain extends BaseEntity {
 
     /**

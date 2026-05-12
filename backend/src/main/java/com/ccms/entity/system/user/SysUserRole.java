@@ -5,7 +5,7 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "sys_user_role")
+@Table(name = "ccms_sys_user_role")
 public class SysUserRole extends BaseEntity {
     
     @Column(name = "user_id", nullable = false)

@@ -54,7 +54,7 @@ public interface SysDeptRepository extends JpaRepository<SysDept, Long> {
      * 
      * @return 可用部门列表
      */
-    @Query("SELECT d FROM SysDept d WHERE d.status = 1 ORDER BY d.sort ASC")
+    @Query("SELECT d FROM SysDept d WHERE d.status = 1 ORDER BY d.sortOrder ASC")
     List<SysDept> findAllActiveDepartments();
 
     /**
@@ -62,38 +62,23 @@ public interface SysDeptRepository extends JpaRepository<SysDept, Long> {
      * 
      * @return 树形部门列表
      */
-    @Query("SELECT d FROM SysDept d WHERE d.parentId = 0 AND d.status = 1 ORDER BY d.sort ASC")
+    @Query("SELECT d FROM SysDept d WHERE d.parentId = 0 AND d.status = 1 ORDER BY d.sortOrder ASC")
     List<SysDept> findRootDepartments();
 
     /**
-     * 根据部门路径查询部门
+     * 根据部门路径查询部门（暂不支持该功能）
      * 
      * @param deptPath 部门路径
      * @return 部门信息
      */
-    Optional<SysDept> findByDeptPath(String deptPath);
+    @Query("SELECT d FROM SysDept d WHERE d.deptCode = :deptPath")
+    Optional<SysDept> findByDeptPath(@Param("deptPath") String deptPath);
 
     /**
-     * 检查部门编码是否存在
+     * 根据负责人ID查询部门
      * 
-     * @param deptCode 部门编码
-     * @return 是否存在
-     */
-    boolean existsByDeptCode(String deptCode);
-
-    /**
-     * 查询特定层级的所有部门
-     * 
-     * @param level 部门层级
+     * @param leaderId 负责人ID
      * @return 部门列表
      */
-    List<SysDept> findByLevel(Integer level);
-
-    /**
-     * 根据部门负责人ID查询部门
-     * 
-     * @param managerId 部门负责人ID
-     * @return 部门列表
-     */
-    List<SysDept> findByManagerId(Long managerId);
+    List<SysDept> findByLeaderId(Long leaderId);
 }

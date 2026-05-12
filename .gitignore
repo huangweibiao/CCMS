@@ -146,3 +146,5 @@ test-results/
 
 # Comate specs
 .comate/
+
+uploads/

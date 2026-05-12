@@ -12,7 +12,7 @@ import com.ccms.enums.BusinessTypeEnum;
  * @author 系统生成
  */
 @Entity
-@Table(name = "approval_flow_config")
+@Table(name = "ccms_approval_flow_config")
 public class ApprovalFlowConfig extends BaseEntity {
 
     /**

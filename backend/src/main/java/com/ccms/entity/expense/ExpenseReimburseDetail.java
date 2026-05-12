@@ -12,7 +12,7 @@ import java.sql.Date;
  * @author 系统生成
  */
 @Entity
-@Table(name = "expense_reimburse_detail")
+@Table(name = "ccms_expense_reimburse_detail")
 public class ExpenseReimburseDetail extends BaseEntity {
 
     /**

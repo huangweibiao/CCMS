@@ -10,7 +10,7 @@ import jakarta.persistence.*;
  * @author 系统生成
  */
 @Entity
-@Table(name = "sys_cost_center")
+@Table(name = "ccms_sys_cost_center")
 public class CostCenter extends BaseEntity {
 
     /**

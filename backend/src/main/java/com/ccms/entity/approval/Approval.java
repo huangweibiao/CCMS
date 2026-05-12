@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "approval")
+@Table(name = "ccms_approval")
 public class Approval extends BaseEntity {
     
     @Column(name = "title", nullable = false, length = 200)

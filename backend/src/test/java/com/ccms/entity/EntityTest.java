@@ -1,7 +1,8 @@
 package com.ccms.entity;
 
 import com.ccms.BaseTest;
-import com.ccms.entity.system.user.SysUser;
+import com.ccms.entity.system.user.User;
+import com.ccms.entity.system.dept.Department;
 import com.ccms.entity.expense.ExpenseApply;
 import com.ccms.entity.budget.BudgetMain;
 import org.junit.jupiter.api.Test;
@@ -18,27 +19,27 @@ import static org.junit.jupiter.api.Assertions.*;
 class EntityTest extends BaseTest {
 
     @Test
-    void shouldCreateSysUser() {
+    void shouldCreateUser() {
         // Given & When
-        SysUser user = new SysUser();
+        User user = new User();
         user.setId(1L);
-        user.setUserCode("TEST001");
-        user.setUserName("测试用户");
-        user.setMobile("13800138000");
+        user.setUsername("testuser");
+        user.setName("测试用户");
+        user.setPhone("13800138000");
         user.setEmail("test@example.com");
-        user.setDeptId(1L);
-        user.setStatus(1);
+        user.setStatus(User.UserStatus.ACTIVE);
         user.setPassword("password123");
         user.setLastLoginTime(LocalDateTime.now());
+        user.setEmployeeNo("TEST001");
 
         // Then
         assertEquals(1L, user.getId());
-        assertEquals("TEST001", user.getUserCode());
-        assertEquals("测试用户", user.getUserName());
-        assertEquals("13800138000", user.getMobile());
+        assertEquals("TEST001", user.getEmployeeNo());
+        assertEquals("testuser", user.getUsername());
+        assertEquals("测试用户", user.getName());
+        assertEquals("13800138000", user.getPhone());
         assertEquals("test@example.com", user.getEmail());
-        assertEquals(1L, user.getDeptId());
-        assertEquals(1, user.getStatus());
+        assertEquals(User.UserStatus.ACTIVE, user.getStatus());
     }
 
     @Test
@@ -89,13 +90,12 @@ class EntityTest extends BaseTest {
 
     @Test
     void shouldTestBaseEntity() {
-        // Given & When - 使用SysUser作为BaseEntity的具体实现
-        SysUser entity = new SysUser();
+        // Given & When - 使用Department作为BaseEntity的具体实现
+        Department entity = new Department();
         entity.setId(1L);
+        entity.setDeptName("测试部门");
         entity.setVersion(0);
         entity.setDeleted(false);
-        entity.setCreateTime(LocalDateTime.now());
-        entity.setUpdateTime(LocalDateTime.now());
         entity.setCreateBy(1L);
         entity.setUpdateBy(1L);
 
@@ -103,8 +103,6 @@ class EntityTest extends BaseTest {
         assertEquals(1L, entity.getId());
         assertEquals(0, entity.getVersion());
         assertEquals(false, entity.getDeleted());
-        assertNotNull(entity.getCreateTime());
-        assertNotNull(entity.getUpdateTime());
         assertEquals(1L, entity.getCreateBy());
         assertEquals(1L, entity.getUpdateBy());
     }

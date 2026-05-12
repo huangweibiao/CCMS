@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  * 数据权限控制配置
  */
 @Entity
-@Table(name = "data_permission")
+@Table(name = "ccms_data_permission")
 public class DataPermission {
     
     @Id

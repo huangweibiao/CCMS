@@ -97,7 +97,7 @@ class DeptControllerTest extends ControllerTestBase {
     void shouldCreateDeptSuccess() throws Exception {
         // given
         SysDept dept = createTestDept(1L, "HR", "人事部", 0L, 1);
-        when(sysDeptRepository.existsByDeptCode("HR")).thenReturn(false);
+        when(sysDeptRepository.findByDeptCode("HR")).thenReturn(Optional.empty());
         when(sysDeptRepository.save(any(SysDept.class))).thenReturn(dept);
 
         // when & then
@@ -111,7 +111,7 @@ class DeptControllerTest extends ControllerTestBase {
     void shouldReturnBadRequestWhenCreateDeptWithDuplicateCode() throws Exception {
         // given
         SysDept dept = createTestDept(1L, "TECH", "技术部", 0L, 1);
-        when(sysDeptRepository.existsByDeptCode("TECH")).thenReturn(true);
+        when(sysDeptRepository.findByDeptCode("TECH")).thenReturn(Optional.of(dept));
 
         // when & then
         performPost("/api/system/depts", dept)

@@ -46,7 +46,7 @@ public interface SysRoleRepository extends JpaRepository<SysRole, Long> {
      * 
      * @return 可用角色列表
      */
-    @Query("SELECT r FROM SysRole r WHERE r.status = 1 ORDER BY r.sort ASC")
+    @Query("SELECT r FROM SysRole r WHERE r.status = 1 ORDER BY r.roleCode ASC")
     List<SysRole> findAllActiveRoles();
 
     /**
@@ -66,11 +66,5 @@ public interface SysRoleRepository extends JpaRepository<SysRole, Long> {
     @Query("SELECT r FROM SysRole r JOIN SysUserRole ur ON r.id = ur.roleId WHERE ur.userId = :userId AND r.status = 1")
     List<SysRole> findByUserId(@Param("userId") Long userId);
 
-    /**
-     * 根据角色类型查询角色列表
-     * 
-     * @param roleType 角色类型：0-系统角色，1-业务角色
-     * @return 角色列表
-     */
-    List<SysRole> findByRoleType(Integer roleType);
+
 }

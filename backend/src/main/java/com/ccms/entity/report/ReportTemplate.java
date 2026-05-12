@@ -9,7 +9,7 @@ import java.util.Map;
  * 报表模板实体类
  */
 @Entity
-@Table(name = "sys_report_template")
+@Table(name = "ccms_sys_report_template")
 public class ReportTemplate {
     
     @Id

@@ -4,7 +4,7 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "approval_process")
+@Table(name = "ccms_approval_process")
 public class ApprovalProcess extends BaseEntity {
     
     @Column(name = "process_code", nullable = false, unique = true, length = 50)

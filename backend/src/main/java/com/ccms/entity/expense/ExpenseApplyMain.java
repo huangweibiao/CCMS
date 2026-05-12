@@ -26,7 +26,7 @@ import java.util.List;
  * @author 系统生成
  */
 @Entity
-@Table(name = "expense_apply_main")
+@Table(name = "ccms_expense_apply_main")
 public class ExpenseApplyMain extends BaseEntity {
 
     /**

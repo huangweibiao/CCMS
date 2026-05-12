@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "expense_detail")
+@Table(name = "ccms_expense_detail")
 public class ExpenseDetail extends BaseEntity {
     
     @Column(name = "expense_main_id", nullable = false)

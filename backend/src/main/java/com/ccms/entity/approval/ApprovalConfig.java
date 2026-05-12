@@ -10,7 +10,7 @@ import java.util.List;
  * 审批流程配置实体
  */
 @Entity
-@Table(name = "approval_config")
+@Table(name = "ccms_approval_config")
 public class ApprovalConfig {
     
     @Id

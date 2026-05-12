@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "expense_item")
+@Table(name = "ccms_expense_item")
 public class ExpenseItem extends BaseEntity {
     
     @Column(name = "expense_apply_id", nullable = false)

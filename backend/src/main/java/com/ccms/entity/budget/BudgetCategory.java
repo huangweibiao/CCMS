@@ -6,7 +6,7 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "budget_category")
+@Table(name = "ccms_budget_category")
 public class BudgetCategory extends BaseEntity {
     
     @Column(name = "category_code", nullable = false, unique = true, length = 50)

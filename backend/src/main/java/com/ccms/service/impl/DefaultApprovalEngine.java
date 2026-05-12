@@ -182,7 +182,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         }
         
         // 验证节点配置
-        List<ApprovalNode> nodes = nodeRepository.findByFlowConfigIdOrderByStepNumber(flowConfig.getId());
+        List<ApprovalNode> nodes = nodeRepository.findByFlowConfig_IdOrderByStepNumber(flowConfig.getId());
         if (nodes.isEmpty()) {
             log.warn("流程配置 {} 没有定义任何审批节点", flowConfig.getFlowCode());
             return false;

@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
  * 系统参数配置实体类
  */
 @Entity
-@Table(name = "sys_config", uniqueConstraints = {
+@Table(name = "ccms_sys_config", uniqueConstraints = {
     @UniqueConstraint(columnNames = "configKey")
 })
 public class SystemConfig extends BaseEntity {

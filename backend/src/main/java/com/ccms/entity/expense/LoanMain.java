@@ -13,7 +13,7 @@ import java.time.temporal.ChronoUnit;
  * @author 系统生成
  */
 @Entity
-@Table(name = "loan_main")
+@Table(name = "ccms_loan_main")
 public class LoanMain extends BaseEntity {
 
     /**

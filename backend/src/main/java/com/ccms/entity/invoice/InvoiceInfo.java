@@ -9,7 +9,7 @@ import java.time.LocalDate;
  * 发票信息实体
  */
 @Entity
-@Table(name = "invoice_info")
+@Table(name = "ccms_invoice_info")
 public class InvoiceInfo extends BaseEntity {
     
     @Column(name = "invoice_no", nullable = false, unique = true, length = 50)

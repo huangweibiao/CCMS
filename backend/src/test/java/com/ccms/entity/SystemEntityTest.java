@@ -1,9 +1,9 @@
 package com.ccms.entity;
 
 import com.ccms.BaseTest;
-import com.ccms.entity.system.user.SysUser;
+
 import com.ccms.entity.system.user.User;
-import com.ccms.entity.system.dept.SysDept;
+import com.ccms.entity.system.dept.Department;
 import com.ccms.entity.system.config.DataDict;
 import com.ccms.entity.system.config.SystemConfig;
 import org.junit.jupiter.api.Test;
@@ -18,30 +18,30 @@ import static org.junit.jupiter.api.Assertions.*;
 class SystemEntityTest extends BaseTest {
 
     @Test
-    void shouldCreateSysUser() {
+    void shouldCreateUserWithOldMethod() {
         // Given & When
-        SysUser user = new SysUser();
+        User user = new User();
         user.setId(1L);
-        user.setUserCode("EMP001");
-        user.setUserName("张三");
-        user.setMobile("13800138000");
+        user.setUsername("zhangsan");
+        user.setName("张三");
+        user.setPhone("13800138000");
         user.setEmail("zhangsan@company.com");
-        user.setDeptId(1L);
-        user.setStatus(1);
+        user.setStatus(User.UserStatus.ACTIVE);
         user.setPassword("encrypted_password");
+        user.setEmployeeNo("EMP001");
 
         // Then
         assertEquals(1L, user.getId());
-        assertEquals("EMP001", user.getUserCode());
-        assertEquals("张三", user.getUserName());
-        assertEquals("13800138000", user.getMobile());
+        assertEquals("EMP001", user.getEmployeeNo());
+        assertEquals("zhangsan", user.getUsername());
+        assertEquals("张三", user.getName());
+        assertEquals("13800138000", user.getPhone());
         assertEquals("zhangsan@company.com", user.getEmail());
-        assertEquals(1L, user.getDeptId());
-        assertEquals(1, user.getStatus());
+        assertEquals(User.UserStatus.ACTIVE, user.getStatus());
     }
 
     @Test
-    void shouldCreateUser() {
+    void shouldCreateUserWithNewMethod() {
         // Given & When
         User user = new User();
         user.setId(1L);
@@ -61,23 +61,17 @@ class SystemEntityTest extends BaseTest {
     }
 
     @Test
-    void shouldCreateSysDept() {
+    void shouldCreateDepartment() {
         // Given & When
-        SysDept dept = new SysDept();
+        Department dept = new Department();
         dept.setId(1L);
         dept.setDeptCode("D001");
         dept.setDeptName("技术部");
-        dept.setParentId(0L);
-        dept.setSortOrder(1);
-        dept.setStatus(1);
 
         // Then
         assertEquals(1L, dept.getId());
         assertEquals("D001", dept.getDeptCode());
         assertEquals("技术部", dept.getDeptName());
-        assertEquals(0L, dept.getParentId());
-        assertEquals(1, dept.getSortOrder());
-        assertEquals(1, dept.getStatus());
     }
 
     @Test

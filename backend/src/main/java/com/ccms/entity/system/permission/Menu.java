@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
  * 系统菜单实体类
  */
 @Entity
-@Table(name = "sys_menu")
+@Table(name = "ccms_sys_menu")
 public class Menu extends BaseEntity {
 
     @NotBlank

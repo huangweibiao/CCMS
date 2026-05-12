@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "reimburse_item")
+@Table(name = "ccms_reimburse_item")
 public class ReimburseItem extends BaseEntity {
     
     @Column(name = "reimburse_main_id", nullable = false)

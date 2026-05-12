@@ -1,11 +1,11 @@
 package com.ccms.config;
 
-import com.ccms.entity.system.user.SysUser;
+import com.ccms.entity.system.user.User;
 import com.ccms.entity.system.dept.SysDept;
-import com.ccms.entity.system.permission.SysRole;
 import com.ccms.entity.budget.BudgetCategory;
 import com.ccms.entity.expense.ExpenseType;
-import com.ccms.repository.system.user.SysUserRepository;
+import com.ccms.entity.system.permission.SysRole;
+import com.ccms.repository.system.user.UserRepository;
 import com.ccms.repository.system.dept.SysDeptRepository;
 import com.ccms.repository.system.permission.SysRoleRepository;
 import com.ccms.repository.budget.BudgetCategoryRepository;
@@ -36,7 +36,7 @@ public class DataInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
 
     @Autowired
-    private SysUserRepository sysUserRepository;
+    private UserRepository sysUserRepository;
     
     @Autowired
     private SysDeptRepository sysDeptRepository;
@@ -158,16 +158,14 @@ public class DataInitializer {
             
             if (adminDept != null) {
                 // 创建管理员用户
-                SysUser adminUser = new SysUser();
+                User adminUser = new User();
                 adminUser.setUsername("admin");
                 adminUser.setPassword(passwordEncoder.encode("admin123"));
-                adminUser.setRealName("系统管理员");
+                adminUser.setName("系统管理员");
                 adminUser.setEmail("admin@ccms.com");
                 adminUser.setPhone("13800138000");
-                adminUser.setDeptId(adminDept.getId());
-                adminUser.setStatus(1);
-                adminUser.setCreateBy(1L);
-                adminUser.setUpdateBy(1L);
+                adminUser.setCreateTime(LocalDateTime.now());
+                adminUser.setUpdateTime(LocalDateTime.now());
                 
                 sysUserRepository.save(adminUser);
                 logger.info("已初始化管理员用户: {}", adminUser.getUsername());
@@ -199,11 +197,11 @@ public class DataInitializer {
         return role;
     }
 
-    private BudgetCategory createBudgetCategory(String name, Integer orderNum, String description) {
+    private BudgetCategory createBudgetCategory(String categoryName, Integer sortOrder, String description) {
         BudgetCategory category = new BudgetCategory();
-        category.setCategoryName(name);
-        category.setCategoryCode("CATEGORY_" + System.currentTimeMillis() % 1000); // 生成唯一编码
-        category.setSortOrder(orderNum);
+        category.setCategoryName(categoryName);
+        category.setCategoryCode("CATEGORY_" + categoryName.toUpperCase().replace(" ", "_"));
+        category.setSortOrder(sortOrder);
         category.setDescription(description);
         category.setEnabled(true);
         category.setCreateBy(1L);
@@ -211,15 +209,15 @@ public class DataInitializer {
         return category;
     }
 
-    private ExpenseType createExpenseType(String name, String code, String description, Integer orderNum) {
+    private ExpenseType createExpenseType(String typeName, String typeCode, String description, Integer sortOrder) {
         ExpenseType expenseType = new ExpenseType();
-        expenseType.setTypeName(name);
-        expenseType.setTypeCode(code);
+        expenseType.setTypeName(typeName);
+        expenseType.setTypeCode(typeCode);
         expenseType.setDescription(description);
-        expenseType.setSortOrder(orderNum);
+        expenseType.setSortOrder(sortOrder);
         expenseType.setEnabled(true);
-        expenseType.setCreateTime(LocalDateTime.now());
-        expenseType.setUpdateTime(LocalDateTime.now());
+        expenseType.setCreateBy(1L);
+        expenseType.setUpdateBy(1L);
         expenseType.setCreateUser(1L);
         expenseType.setUpdateUser(1L);
         return expenseType;

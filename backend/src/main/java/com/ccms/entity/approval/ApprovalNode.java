@@ -11,7 +11,7 @@ import jakarta.persistence.*;
  */
 
 @Entity
-@Table(name = "approval_node")
+@Table(name = "ccms_approval_node")
 public class ApprovalNode extends BaseEntity {
     
     /**

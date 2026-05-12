@@ -6,7 +6,7 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "sys_message_template")
+@Table(name = "ccms_sys_message_template")
 public class MessageTemplate extends BaseEntity {
     
     @Column(name = "template_code", nullable = false, unique = true, length = 100)

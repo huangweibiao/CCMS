@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  * 导出任务实体类
  */
 @Entity
-@Table(name = "sys_export_task")
+@Table(name = "ccms_sys_export_task")
 public class ExportTask {
     
     @Id

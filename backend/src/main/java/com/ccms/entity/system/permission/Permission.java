@@ -10,7 +10,7 @@ import jakarta.persistence.*;
  * @author 系统生成
  */
 @Entity
-@Table(name = "sys_permission")
+@Table(name = "ccms_sys_permission")
 public class Permission extends BaseEntity {
 
     /**

@@ -10,7 +10,7 @@ import jakarta.persistence.*;
  * @author 系统生成
  */
 @Entity
-@Table(name = "sys_role")
+@Table(name = "ccms_sys_role")
 public class Role extends BaseEntity {
 
     /**

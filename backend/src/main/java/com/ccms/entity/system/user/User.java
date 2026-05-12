@@ -18,7 +18,7 @@ import java.util.Set;
  * 系统用户实体类
  */
 @Entity
-@Table(name = "sys_user", 
+@Table(name = "ccms_sys_user", 
        uniqueConstraints = {
            @UniqueConstraint(columnNames = "username"),
            @UniqueConstraint(columnNames = "email"),

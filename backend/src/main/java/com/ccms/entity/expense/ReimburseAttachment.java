@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reimburse_attachment")
+@Table(name = "ccms_reimburse_attachment")
 public class ReimburseAttachment extends BaseEntity {
     
     @Column(name = "reimburse_main_id", nullable = false)

@@ -6,7 +6,7 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "expense_attachment")
+@Table(name = "ccms_expense_attachment")
 public class ExpenseAttachment extends BaseEntity {
     
     @Column(name = "expense_apply_id", nullable = false)

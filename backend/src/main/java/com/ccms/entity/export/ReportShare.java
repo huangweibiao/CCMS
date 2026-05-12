@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  * 报表分享实体类
  */
 @Entity
-@Table(name = "sys_report_share")
+@Table(name = "ccms_sys_report_share")
 public class ReportShare {
     
     @Id

@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "expense_settle")
+@Table(name = "ccms_expense_settle")
 public class ExpenseSettle extends BaseEntity {
     
     @Column(name = "settle_no", nullable = false, unique = true, length = 50)
