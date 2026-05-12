@@ -215,7 +215,7 @@ public class ApprovalMonitorService {
                 .orElse(0.0);
     }
     
-    private long getPendingInstanceCount() {
+    public long getPendingInstanceCount() {
         return gaugeMetrics.getOrDefault(ApprovalMonitorConfig.MetricNames.INSTANCE_PENDING, 
             new AtomicLong(0)).get();
     }

@@ -425,7 +425,7 @@ public interface ExpenseReimburseService {
         
         @Override
         protected void handleApprovalCompleted(ApprovalInstance instance, ApprovalStatus finalStatus) {
-            expenseReimburseService.onApprovalCompleted(Long.parseLong(instance.getBusinessId()), finalStatus);
+            expenseReimburseService.onApprovalCompleted(instance.getBusinessId(), finalStatus);
         }
         
         @Override
@@ -452,7 +452,7 @@ public interface ExpenseReimburseService {
         @Override
         protected ApprovalFlowConfig getDefaultFlowConfig() {
             // 返回费用报销默认流程配置
-            return approvalFlowService.getDefaultFlowConfig(BusinessType.EXPENSE_REIMBURSEMENT);
+            return approvalFlowService.getDefaultFlowConfig(com.ccms.enums.BusinessTypeEnum.EXPENSE_REIMBURSE);
         }
         
         @Override

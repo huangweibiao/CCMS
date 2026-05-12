@@ -117,6 +117,18 @@ public class ApprovalInstance extends BaseEntity {
      */
     @Column(name = "remarks", length = 500)
     private String remarks;
+    
+    /**
+     * 金额
+     */
+    @Column(name = "amount", precision = 15, scale = 2)
+    private java.math.BigDecimal amount;
+    
+    /**
+     * 当前审批人ID
+     */
+    @Column(name = "current_approver_id")
+    private Long currentApproverId;
 
     // Getters and Setters
     public String getInstanceNo() {
@@ -236,8 +248,9 @@ public class ApprovalInstance extends BaseEntity {
         this.createBy = createBy;
     }
 
-    public String getCreateBy() {
-        return createBy;
+    @Override
+    public Long getCreateBy() {
+        return createBy != null ? Long.valueOf(createBy) : null;
     }
 
     public void setCreateBy(String createBy) {

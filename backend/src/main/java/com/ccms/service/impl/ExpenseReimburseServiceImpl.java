@@ -21,6 +21,7 @@ import com.ccms.service.ApprovalFlowService;
 import com.ccms.dto.ApprovalRequest;
 import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.ApprovalAction;
+import com.ccms.enums.ApprovalActionEnum;
 import com.ccms.enums.BusinessTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -120,7 +121,7 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
     }
 
     @Override
-    public void submitExpenseReimburseForApproval(Long reimburseId) {
+    public ApprovalInstance submitExpenseReimburseForApproval(Long reimburseId, Long applicantId, String title) {
         Optional<ExpenseReimburse> reimburseOpt = expenseReimburseRepository.findById(reimburseId);
         if (reimburseOpt.isEmpty()) {
             throw new RuntimeException("费用报销申请不存在");
@@ -160,8 +161,19 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
         reimburse.setStatus(1); // 审批中
         reimburse.setApprovalStatus(1); // 审批中
         reimburse.setSubmitTime(LocalDateTime.now());
+        reimburse = expenseReimburseRepository.save(reimburse);
         
-        expenseReimburseRepository.save(reimburse);
+        // 创建审批实例
+        ApprovalInstance approvalInstance = new ApprovalInstance();
+        approvalInstance.setBusinessId(reimburseId);
+        approvalInstance.setBusinessType(com.ccms.enums.BusinessTypeEnum.EXPENSE_REIMBURSE.name());
+        approvalInstance.setCurrentApproverId(applicantId);
+        approvalInstance.setBusinessTitle(title);
+        approvalInstance.setStatus(0); // 审批中
+        approvalInstance.setCreateTime(LocalDateTime.now());
+        
+        // 保存审批实例并返回
+        return approvalInstanceRepository.save(approvalInstance);
     }
 
     @Override
@@ -681,51 +693,22 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
     // ========== 审批流程集成方法 ==========
     
     @Override
-    public ApprovalInstance submitExpenseReimburseForApproval(Long reimburseId, Long applicantId, String title) {
-        ExpenseReimburse reimburse = getExpenseReimburseById(reimburseId);
-        if (reimburse == null) {
-            throw new RuntimeException("费用报销申请不存在");
-        }
-        
-        // 检查是否在审批中
-        if (isUnderApproval(reimburseId)) {
-            throw new RuntimeException("费用报销申请已在审批中");
-        }
-        
-        // 创建审批请求
-        ApprovalRequest request = new ApprovalRequest();
-        request.setBusinessId(reimburseId.toString());
-        request.setBusinessType(BusinessTypeEnum.EXPENSE_REIMBURSE);
-        request.setApplicantId(applicantId);
-        request.setTitle(title != null ? title : "费用报销申请审批-" + reimburse.getReimburseNo());
-        // 移除setDescription方法调用，ApprovalRequest没有这个方法
-        
-        // 提交审批流程
-        ApprovalInstance approvalInstance = approvalFlowService.startApprovalInstance(
-            request.getBusinessType(), 
-            request.getBusinessId(), 
-            request.getApplicantId(), 
-            request.getTitle(), 
-            "费用报销申请审批流程"
-        );
-        
-        // 更新报销申请状态为审批中
-        reimburse.setStatus(1); // 审批中
-        reimburse.setApprovalStatus(1); // 审批中
-        expenseReimburseRepository.save(reimburse);
-        
-        return approvalInstance;
-    }
-    
-    @Override
     public void withdrawExpenseReimburseApproval(Long reimburseId, String remarks) {
         ExpenseReimburse reimburse = getExpenseReimburseById(reimburseId);
         if (reimburse == null) {
             throw new RuntimeException("费用报销申请不存在");
         }
         
+        // 查找审批实例ID
+        Optional<ApprovalInstance> instanceOpt = approvalInstanceRepository.findByBusinessId(reimburseId);
+        if (!instanceOpt.isPresent()) {
+            throw new RuntimeException("找不到关联的审批实例");
+        }
+        Long instanceId = instanceOpt.get().getId();
+        Long applicantId = reimburse.getApplicantId();  // 获取申请人ID
+        
         // 撤回审批流程
-        approvalFlowService.withdrawApprovalInstance(reimburseId.toString(), remarks);
+        approvalFlowService.withdrawApprovalInstance(instanceId, applicantId);
         
         // 更新报销申请状态为草稿
         reimburse.setStatus(0); // 草稿
@@ -736,10 +719,10 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
     @Override
     public ApprovalStatus getApprovalStatus(Long reimburseId) {
         // 查找关联的审批实例
-        Optional<ApprovalInstance> instanceOpt = approvalInstanceRepository.findByBusinessId(reimburseId.toString());
+        Optional<ApprovalInstance> instanceOpt = approvalInstanceRepository.findByBusinessId(reimburseId);
         if (instanceOpt.isPresent()) {
-            ApprovalInstance instance = instanceOpt.get();
-            return ApprovalStatus.valueOf(instance.getStatus());
+        ApprovalInstance instance = instanceOpt.get();
+        return ApprovalStatus.getByCode(String.valueOf(instance.getStatus()));
         }
         
         // 如果没有审批实例，获取报销申请自己的状态
@@ -761,8 +744,8 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
         for (ApprovalRecord record : approvalRecords) {
             Map<String, Object> recordMap = new HashMap<>();
             recordMap.put("approverId", record.getApproverId());
-            recordMap.put("action", ApprovalAction.valueOf(record.getAction()));
-            recordMap.put("remarks", record.getRemarks());
+            recordMap.put("action", ApprovalActionEnum.getByCode(record.getApprovalAction()));
+            recordMap.put("remarks", record.getApprovalRemark());
             recordMap.put("approvalTime", record.getApprovalTime());
             records.add(recordMap);
         }
@@ -818,7 +801,7 @@ public class ExpenseReimburseServiceImpl implements ExpenseReimburseService {
             case APPROVED: return 2; // 审批通过
             case REJECTED: return 3; // 审批拒绝
             case WITHDRAWN: return 0; // 已撤回（恢复为草稿）
-            case CANCELLED: return 4; // 已取消
+            case CANCELED: return 4; // 已取消
             default: return 1; // 审批中
         }
     }

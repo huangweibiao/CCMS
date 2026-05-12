@@ -132,4 +132,9 @@ public interface ApprovalRecordRepository extends JpaRepository<ApprovalRecord, 
     List<ApprovalRecord> findByInstanceId(Long instanceId);
 
     List<ApprovalRecord> findByInstanceId(Long instanceId, org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * 根据业务ID查找审批记录
+     */
+    List<ApprovalRecord> findByBusinessId(String businessId);
 }

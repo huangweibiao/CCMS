@@ -1,7 +1,7 @@
 package com.ccms.monitor;
 
 import com.ccms.entity.approval.ApprovalInstance;
-import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.enums.BusinessTypeEnum;
 import com.ccms.repository.approval.ApprovalInstanceRepository;
 import io.micrometer.core.instrument.Counter;
@@ -47,7 +47,7 @@ public class ApprovalMetricsCollector {
     
     // 业务统计
     private Map<BusinessTypeEnum, Counter> businessTypeCounters;
-    private Map<ApprovalStatus, AtomicLong> statusCounters;
+    private Map<ApprovalStatusEnum, AtomicLong> statusCounters;
     
     // 性能指标
     private AtomicLong averageApprovalTime;
@@ -111,7 +111,7 @@ public class ApprovalMetricsCollector {
         }
         
         // 初始化状态计数器
-        for (ApprovalStatus status : ApprovalStatus.values()) {
+        for (ApprovalStatusEnum status : ApprovalStatusEnum.values()) {
             statusCounters.put(status, new AtomicLong(0));
             
             Gauge.builder("approval.instances.by.status", 
@@ -225,7 +225,7 @@ public class ApprovalMetricsCollector {
     public void refreshInstanceStats() {
         try {
             // 统计各状态实例数量
-            for (ApprovalStatus status : ApprovalStatus.values()) {
+        for (ApprovalStatusEnum status : ApprovalStatusEnum.values()) {
                 long count = instanceRepository.countByStatus(status);
                 statusCounters.get(status).set(count);
             }
@@ -241,7 +241,10 @@ public class ApprovalMetricsCollector {
                 
             // 统计未处理审批
             long pendingCount = instanceRepository.countByStatusIn(
-                Arrays.asList(ApprovalStatus.APPROVING));
+                Arrays.asList(
+                    ApprovalStatusEnum.RUNNING, 
+                    ApprovalStatusEnum.WAITING, 
+                    ApprovalStatusEnum.PENDING));
                 
             Gauge.builder("approval.instances.pending", 
                     () -> pendingCount)
@@ -267,9 +270,9 @@ public class ApprovalMetricsCollector {
         report.setTotalErrors(errorCounter.count());
         
         // 状态分布
-        Map<ApprovalStatus, Long> statusDistribution = new HashMap<>();
-        for (ApprovalStatus status : ApprovalStatus.values()) {
-            statusDistribution.put(status, statusCounters.get(status).get());
+        Map<Integer, Double> statusDistribution = new HashMap<>();
+        for (ApprovalStatusEnum status : ApprovalStatusEnum.values()) {
+            statusDistribution.put(status.getCode(), (double) statusCounters.get(status).get());
         }
         report.setStatusDistribution(statusDistribution);
         
@@ -282,17 +285,35 @@ public class ApprovalMetricsCollector {
             businessDistribution.put(businessType, percentage);
         }
         report.setBusinessDistribution(businessDistribution);
-        
-        // 性能指标
-        report.setAverageApprovalTime(averageApprovalTime.get());
-        report.setMaxApprovalTime(maxApprovalTime.get());
-        report.setMinApprovalTime(minApprovalTime.get() == Long.MAX_VALUE ? 0 : minApprovalTime.get());
-        
-        // 吞吐量（最近1分钟）
-        report.setThroughputLastMinute(getThroughputLastMinute());
-        
         return report;
     }
+    
+    /**
+     * 将ApprovalStatusEnum转换为对应的整数代码
+     */
+    private Integer getStatusCodeFromApprovalStatus(ApprovalStatusEnum status) {
+        // 这里需要实现ApprovalStatusEnum到对应状态码的映射逻辑
+        switch (status) {
+            case PENDING:
+                return 7; // ApprovalStatusEnum.PENDING.getCode()
+            case WAITING:
+                return 6; // ApprovalStatusEnum.WAITING.getCode()
+            case RUNNING:
+                return 0; // ApprovalStatusEnum.RUNNING.getCode()  
+            case APPROVED:
+                return 1; // ApprovalStatusEnum.APPROVED.getCode()
+            case REJECTED:
+                return 2; // ApprovalStatusEnum.REJECTED.getCode()
+            case CANCELED:
+                return 3; // ApprovalStatusEnum.CANCELED.getCode()
+            case TIMEOUT:
+                return 4; // ApprovalStatusEnum.TIMEOUT.getCode()
+            case TERMINATED:
+                return 5; // ApprovalStatusEnum.TERMINATED.getCode()
+            default:
+                return 7; // 默认Pending状态
+    }
+}
     
     /**
      * 获取健康状态
@@ -343,57 +364,6 @@ public class ApprovalMetricsCollector {
 }
 
 /**
- * 审批指标报告
- */
-class ApprovalMetricsReport {
-    private double totalSubmissions;
-    private double totalApprovals;
-    private double totalRejections;
-    private double totalCancellations;
-    private double totalErrors;
-    private Map<ApprovalStatus, Long> statusDistribution;
-    private Map<BusinessTypeEnum, Double> businessDistribution;
-    private long averageApprovalTime;
-    private long maxApprovalTime;
-    private long minApprovalTime;
-    private double throughputLastMinute;
-    
-    // getters and setters
-    public double getTotalSubmissions() { return totalSubmissions; }
-    public void setTotalSubmissions(double totalSubmissions) { this.totalSubmissions = totalSubmissions; }
-    
-    public double getTotalApprovals() { return totalApprovals; }
-    public void setTotalApprovals(double totalApprovals) { this.totalApprovals = totalApprovals; }
-    
-    public double getTotalRejections() { return totalRejections; }
-    public void setTotalRejections(double totalRejections) { this.totalRejections = totalRejections; }
-    
-    public double getTotalCancellations() { return totalCancellations; }
-    public void setTotalCancellations(double totalCancellations) { this.totalCancellations = totalCancellations; }
-    
-    public double getTotalErrors() { return totalErrors; }
-    public void setTotalErrors(double totalErrors) { this.totalErrors = totalErrors; }
-    
-    public Map<ApprovalStatus, Long> getStatusDistribution() { return statusDistribution; }
-    public void setStatusDistribution(Map<ApprovalStatus, Long> statusDistribution) { this.statusDistribution = statusDistribution; }
-    
-    public Map<BusinessTypeEnum, Double> getBusinessDistribution() { return businessDistribution; }
-    public void setBusinessDistribution(Map<BusinessTypeEnum, Double> businessDistribution) { this.businessDistribution = businessDistribution; }
-    
-    public long getAverageApprovalTime() { return averageApprovalTime; }
-    public void setAverageApprovalTime(long averageApprovalTime) { this.averageApprovalTime = averageApprovalTime; }
-    
-    public long getMaxApprovalTime() { return maxApprovalTime; }
-    public void setMaxApprovalTime(long maxApprovalTime) { this.maxApprovalTime = maxApprovalTime; }
-    
-    public long getMinApprovalTime() { return minApprovalTime; }
-    public void setMinApprovalTime(long minApprovalTime) { this.minApprovalTime = minApprovalTime; }
-    
-    public double getThroughputLastMinute() { return throughputLastMinute; }
-    public void setThroughputLastMinute(double throughputLastMinute) { this.throughputLastMinute = throughputLastMinute; }
-}
-
-/**
  * 审批健康状态
  */
 class ApprovalHealthStatus {
@@ -418,4 +388,50 @@ class ApprovalHealthStatus {
     
     public LocalDateTime getLastUpdated() { return lastUpdated; }
     public void setLastUpdated(LocalDateTime lastUpdated) { this.lastUpdated = lastUpdated; }
+}
+
+/**
+ * 审批指标统计报告类
+ */
+class ApprovalMetricsReport {
+    private double totalSubmissions;
+    private double totalApprovals;
+    private double totalRejections;
+    private double totalCancellations;
+    private double totalErrors;
+    private double overallApprovalRate;
+    private double averageApprovalTime;
+    private Map<Integer, Double> statusDistribution;
+    private Map<Integer, Double> actionDistribution;
+    private Map<BusinessTypeEnum, Double> businessDistribution;
+    
+    public double getTotalSubmissions() { return totalSubmissions; }
+    public void setTotalSubmissions(double totalSubmissions) { this.totalSubmissions = totalSubmissions; }
+    
+    public double getTotalApprovals() { return totalApprovals; }
+    public void setTotalApprovals(double totalApprovals) { this.totalApprovals = totalApprovals; }
+    
+    public double getTotalRejections() { return totalRejections; }
+    public void setTotalRejections(double totalRejections) { this.totalRejections = totalRejections; }
+    
+    public double getTotalCancellations() { return totalCancellations; }
+    public void setTotalCancellations(double totalCancellations) { this.totalCancellations = totalCancellations; }
+    
+    public double getTotalErrors() { return totalErrors; }
+    public void setTotalErrors(double totalErrors) { this.totalErrors = totalErrors; }
+    
+    public double getOverallApprovalRate() { return overallApprovalRate; }
+    public void setOverallApprovalRate(double overallApprovalRate) { this.overallApprovalRate = overallApprovalRate; }
+    
+    public double getAverageApprovalTime() { return averageApprovalTime; }
+    public void setAverageApprovalTime(double averageApprovalTime) { this.averageApprovalTime = averageApprovalTime; }
+    
+    public Map<Integer, Double> getStatusDistribution() { return statusDistribution; }
+    public void setStatusDistribution(Map<Integer, Double> statusDistribution) { this.statusDistribution = statusDistribution; }
+    
+    public Map<Integer, Double> getActionDistribution() { return actionDistribution; }
+    public void setActionDistribution(Map<Integer, Double> actionDistribution) { this.actionDistribution = actionDistribution; }
+    
+    public Map<BusinessTypeEnum, Double> getBusinessDistribution() { return businessDistribution; }
+    public void setBusinessDistribution(Map<BusinessTypeEnum, Double> businessDistribution) { this.businessDistribution = businessDistribution; }
 }

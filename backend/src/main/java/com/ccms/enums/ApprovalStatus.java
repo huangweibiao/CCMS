@@ -41,4 +41,16 @@ public enum ApprovalStatus {
     public boolean isFinalStatus() {
         return finalStatus;
     }
+
+    /**
+     * 根据状态码获取枚举
+     */
+    public static ApprovalStatus getByCode(String code) {
+        for (ApprovalStatus status : values()) {
+            if (status.getCode().equals(code)) {
+                return status;
+            }
+        }
+        return null;
+    }
 }

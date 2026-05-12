@@ -1,9 +1,12 @@
 package com.ccms.service;
 
+import com.ccms.dto.ApprovalRequest;
+import com.ccms.dto.ApprovalOperateRequest;
 import com.ccms.entity.approval.ApprovalProcess;
 import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.entity.approval.ApprovalNode;
 import com.ccms.entity.approval.Approval;
+import com.ccms.entity.approval.ApprovalInstance;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -156,6 +159,15 @@ public interface ApprovalService {
     
     // 审批操作
     void approve(Long approvalId, Long approverId, Integer result, String comment);
+    
+    // 新审批操作（异步服务使用）
+    Boolean approve(Long instanceId, ApprovalOperateRequest request);
+    
+    // 提交审批申请
+    ApprovalInstance submitApproval(ApprovalRequest request);
+    
+    // 驳回审批
+    Boolean reject(Long instanceId, ApprovalOperateRequest request);
     
     // 分页查询方法
     Page<Approval> getPendingApprovals(int page, int size, Long approverId, String businessType);

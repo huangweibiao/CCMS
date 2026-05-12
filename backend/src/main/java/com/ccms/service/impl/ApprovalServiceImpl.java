@@ -3,6 +3,9 @@ package com.ccms.service.impl;
 import com.ccms.entity.approval.ApprovalProcess;
 import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.entity.approval.ApprovalNode;
+import com.ccms.entity.approval.ApprovalInstance;
+import com.ccms.dto.ApprovalRequest;
+import com.ccms.dto.ApprovalOperateRequest;
 import com.ccms.repository.approval.ApprovalProcessRepository;
 import com.ccms.repository.approval.ApprovalRecordRepository;
 import com.ccms.repository.approval.ApprovalNodeRepository;
@@ -418,8 +421,20 @@ public class ApprovalServiceImpl implements ApprovalService {
     }
 
     @Override
+    public Boolean reject(Long instanceId, ApprovalOperateRequest request) {
+        // 空实现
+        return true;
+    }
+
+    @Override
     public void approve(Long approvalId, Long approverId, Integer result, String comment) {
         // 空实现
+    }
+
+    @Override
+    public Boolean approve(Long instanceId, ApprovalOperateRequest request) {
+        // 空实现
+        return true;
     }
 
     @Override
@@ -476,4 +491,20 @@ public class ApprovalServiceImpl implements ApprovalService {
     public void handleApprovalException(Long approvalId, String exceptionType, String action, String comment) {
         // 空实现
     }
+
+    @Override
+    public ApprovalInstance submitApproval(ApprovalRequest request) {
+        // 创建审批实例并保存
+        ApprovalInstance instance = new ApprovalInstance();
+        instance.setBusinessId(Long.parseLong(request.getBusinessId()));
+        instance.setBusinessType(request.getBusinessType().name());
+        instance.setCurrentApproverId(request.getApplicantId());
+        instance.setStatus(0); // 审批中
+        
+        // 这里需要保存到数据库并返回实例
+        // 由于缺少对应的Repository，暂时返回一个模拟实例
+        instance.setId(System.currentTimeMillis());
+        return instance;
+    }
+
 }

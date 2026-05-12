@@ -70,4 +70,16 @@ public enum ApprovalAction {
     public String getDescription() {
         return description;
     }
+
+    /**
+     * 根据状态码获取枚举
+     */
+    public static ApprovalAction getByCode(String code) {
+        for (ApprovalAction action : values()) {
+            if (action.getCode().equals(code)) {
+                return action;
+            }
+        }
+        return null;
+    }
 }

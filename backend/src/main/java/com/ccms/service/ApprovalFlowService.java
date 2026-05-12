@@ -183,7 +183,7 @@ public interface ApprovalFlowService {
     /**
      * 获取用户审批统计
      */
-    ApprovalStatistics getUserApprovalStatistics(Long userId, BusinessType businessType, String startDate, String endDate);
+    com.ccms.dto.ApprovalStatistics getUserApprovalStatistics(Long userId, BusinessType businessType, String startDate, String endDate);
 
     /**
      * 获取业务类型审批统计

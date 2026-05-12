@@ -6,6 +6,8 @@ package com.ccms.enums;
  */
 public enum ApprovalStatusEnum {
     RUNNING(0, "运行中", "审批流程正在进行中"),
+    WAITING(6, "待处理", "审批流程等待处理"),
+    PENDING(7, "挂起中", "审批流程暂时挂起"),
     APPROVED(1, "已通过", "审批流程已通过"),
     REJECTED(2, "已驳回", "审批流程被驳回"),
     CANCELED(3, "已撤销", "审批流程已撤销"),
@@ -72,6 +74,6 @@ public enum ApprovalStatusEnum {
      * 判断是否为需要继续处理的状态
      */
     public boolean isActiveStatus() {
-        return this == RUNNING;
+        return this == RUNNING || this == WAITING || this == PENDING;
     }
 }

@@ -4,6 +4,7 @@ import com.ccms.dto.ApprovalRequest;
 import com.ccms.entity.expense.ExpenseApplyMain;
 import com.ccms.entity.expense.ExpenseApplyDetail;
 import com.ccms.entity.approval.ApprovalInstance;
+import com.ccms.entity.approval.ApprovalFlowConfig;
 import com.ccms.enums.ApprovalStatus;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.BusinessType;
@@ -144,7 +145,7 @@ public interface ExpenseApplyService {
         
         @Override
         protected void handleApprovalCompleted(ApprovalInstance instance, ApprovalStatus finalStatus) {
-            expenseApplyService.onApprovalCompleted(Long.parseLong(instance.getBusinessId()), finalStatus);
+            expenseApplyService.onApprovalCompleted(instance.getBusinessId(), finalStatus);
         }
         
         @Override
@@ -171,7 +172,7 @@ public interface ExpenseApplyService {
         @Override
         protected ApprovalFlowConfig getDefaultFlowConfig() {
             // 返回费用申请默认流程配置
-            return approvalFlowService.getDefaultFlowConfig(BusinessType.EXPENSE_BUDGET);
+            return approvalFlowService.getDefaultFlowConfig(com.ccms.enums.BusinessTypeEnum.EXPENSE_APPLY);
         }
         
         @Override

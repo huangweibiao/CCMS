@@ -155,10 +155,22 @@ function Build-Backend {
     Push-Location $backendDir
     
     try {
-        # 清理旧的target目录
+        # 清理旧的target目录（带重试机制）
         if (Test-Path "./target") {
             Write-Info "清理旧的构建目录..."
-            Remove-Item -Path "./target" -Recurse -Force
+            
+            # 先尝试优雅清理，如果失败则跳过
+            try {
+                Remove-Item -Path "./target" -Recurse -Force -ErrorAction Stop
+                Write-Info "成功清理旧的构建目录"
+            } catch {
+                Write-Warning "无法完全删除target目录（可能有进程锁定），将尝试使用Maven clean命令清理"
+                # 尝试使用Maven clean来清理
+                & mvn clean -q
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warning "Maven clean也失败，将跳过预清理直接打包"
+                }
+            }
         }
         
         # 执行Maven打包
@@ -166,10 +178,8 @@ function Build-Backend {
         $mvnArgs = @("clean", "package")
         
         if ($SkipTests) {
-            $mvnArgs += "--define"
-            $mvnArgs += "skipTests=true"
-            $mvnArgs += "--define"
-            $mvnArgs += "maven.test.skip=true"
+            $mvnArgs += "-DskipTests=true"
+            $mvnArgs += "-Dmaven.test.skip=true"
         }
         
         & mvn $mvnArgs
@@ -179,9 +189,14 @@ function Build-Backend {
         }
         
         # 检查打包结果
-        $jarFile = "./target/ccms-backend-$Version-exec.jar"
+        $jarFile = "./target/ccms-backend-$Version.jar"
         if (-not (Test-Path $jarFile)) {
-            throw "后端打包结果不存在: $jarFile"
+            # 尝试查找Spring Boot生成的jar文件
+            $jarFiles = Get-ChildItem "./target" -Filter "ccms-backend*.jar" | Where-Object { $_.Name -notlike "*sources*" -and $_.Name -notlike "*original*" }
+            if ($jarFiles.Count -eq 0) {
+                throw "后端打包结果不存在: 没有找到ccms-backend的jar文件"
+            }
+            $jarFile = $jarFiles[0].FullName
         }
         
         $jarSize = (Get-Item $jarFile).Length / 1MB
@@ -204,7 +219,15 @@ function Create-DeploymentPackage {
     New-Item -ItemType Directory -Path $deployDir -Force | Out-Null
     
     # 复制JAR文件
-    $jarSource = "./backend/target/ccms-backend-$Version-exec.jar"
+    $jarSource = "./backend/target/ccms-backend-$Version.jar"
+    if (-not (Test-Path $jarSource)) {
+        # 查找实际的jar文件
+        $jarFiles = Get-ChildItem "./backend/target" -Filter "ccms-backend*.jar" | Where-Object { $_.Name -notlike "*sources*" -and $_.Name -notlike "*original*" }
+        if ($jarFiles.Count -eq 0) {
+            throw "后端JAR文件不存在: 没有找到ccms-backend的jar文件"
+        }
+        $jarSource = $jarFiles[0].FullName
+    }
     $jarTarget = "$deployDir/ccms-backend-$Version.jar"
     Copy-Item -Path $jarSource -Destination $jarTarget -Force
     Write-Info "复制JAR文件: $jarTarget"
@@ -260,6 +283,13 @@ java \$JAVA_OPTS -jar \$JAR_FILE --spring.profiles.active=prod
     if (Test-Path $configSource) {
         Copy-Item -Path $configSource -Destination $configDir -Force
         Write-Info "复制配置文件"
+    }
+    
+    # 复制MySQL配置文件示例
+    $mysqlConfigSource = "./docs/deployment-guide.md"
+    if (Test-Path $mysqlConfigSource) {
+        Copy-Item -Path $mysqlConfigSource -Destination $deployDir -Force
+        Write-Info "复制部署文档"
     }
     
     # 创建README

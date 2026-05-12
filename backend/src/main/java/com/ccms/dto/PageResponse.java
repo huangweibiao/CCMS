@@ -28,6 +28,22 @@ public class PageResponse<T> {
         return new PageResponseBuilder<T>();
     }
 
+    /**
+     * 从Spring Data Page对象创建PageResponse
+     */
+    public static <T> PageResponse<T> fromPage(org.springframework.data.domain.Page<T> page) {
+        if (page == null) {
+            return null;
+        }
+        return PageResponse.<T>builder()
+                .content(page.getContent())
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
     public List<T> getContent() {
         return content;
     }

@@ -388,4 +388,12 @@ public class ExpenseReimburse extends BaseEntity {
     public void setRealAmount(BigDecimal realAmount) {
         this.realAmount = realAmount;
     }
+    
+    public Long getApplicantId() {
+        return applyUserId;
+    }
+    
+    public void setApplicantId(Long applicantId) {
+        this.applyUserId = applicantId;
+    }
 }

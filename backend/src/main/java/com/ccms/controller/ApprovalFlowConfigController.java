@@ -239,10 +239,10 @@ public class ApprovalFlowConfigController {
      * 导出流程配置
      */
     @GetMapping("/{configId}/export")
-    public ResponseEntity<ApprovalFlowConfig> exportFlowConfig(@PathVariable Long configId) {
+    public ResponseEntity<String> exportFlowConfig(@PathVariable Long configId) {
         log.info("导出流程配置: ID={}", configId);
         
-        ApprovalFlowConfig config = approvalFlowService.exportApprovalFlowConfig(configId);
+        String config = approvalFlowService.exportApprovalFlowConfig(configId);
         
         log.info("流程配置导出成功: ID={}", configId);
         return ResponseEntity.ok(config);

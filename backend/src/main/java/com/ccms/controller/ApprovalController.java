@@ -8,7 +8,9 @@ import com.ccms.entity.approval.ApprovalRecord;
 import com.ccms.entity.approval.ApprovalFlowConfig;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.enums.BusinessType;
+import com.ccms.enums.BusinessTypeEnum;
 import com.ccms.service.ApprovalFlowService;
 import com.ccms.vo.ApprovalInstanceVO;
 import com.ccms.vo.ApprovalRecordVO;
@@ -68,8 +70,8 @@ public class ApprovalController {
                 .message("审批流程发起成功")
                 .instanceId(instance.getId())
                 .flowConfigId(instance.getFlowConfigId())
-                .currentNode(instance.getCurrentNode())
-                .status(instance.getStatus())
+                .currentNode(Integer.parseInt(instance.getCurrentNode()))
+                .status(ApprovalStatusEnum.getByCode(instance.getStatus()))
                 .build();
         
         log.info("审批流程发起成功: 实例ID={}", instance.getId());
@@ -403,8 +405,8 @@ public class ApprovalController {
                 .message(message)
                 .instanceId(instance.getId())
                 .flowConfigId(instance.getFlowConfigId())
-                .currentNode(instance.getCurrentNode())
-                .status(instance.getStatus())
+                .currentNode(Integer.parseInt(instance.getCurrentNode()))
+                .status(ApprovalStatusEnum.getByCode(instance.getStatus()))
                 .completed(ApprovalStatusEnum.isFinalStatus(instance.getStatus()))
                 .build();
     }
@@ -441,13 +443,13 @@ public class ApprovalController {
         return ApprovalInstanceVO.builder()
                 .id(instance.getId())
                 .flowConfigId(instance.getFlowConfigId())
-                .businessType(instance.getBusinessType())
-                .businessId(instance.getBusinessId())
+                .businessType(BusinessTypeEnum.getByCode(instance.getBusinessType()))
+                .businessId(String.valueOf(instance.getBusinessId()))
                 .applicantId(instance.getApplicantId())
                 .title(instance.getApprovalTitle())
                 .content(instance.getBusinessContent())
-                .currentNode(instance.getCurrentNode())
-                .status(instance.getStatus())
+                .currentNode(Integer.parseInt(instance.getCurrentNode()))
+                .status(ApprovalStatusEnum.getByCode(instance.getStatus()))
                 .createTime(instance.getCreateTime())
                 .updateTime(instance.getUpdateTime())
                 .build();
@@ -459,7 +461,7 @@ public class ApprovalController {
                 .instanceId(record.getInstanceId())
                 .nodeId(record.getNodeId())
                 .approverId(record.getApproverId())
-                .action(record.getApprovalAction())
+                .action(record.getApprovalActionEnum())
                 .remarks(record.getApprovalRemark())
                 .createTime(record.getCreateTime())
                 .build();
@@ -472,7 +474,7 @@ public class ApprovalController {
                 .approvedCount(statistics.getApprovedCount())
                 .rejectedCount(statistics.getRejectedCount())
                 .canceledCount(statistics.getCanceledCount())
-                .averageApprovalDuration(statistics.getAverageApprovalDuration())
+                .averageDuration(statistics.getAverageDuration())
                 .build();
     }
 

@@ -452,11 +452,18 @@ public class ApprovalFlowServiceImpl implements ApprovalFlowService {
     }
 
     @Override
-    public ApprovalStatistics getUserApprovalStatistics(Long userId, BusinessType businessType, String startDate, String endDate) {
+    public com.ccms.dto.ApprovalStatistics getUserApprovalStatistics(Long userId, BusinessType businessType, String startDate, String endDate) {
         log.info("获取用户审批统计: 用户ID={}, 业务类型={}", userId, businessType);
         
-        // 简化实现
-        return new ApprovalStatistics(0L, 0L, 0L, 0L, 0L, 0.0);
+        // 简化实现 - 使用com.ccms.dto.ApprovalStatistics
+        com.ccms.dto.ApprovalStatistics result = new com.ccms.dto.ApprovalStatistics();
+        result.setTotalCount(0L);
+        result.setPendingCount(0L);
+        result.setApprovedCount(0L);
+        result.setRejectedCount(0L);
+        result.setCanceledCount(0L);
+        result.setAverageDuration(0.0);
+        return result;
     }
 
     @Override

@@ -17,7 +17,7 @@ public class ApprovalNotFoundException extends ApprovalException {
     
     public ApprovalNotFoundException(String resourceType, Object resourceId, Throwable cause) {
         super("APPROVAL_NOT_FOUND", 
-              String.format("审批%s不存在: ID=%s", resourceType, resourceId), cause);
+              String.format("审批%s不存在: ID=%s", resourceType, String.valueOf(resourceId)));
         this.resourceType = resourceType;
         this.resourceId = resourceId;
     }

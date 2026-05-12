@@ -107,4 +107,30 @@ public interface ApprovalInstanceRepository extends BaseRepository<ApprovalInsta
     Long countByCreateTimeBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     Long countByStatusAndCreateTimeBetween(Long status, LocalDateTime startDate, LocalDateTime endDate);
+
+    // 新增缺失的查询方法
+    /**
+     * 根据状态和更新时间之前删除审批实例
+     */
+    int deleteByStatusAndUpdateTimeBefore(ApprovalStatusEnum status, LocalDateTime updateTime);
+
+    /**
+     * 根据状态统计审批实例数量
+     */
+    Long countByStatus(ApprovalStatusEnum status);
+
+    /**
+     * 根据创建时间之后统计审批实例数量
+     */
+    Long countByCreateTimeAfter(LocalDateTime createTime);
+
+    /**
+     * 根据状态列表统计审批实例数量
+     */
+    Long countByStatusIn(List<ApprovalStatusEnum> statusList);
+
+    /**
+     * 根据业务ID查找审批实例
+     */
+    Optional<ApprovalInstance> findByBusinessId(Long businessId);
 }

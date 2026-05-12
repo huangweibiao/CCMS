@@ -312,23 +312,3 @@ public class ApprovalAuditService {
         return "Unknown";
     }
 }
-
-/**
- * 审计动作类型枚举
- */
-enum AuditActionType {
-    CREATE_INSTANCE,      // 创建审批实例
-    CREATE_RECORD,        // 创建审批记录
-    APPROVE,              // 审批通过
-    REJECT,               // 审批驳回
-    TRANSFER,             // 转审
-    CANCEL,               // 取消审批
-    SKIP_NODE,            // 跳过节点
-    STATUS_CHANGE,        // 状态变更
-    FLOW_CONFIG_CHANGE,   // 流程配置变更
-    CACHE_WARMUP,         // 缓存预热
-    CACHE_CLEANUP,        // 缓存清理
-    CACHE_PERF_TEST,      // 缓存性能测试
-    BATCH_LOAD,           // 批量加载
-    OTHER                 // 其他操作
-}

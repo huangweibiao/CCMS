@@ -5,6 +5,7 @@ import com.ccms.dto.ApprovalRequest;
 import com.ccms.entity.approval.ApprovalInstance;
 import com.ccms.enums.ApprovalAction;
 import com.ccms.enums.ApprovalStatus;
+import com.ccms.enums.ApprovalStatusEnum;
 import com.ccms.monitor.ApprovalMetricsCollector;
 import com.ccms.repository.approval.ApprovalAuditLogRepository;
 import com.ccms.repository.approval.ApprovalInstanceRepository;
@@ -196,7 +197,7 @@ public class AsyncApprovalService {
             
             // 清理已完成的审批实例
             long deletedInstances = instanceRepository.deleteByStatusAndUpdateTimeBefore(
-                ApprovalStatus.APPROVED, cutoffDate);
+                ApprovalStatusEnum.APPROVED, cutoffDate);
             
             // 清理相关的审批记录和审计日志
             // 这里需要实现更复杂的清理逻辑
@@ -223,7 +224,8 @@ public class AsyncApprovalService {
             for (Long instanceId : instanceIds) {
                 try {
                     ApprovalOperateRequest request = new ApprovalOperateRequest();
-                    request.setApproverId(approverId);
+                    request.setOperatorId(approverId);
+                    request.setAction(1); // 假设1表示通过
                     request.setRemarks("批量审批通过");
                     
                     approvalService.approve(instanceId, request);

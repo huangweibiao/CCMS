@@ -102,13 +102,14 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         log.info("处理审批结果: 实例ID={}, 操作={}, 当前节点={}", instance.getId(), action, currentNode.getStepNumber());
         
         // 验证状态转换是否允许
-        if (!isTransitionAllowed(instance.getStatus(), action)) {
+        if (!isTransitionAllowed(convertIntegerToApprovalStatus(instance.getStatus()), action)) {
             throw new IllegalStateException("不允许的状态转换: " + instance.getStatus() + " -> " + action);
         }
         
         // 更新节点状态
         currentNode.setProcessTime(LocalDateTime.now());
-        currentNode.setStatus(action.name());
+        // 将枚举名称转换为状态码
+        currentNode.setStatus(convertActionToStatusCode(action));
         nodeRepository.save(currentNode);
         
         // 更新实例状态
@@ -231,7 +232,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
     @Override
     public ApprovalStatus getCurrentStatus(ApprovalInstance instance) {
         // 将Integer状态转换为ApprovalStatus枚举
-        return convertToApprovalStatus(instance.getStatus());
+        return convertIntegerToApprovalStatus(instance.getStatus());
     }
 
     @Override
@@ -241,7 +242,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         List<ApprovalInstance> timeoutInstances = new ArrayList<>();
         
         // 查找超时的运行中实例
-        List<ApprovalInstance> runningInstances = instanceRepository.findByStatus(ApprovalStatus.RUNNING.ordinal());
+        List<ApprovalInstance> runningInstances = instanceRepository.findByStatus(ApprovalStatusEnum.RUNNING);
         
         for (ApprovalInstance instance : runningInstances) {
             if (instance.getCreateTime().isBefore(timeoutThreshold)) {
@@ -362,31 +363,39 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         return rules;
     }
 
+    private Integer convertActionToStatusCode(ApprovalAction action) {
+        switch (action) {
+            case APPROVE: return 1;
+            case REJECT: return 2;
+            case TRANSFER: return 3;
+            case SKIP: return 4;
+            case CANCEL: return 5;
+            default: return 0;
+        }
+    }
+
     private boolean isFinalStatus(Integer status) {
         if (status == null) {
             return false;
         }
-        ApprovalStatus approvalStatus = convertToApprovalStatus(status);
+        ApprovalStatus approvalStatus = convertIntegerToApprovalStatus(status);
         return approvalStatus == ApprovalStatus.APPROVED || 
                approvalStatus == ApprovalStatus.REJECTED || 
                approvalStatus == ApprovalStatus.CANCELED || 
                approvalStatus == ApprovalStatus.TIMEOUT;
     }
 
-    private ApprovalStatus convertToApprovalStatus(Integer status) {
+    private ApprovalStatus convertIntegerToApprovalStatus(Integer status) {
         if (status == null) {
             return ApprovalStatus.RUNNING; // 默认状态
         }
         
-        switch (status) {
-            case 0: return ApprovalStatus.PENDING;
-            case 1: return ApprovalStatus.RUNNING;
-            case 2: return ApprovalStatus.APPROVED;
-            case 3: return ApprovalStatus.REJECTED;
-            case 4: return ApprovalStatus.CANCELED;
-            case 5: return ApprovalStatus.TIMEOUT;
-            default: return ApprovalStatus.RUNNING;
+        // 根据数据库存储的ordinal值转换为枚举
+        ApprovalStatus[] values = ApprovalStatus.values();
+        if (status >= 0 && status < values.length) {
+            return values[status];
         }
+        return ApprovalStatus.RUNNING;
     }
 
     private ApprovalInstance handleApproveAction(ApprovalInstance instance, Map<String, Object> context) {
@@ -475,27 +484,27 @@ public class DefaultApprovalEngine implements ApprovalEngine {
     }
 
     // 默认节点处理器实现
-    private static class UserApprovalProcessor implements NodeProcessor {
+    private static class UserApprovalProcessor implements ApprovalEngine.NodeProcessor {
         @Override
-        public NodeResult process(ApprovalNode node, Map<String, Object> context) {
+        public ApprovalEngine.NodeProcessor.NodeResult process(ApprovalNode node, Map<String, Object> context) {
             // 简单实现：等待用户审批，这里只是模拟处理
-            return new NodeResult(true, "用户审批节点执行成功", null);
+            return new ApprovalEngine.NodeProcessor.NodeResult(true, "用户审批节点执行成功", null);
         }
     }
 
-    private static class RoleApprovalProcessor implements NodeProcessor {
+    private static class RoleApprovalProcessor implements ApprovalEngine.NodeProcessor {
         @Override
-        public NodeResult process(ApprovalNode node, Map<String, Object> context) {
+        public ApprovalEngine.NodeProcessor.NodeResult process(ApprovalNode node, Map<String, Object> context) {
             // 角色审批处理器实现
-            return new NodeResult(true, "角色审批节点执行成功", null);
+            return new ApprovalEngine.NodeProcessor.NodeResult(true, "角色审批节点执行成功", null);
         }
     }
 
-    private static class DepartmentApprovalProcessor implements NodeProcessor {
+    private static class DepartmentApprovalProcessor implements ApprovalEngine.NodeProcessor {
         @Override
-        public NodeResult process(ApprovalNode node, Map<String, Object> context) {
+        public ApprovalEngine.NodeProcessor.NodeResult process(ApprovalNode node, Map<String, Object> context) {
             // 部门审批处理器实现
-            return new NodeResult(true, "部门审批节点执行成功", null);
+            return new ApprovalEngine.NodeProcessor.NodeResult(true, "部门审批节点执行成功", null);
         }
     }
 
