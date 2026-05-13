@@ -5,6 +5,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -80,6 +81,7 @@ public class CacheConfig {
      * 获取当前环境的缓存管理器
      */
     @Bean
+    @Primary
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         // 根据环境配置选择缓存管理器
         String env = System.getProperty("spring.profiles.active", "dev");

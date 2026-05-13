@@ -58,36 +58,9 @@ public class VoucherTemplate extends BaseEntity {
     @Column(name = "remark", length = 512)
     private String remark;
 
-    /**
-     * 创建人ID
-     */
-    @Column(name = "create_by", nullable = false)
-    private Long createBy;
 
-    /**
-     * 创建时间
-     */
-    @Column(name = "create_time", nullable = false, updatable = false)
-    private LocalDateTime createTime;
 
-    /**
-     * 更新人ID
-     */
-    @Column(name = "update_by")
-    private Long updateBy;
 
-    /**
-     * 更新时间
-     */
-    @Column(name = "update_time")
-    private LocalDateTime updateTime;
-
-    /**
-     * 乐观锁版本号
-     */
-    @Version
-    @Column(name = "version", nullable = false)
-    private Integer version;
 
     // getter和setter方法
     public Long getId() {
@@ -122,25 +95,9 @@ public class VoucherTemplate extends BaseEntity {
         return remark;
     }
 
-    public Long getCreateBy() {
-        return createBy;
-    }
 
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
 
-    public Long getUpdateBy() {
-        return updateBy;
-    }
 
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public Integer getVersion() {
-        return version;
-    }
 
     public void setTemplateCode(String templateCode) {
         this.templateCode = templateCode;
@@ -170,23 +127,7 @@ public class VoucherTemplate extends BaseEntity {
         this.remark = remark;
     }
 
-    public void setCreateBy(Long createBy) {
-        this.createBy = createBy;
-    }
 
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
 
-    public void setUpdateBy(Long updateBy) {
-        this.updateBy = updateBy;
-    }
 
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 }

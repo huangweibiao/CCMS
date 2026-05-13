@@ -242,7 +242,7 @@ public class DefaultApprovalEngine implements ApprovalEngine {
         List<ApprovalInstance> timeoutInstances = new ArrayList<>();
         
         // 查找超时的运行中实例
-        List<ApprovalInstance> runningInstances = instanceRepository.findByStatus(ApprovalStatusEnum.RUNNING);
+        List<ApprovalInstance> runningInstances = instanceRepository.findByStatus(ApprovalStatusEnum.RUNNING.getCode());
         
         for (ApprovalInstance instance : runningInstances) {
             if (instance.getCreateTime().isBefore(timeoutThreshold)) {

@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * 审批流程配置控制器
  */
 @RestController
-@RequestMapping("/api/approval/flow-configs")
+@RequestMapping("/api/approval/flow-configs/v2")
 @Validated
 public class ApprovalFlowConfigController {
 

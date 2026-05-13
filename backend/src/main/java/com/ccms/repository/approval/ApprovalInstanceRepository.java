@@ -27,9 +27,9 @@ public interface ApprovalInstanceRepository extends BaseRepository<ApprovalInsta
     List<ApprovalInstance> findByBusinessType(BusinessTypeEnum businessType);
     
     /**
-     * 根据状态枚举查找审批实例
+     * 根据状态代码查找审批实例
      */
-    List<ApprovalInstance> findByStatus(ApprovalStatusEnum status);
+    List<ApprovalInstance> findByStatus(Integer statusCode);
     
     /**
      * 根据申请人ID查找审批实例
@@ -93,9 +93,9 @@ public interface ApprovalInstanceRepository extends BaseRepository<ApprovalInsta
     Double findAverageApprovalDuration(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
     
     /**
-     * 根据状态枚举和完成时间之后查找审批实例
+     * 根据状态代码和完成时间之后查找审批实例
      */
-    List<ApprovalInstance> findByStatusAndFinishTimeAfter(ApprovalStatusEnum status, LocalDateTime finishTime);
+    List<ApprovalInstance> findByStatusAndFinishTimeAfter(Integer statusCode, LocalDateTime finishTime);
 
     // 以下方法是编译错误中缺失的方法声明
     Optional<ApprovalInstance> findTop1ByBusinessTypeAndBusinessId(String businessType, Long businessId);

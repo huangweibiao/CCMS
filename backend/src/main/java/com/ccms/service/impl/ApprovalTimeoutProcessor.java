@@ -71,7 +71,7 @@ public class ApprovalTimeoutProcessor {
         
         try {
             // 查找运行中的审批实例
-            List<ApprovalInstance> runningInstances = instanceRepository.findByStatus(ApprovalStatusEnum.RUNNING);
+            List<ApprovalInstance> runningInstances = instanceRepository.findByStatus(ApprovalStatusEnum.RUNNING.getCode());
             
             for (ApprovalInstance instance : runningInstances) {
                 TimeoutResult result = checkAndProcessTimeout(instance);
@@ -291,7 +291,7 @@ public class ApprovalTimeoutProcessor {
     public TimeoutStatistics getStatistics() {
         LocalDateTime startTime = LocalDateTime.now().minusHours(24);
         List<ApprovalInstance> timeoutInstances = instanceRepository
-                .findByStatusAndFinishTimeAfter(ApprovalStatusEnum.TIMEOUT, startTime);
+                .findByStatusAndFinishTimeAfter(ApprovalStatusEnum.TIMEOUT.getCode(), startTime);
         
         long totalCount = timeoutInstances.size();
         double avgDuration = timeoutInstances.stream()

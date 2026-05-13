@@ -24,9 +24,9 @@ public class PerformanceAspect {
     private PerformanceMonitor performanceMonitor;
 
     /**
-     * 监控Service层方法
+     * 监控Service层方法（排除性能监控服务自身）
      */
-    @Pointcut("execution(* com.ccms.service..*.*(..))")
+    @Pointcut("execution(* com.ccms.service..*.*(..)) && !execution(* com.ccms.service.monitor.PerformanceMonitor.*(..))")
     public void serviceMethods() {}
 
     /**

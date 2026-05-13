@@ -54,6 +54,12 @@ public class FeeType extends BaseEntity {
      */
     @Column(name = "sort_order")
     private Integer sortOrder;
+    
+    /**
+     * 类别
+     */
+    @Column(name = "category")
+    private Integer category;
 
     // Getters and Setters
     public String getTypeCode() {
@@ -112,6 +118,14 @@ public class FeeType extends BaseEntity {
         this.sortOrder = sortOrder;
     }
 
+    public Integer getCategory() {
+        return category;
+    }
+
+    public void setCategory(Integer category) {
+        this.category = category;
+    }
+
     @Override
     public String toString() {
         return "FeeType{" +
@@ -123,6 +137,7 @@ public class FeeType extends BaseEntity {
                 ", needInvoice=" + needInvoice +
                 ", status=" + status +
                 ", sortOrder=" + sortOrder +
+                ", category=" + category +
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
                 ", version=" + getVersion() +

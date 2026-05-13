@@ -223,22 +223,55 @@ public class PerformanceTuner {
     }
     
     private void analyzeSlowQueries() {
-        // 模拟慢查询分析
+        // 慢查询分析 - 使用MySQL系统表或信息模式
         try {
-            // 检查是否存在长时间运行的查询
-            List<Map<String, Object>> slowQueries = jdbcTemplate.queryForList(
-                "SELECT query, execution_time FROM system_slow_queries WHERE execution_time > 1000"
-            );
+            // 方法1：检查MySQL性能模式中的慢查询
+            List<Map<String, Object>> slowQueries = new ArrayList<>();
+            
+            // 先检查是否存在Performance Schema（MySQL 5.6+）
+            try {
+                slowQueries = jdbcTemplate.queryForList(
+                    "SELECT sql_text, timer_wait/1000000000 as execution_time_ms " +
+                    "FROM performance_schema.events_statements_history_long " +
+                    "WHERE timer_wait/1000000000 > 1000 AND sql_text IS NOT NULL " +
+                    "LIMIT 10"
+                );
+            } catch (DataAccessException e) {
+                logger.debug("Performance Schema不可用，尝试使用慢查询日志方式", e);
+                
+                // 方法2：如果Performance Schema不可用，使用慢查询日志相关系统表
+                try {
+                    slowQueries = jdbcTemplate.queryForList(
+                        "SELECT argument as query, query_time as execution_time_ms " +
+                        "FROM mysql.slow_log " +
+                        "WHERE query_time > 1 " +
+                        "ORDER BY start_time DESC LIMIT 10"
+                    );
+                } catch (DataAccessException e2) {
+                    logger.debug("慢查询日志表不可用，使用信息模式分析", e2);
+                    
+                    // 方法3：最后使用信息模式分析长时间运行的操作
+                    slowQueries = jdbcTemplate.queryForList(
+                        "SELECT STATE, TIME_MS " +
+                        "FROM information_schema.PROCESSLIST " +
+                        "WHERE TIME_MS > 1000 AND COMMAND != 'Sleep' " +
+                        "LIMIT 10"
+                    );
+                }
+            }
             
             if (!slowQueries.isEmpty()) {
                 logger.warn("发现 {} 个慢查询需要优化", slowQueries.size());
                 for (Map<String, Object> query : slowQueries) {
-                    logger.info("慢查询: {}, 执行时间: {}ms", 
-                               query.get("query"), query.get("execution_time"));
+                    logger.info("慢查询/长时间操作: {}, 执行时间: {}ms", 
+                               query.get("query") != null ? query.get("query") : query.get("STATE"), 
+                               query.get("execution_time_ms") != null ? query.get("execution_time_ms") : query.get("TIME_MS"));
                 }
+            } else {
+                logger.debug("未发现慢查询");
             }
         } catch (DataAccessException e) {
-            logger.debug("无法获取慢查询信息（可能需要配置）", e);
+            logger.debug("慢查询分析功能需要数据库配置支持", e);
         }
     }
     
