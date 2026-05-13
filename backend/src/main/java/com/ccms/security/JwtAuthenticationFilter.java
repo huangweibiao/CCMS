@@ -34,6 +34,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                    HttpServletResponse response,
                                    FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getServletPath();
+        
+        // 检查是否为公开路径，这些路径不需要JWT认证
+        if (isPublicPath(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        
         try {
             String jwt = getJwtFromRequest(request);
 
@@ -66,5 +74,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    /**
+     * 判断是否为公开路径
+     */
+    private boolean isPublicPath(String path) {
+        // 公开路径列表
+        String[] publicPaths = {
+            "/",
+            "/index.html", 
+            "/login",
+            "/api/auth/login",
+            "/api/auth/logout", 
+            "/api/auth/refresh",
+            "/swagger-ui/",
+            "/v3/api-docs/",
+            "/swagger-resources/",
+            "/actuator/health",
+            "/uploads/",
+            "/static/",
+            "/css/",
+            "/js/",
+            "/favicon.ico"
+        };
+        
+        for (String publicPath : publicPaths) {
+            if (path.startsWith(publicPath)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

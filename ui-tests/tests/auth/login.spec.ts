@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { TestHelpers } from '../../utils/test-helpers';
+import { TestHelpers, PageAssertions } from '../../utils/test-helpers';
 
 test.describe('用户登录和认证', () => {
   test('管理员用户成功登录', async ({ page }) => {
@@ -8,7 +8,7 @@ test.describe('用户登录和认证', () => {
     
     // 验证管理员页面访问权限
     await page.goto('/admin/users');
-    await TestHelpers.verifyPageTitle(page, '用户管理');
+    await PageAssertions.verifyPageTitle(page, '用户管理');
     await expect(page.locator('.user-role')).toContainText('管理员');
   });
 
@@ -18,7 +18,7 @@ test.describe('用户登录和认证', () => {
     
     // 验证审批员页面访问权限
     await page.goto('/approval/management');
-    await TestHelpers.verifyPageTitle(page, '审批管理');
+    await PageAssertions.verifyPageTitle(page, '审批管理');
     await expect(page.locator('.user-role')).toContainText('审批人员');
   });
 
@@ -28,13 +28,13 @@ test.describe('用户登录和认证', () => {
     
     // 验证普通用户页面访问权限
     await page.goto('/expense/application');
-    await TestHelpers.verifyPageTitle(page, '费用申请');
+    await PageAssertions.verifyPageTitle(page, '费用申请');
     await expect(page.locator('.user-role')).toContainText('普通用户');
   });
 
   test('登录失败显示错误信息', async ({ page }) => {
     await page.goto('/login');
-    await TestHelpers.verifyPageTitle(page, '用户登录');
+    await PageAssertions.verifyPageTitle(page, '用户登录');
     
     // 填写错误密码
     await page.fill('input[type="text"]', 'approver@example.com');

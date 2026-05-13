@@ -39,8 +39,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins,
     
-    // 基础路径配置
-    base: isProduction ? '/ccms/' : '/',
+    // 基础路径配置（前后端不分离部署，使用相对路径）
+    base: './',
     
     // 路径别名配置
     resolve: {
@@ -94,7 +94,7 @@ export default defineConfig(({ mode }) => {
     
     // 构建配置
     build: {
-      outDir: 'dist',
+      outDir: '../backend/src/main/resources/static',
       assetsDir: 'assets',
       sourcemap: isProduction ? 'hidden' : false,
       minify: isProduction ? 'terser' : false,

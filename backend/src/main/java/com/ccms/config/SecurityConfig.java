@@ -66,6 +66,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 // 公开访问的接口
+                .requestMatchers(HttpMethod.GET, "/").permitAll()
+                .requestMatchers(HttpMethod.GET, "/index.html").permitAll()
+                .requestMatchers(HttpMethod.GET, "/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
@@ -75,6 +78,11 @@ public class SecurityConfig {
                 // 静态资源
                 .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/static/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/css/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/js/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
+                .requestMatchers(HttpMethod.GET, "/logo*.png").permitAll()
+                .requestMatchers(HttpMethod.GET, "/*.txt").permitAll()
                 
                 // 需要认证的其他接口
                 .anyRequest().authenticated()

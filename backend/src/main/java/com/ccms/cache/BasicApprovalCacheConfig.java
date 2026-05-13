@@ -2,6 +2,7 @@ package com.ccms.cache;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -12,50 +13,34 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 审批模块基础缓存配置类
- * 配置不同类型的缓存策略和过期时间
+ * 配置不同类型的缓存策略
  */
 @Configuration
 @EnableCaching
 public class BasicApprovalCacheConfig {
 
     /**
-     * 缓存管理器配置
+     * 基础审批缓存管理器
+     * 基于Redis的分布式缓存管理器
      */
     @Bean
     public CacheManager basicApprovalCacheManager(RedisConnectionFactory redisConnectionFactory) {
-        // 默认缓存配置
-        RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(1)) // 默认1小时过期
+        RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofHours(2))
+                .disableCachingNullValues()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
-                .disableCachingNullValues(); // 不缓存null值
-
-        // 针对不同类型的缓存定义不同的策略
-        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        
-        // 审批流程配置缓存 - 较长时间，很少变更
-        cacheConfigurations.put("approval-flow-config", defaultCacheConfig.entryTtl(Duration.ofHours(12)));
-        
-        // 审批实例缓存 - 中等时间，状态会变化
-        cacheConfigurations.put("approval-instance", defaultCacheConfig.entryTtl(Duration.ofMinutes(30)));
-        
-        // 审批记录缓存 - 较短时间，频繁更新
-        cacheConfigurations.put("approval-record", defaultCacheConfig.entryTtl(Duration.ofMinutes(10)));
-        
-        // 审批统计缓存 - 较短时间，实时性要求高
-        cacheConfigurations.put("approval-statistics", defaultCacheConfig.entryTtl(Duration.ofMinutes(5)));
-        
-        // 审批配置条件缓存 - 较长时间，很少变更
-        cacheConfigurations.put("approval-conditions", defaultCacheConfig.entryTtl(Duration.ofHours(6)));
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
         return RedisCacheManager.builder(redisConnectionFactory)
-                .cacheDefaults(defaultCacheConfig)
-                .withInitialCacheConfigurations(cacheConfigurations)
+                .cacheDefaults(cacheConfiguration)
+                .withCacheConfiguration("approval-flow-config", cacheConfiguration.entryTtl(Duration.ofDays(7)))
+                .withCacheConfiguration("approval-instance", cacheConfiguration.entryTtl(Duration.ofHours(24)))
+                .withCacheConfiguration("approval-record", cacheConfiguration.entryTtl(Duration.ofDays(30)))
+                .withCacheConfiguration("approval-statistics", cacheConfiguration.entryTtl(Duration.ofHours(1)))
+                .withCacheConfiguration("approval-conditions", cacheConfiguration.entryTtl(Duration.ofDays(7)))
                 .build();
     }
     

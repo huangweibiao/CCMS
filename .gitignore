@@ -143,6 +143,7 @@ local-config/
 # Playwright test results
 playwright-report/
 test-results/
+ui-tests/allure-results/
 
 # Comate specs
 .comate/
