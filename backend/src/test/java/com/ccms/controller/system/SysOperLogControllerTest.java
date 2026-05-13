@@ -35,6 +35,9 @@ class SysOperLogControllerTest extends ControllerTestBase {
         log.setOperType(type);
         log.setOperIp("192.168.1.1");
         log.setOperTime(LocalDateTime.now());
+        log.setOperUserId("user123");
+        log.setOperName("测试用户");
+        log.setStatus(0);
 
         return log;
     }
@@ -77,10 +80,10 @@ class SysOperLogControllerTest extends ControllerTestBase {
     @Test
     void shouldReturnOperLogsByUserId() throws Exception {
         SysOperLog log = createTestOperLog(1L, "用户管理", "新增");
-        when(operLogRepository.findByOperUserId(1L))
+        when(operLogRepository.findByOperUserId("user123"))
                 .thenReturn(Collections.singletonList(log));
 
-        performGet("/api/system/oper-logs/user/1")
+        performGet("/api/system/oper-logs/user/user123")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
     }
@@ -110,10 +113,10 @@ class SysOperLogControllerTest extends ControllerTestBase {
     @Test
     void shouldReturnOperLogsByBusinessId() throws Exception {
         SysOperLog log = createTestOperLog(1L, "用户管理", "新增");
-        when(operLogRepository.findByBusinessId(1L))
+        when(operLogRepository.findByBusinessId("bus123"))
                 .thenReturn(Collections.singletonList(log));
 
-        performGet("/api/system/oper-logs/business/1")
+        performGet("/api/system/oper-logs/business/bus123")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
     }
@@ -134,7 +137,7 @@ class SysOperLogControllerTest extends ControllerTestBase {
     @Test
     void shouldReturnRecentOperLogs() throws Exception {
         SysOperLog log = createTestOperLog(1L, "用户管理", "新增");
-        when(operLogRepository.findRecentOperLogs(7))
+        when(operLogRepository.findRecentOperLogs(any(LocalDateTime.class)))
                 .thenReturn(Collections.singletonList(log));
 
         performGet("/api/system/oper-logs/recent?days=7")
@@ -157,12 +160,12 @@ class SysOperLogControllerTest extends ControllerTestBase {
     void shouldCountUserOperations() throws Exception {
         LocalDateTime startTime = LocalDateTime.now().minusDays(7);
         LocalDateTime endTime = LocalDateTime.now();
-        when(operLogRepository.countByOperUserIdAndOperTimeBetween(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(operLogRepository.countByOperUserIdAndOperTimeBetween(anyString(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(10L);
 
-        performGet("/api/system/oper-logs/user/1/count?startTime=" + startTime + "&endTime=" + endTime)
+        performGet("/api/system/oper-logs/user/user123/count?startTime=" + startTime + "&endTime=" + endTime)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.userId").value("user123"))
                 .andExpect(jsonPath("$.count").value(10));
     }
 
@@ -182,6 +185,6 @@ class SysOperLogControllerTest extends ControllerTestBase {
         performDelete("/api/system/oper-logs/expired?expireDays=90")
                 .andExpect(status().isOk());
 
-        verify(operLogRepository, times(1)).deleteExpiredLogs(90);
+        verify(operLogRepository, times(1)).deleteExpiredLogs(any(LocalDateTime.class));
     }
 }

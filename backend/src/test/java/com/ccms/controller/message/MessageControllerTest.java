@@ -88,7 +88,7 @@ class MessageControllerTest extends ControllerTestBase {
     @Test
     void shouldReturnUserUnreadMessagesSuccess() throws Exception {
         SysMessage message = createTestMessage(1L, "未读消息", 1, 0);
-        when(sysMessageRepository.findByReceiverIdAndReadStatus(1L, 0)).thenReturn(Collections.singletonList(message));
+        when(sysMessageRepository.findByReceiverIdAndIsRead(1L, 0)).thenReturn(Collections.singletonList(message));
 
         performGet("/api/messages/user/1/unread")
                 .andExpect(status().isOk())
@@ -120,7 +120,7 @@ class MessageControllerTest extends ControllerTestBase {
     @Test
     void shouldMarkAllMessagesAsReadSuccess() throws Exception {
         SysMessage message = createTestMessage(1L, "测试消息", 1, 0);
-        when(sysMessageRepository.findByReceiverIdAndReadStatus(1L, 0)).thenReturn(Collections.singletonList(message));
+        when(sysMessageRepository.findByReceiverIdAndIsRead(1L, 0)).thenReturn(Collections.singletonList(message));
 
         performPut("/api/messages/user/1/read-all")
                 .andExpect(status().isOk())
@@ -142,8 +142,8 @@ class MessageControllerTest extends ControllerTestBase {
     @Test
     void shouldReturnMessageStatistics() throws Exception {
         when(sysMessageRepository.findByReceiverId(1L)).thenReturn(Collections.emptyList());
-        when(sysMessageRepository.countByReceiverIdAndReadStatus(1L, 0)).thenReturn(5L);
-        when(sysMessageRepository.countByReceiverIdAndReadStatus(1L, 1)).thenReturn(10L);
+        when(sysMessageRepository.countByReceiverIdAndIsRead(1L, 0)).thenReturn(5L);
+        when(sysMessageRepository.countByReceiverIdAndIsRead(1L, 1)).thenReturn(10L);
 
         performGet("/api/messages/statistics/1")
                 .andExpect(status().isOk())

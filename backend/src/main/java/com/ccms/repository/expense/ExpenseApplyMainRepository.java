@@ -25,10 +25,10 @@ public interface ExpenseApplyMainRepository extends JpaRepository<ExpenseApplyMa
     /**
      * 根据申请单号查询申请单
      * 
-     * @param applyNumber 申请单号
+     * @param applyNo 申请单号
      * @return 申请单信息
      */
-    Optional<ExpenseApplyMain> findByApplyNumber(String applyNumber);
+    Optional<ExpenseApplyMain> findByApplyNo(String applyNo);
 
     /**
      * 根据申请人ID查询申请单列表
@@ -39,12 +39,12 @@ public interface ExpenseApplyMainRepository extends JpaRepository<ExpenseApplyMa
     List<ExpenseApplyMain> findByApplyUserId(Long applyUserId);
 
     /**
-     * 根据部门ID查询申请单列表
+     * 根据申请部门ID查询申请单列表
      * 
-     * @param deptId 部门ID
+     * @param applyDeptId 申请部门ID
      * @return 申请单列表
      */
-    List<ExpenseApplyMain> findByDeptId(Long deptId);
+    List<ExpenseApplyMain> findByApplyDeptId(Long applyDeptId);
 
     /**
      * 根据申请状态查询申请单列表
@@ -76,7 +76,7 @@ public interface ExpenseApplyMainRepository extends JpaRepository<ExpenseApplyMa
      * @param year 年份
      * @return 申请总额
      */
-    @Query("SELECT COALESCE(SUM(eam.totalAmount), 0) FROM ExpenseApplyMain eam WHERE eam.deptId = :deptId AND YEAR(eam.applyDate) = :year AND eam.status >= 2")
+    @Query("SELECT COALESCE(SUM(eam.totalAmount), 0) FROM ExpenseApplyMain eam WHERE eam.applyDeptId = :deptId AND YEAR(eam.createTime) = :year AND eam.status >= 2")
     BigDecimal calculateTotalApplyAmountByDeptAndYear(@Param("deptId") Long deptId, @Param("year") Integer year);
 
     /**
@@ -86,33 +86,20 @@ public interface ExpenseApplyMainRepository extends JpaRepository<ExpenseApplyMa
      * @param year 年份
      * @return 已审批通过总额
      */
-    @Query("SELECT COALESCE(SUM(eam.totalAmount), 0) FROM ExpenseApplyMain eam WHERE eam.deptId = :deptId AND YEAR(eam.applyDate) = :year AND eam.status = 3")
+    @Query("SELECT COALESCE(SUM(eam.totalAmount), 0) FROM ExpenseApplyMain eam WHERE eam.applyDeptId = :deptId AND YEAR(eam.createTime) = :year AND eam.status = 3")
     BigDecimal calculateApprovedAmountByDeptAndYear(@Param("deptId") Long deptId, @Param("year") Integer year);
 
     /**
      * 检查申请单号是否存在
      * 
-     * @param applyNumber 申请单号
+     * @param applyNo 申请单号
      * @return 是否存在
      */
-    boolean existsByApplyNumber(String applyNumber);
+    boolean existsByApplyNo(String applyNo);
 
-    /**
-     * 根据相关申请单号查询申请单
-     * 
-     * @param relatedApplyNumber 相关申请单号
-     * @return 申请单列表
-     */
-    List<ExpenseApplyMain> findByRelatedApplyNumber(String relatedApplyNumber);
 
-    /**
-     * 查询指定日期范围内的申请单
-     * 
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 申请单列表
-     */
-    List<ExpenseApplyMain> findByApplyDateBetween(java.time.LocalDate startDate, java.time.LocalDate endDate);
+
+
 
     /**
      * 查询费用类型申请单数量（按月份统计）
@@ -121,7 +108,7 @@ public interface ExpenseApplyMainRepository extends JpaRepository<ExpenseApplyMa
      * @param month 月份
      * @return Object[] 包含 count 和 status
      */
-    @Query("SELECT eam.status, COUNT(eam) FROM ExpenseApplyMain eam WHERE YEAR(eam.applyDate) = :year AND MONTH(eam.applyDate) = :month GROUP BY eam.status")
+    @Query("SELECT eam.status, COUNT(eam) FROM ExpenseApplyMain eam WHERE YEAR(eam.createTime) = :year AND MONTH(eam.createTime) = :month GROUP BY eam.status")
     List<Object[]> findApplyCountByMonth(@Param("year") Integer year, @Param("month") Integer month);
 
     /**
@@ -138,10 +125,10 @@ public interface ExpenseApplyMainRepository extends JpaRepository<ExpenseApplyMa
     // ==================== 为Controller提供的方法 ====================
     
     /**
-     * 根据申请单号查询（兼容applyNo字段名）
+     * 根据申请单号查询（原applyNumber兼容性方法）
      */
-    default Optional<ExpenseApplyMain> findByApplyNo(String applyNo) {
-        return findByApplyNumber(applyNo);
+    default Optional<ExpenseApplyMain> findByApplyNumber(String applyNumber) {
+        return findByApplyNo(applyNumber);
     }
     
     /**
@@ -170,7 +157,7 @@ public interface ExpenseApplyMainRepository extends JpaRepository<ExpenseApplyMa
      * 根据部门ID查询并按创建时间倒序
      */
     default List<ExpenseApplyMain> findByApplyDeptIdOrderByCreateTimeDesc(Long deptId) {
-        List<ExpenseApplyMain> list = new ArrayList<>(findByDeptId(deptId));
+        List<ExpenseApplyMain> list = new ArrayList<>(findByApplyDeptId(deptId));
         list.sort((e1, e2) -> {
             if (e1.getCreateTime() == null) return 1;
             if (e2.getCreateTime() == null) return -1;

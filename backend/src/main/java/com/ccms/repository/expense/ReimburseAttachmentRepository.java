@@ -13,8 +13,8 @@ public interface ReimburseAttachmentRepository extends BaseRepository<ReimburseA
     
     List<ReimburseAttachment> findByReimburseMainId(Long reimburseMainId);
     
-    @Query("SELECT ra FROM ReimburseAttachment ra WHERE ra.reimburseMainId = :mainId ORDER BY ra.createdTime DESC")
-    List<ReimburseAttachment> findByReimburseMainIdOrderByCreatedTimeDesc(@Param("mainId") Long mainId);
+    @Query("SELECT ra FROM ReimburseAttachment ra WHERE ra.reimburseMainId = :mainId ORDER BY ra.uploadTime DESC")
+    List<ReimburseAttachment> findByReimburseMainIdOrderByUploadTimeDesc(@Param("mainId") Long mainId);
     
     @Query("SELECT ra.fileName FROM ReimburseAttachment ra WHERE ra.reimburseMainId = :mainId")
     List<String> findFileNamesByReimburseMainId(@Param("mainId") Long mainId);

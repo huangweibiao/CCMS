@@ -98,7 +98,7 @@ public class FinancePaymentService {
             FinancePayment savedPayment = paymentRepository.save(payment);
 
             return new PaymentGenerationResult(true, "支付单创建成功",
-                    savedPayment.getPaymentId(), savedPayment.getPaymentNo());
+                    savedPayment.getId(), savedPayment.getPaymentNo());
 
         } catch (Exception e) {
             return new PaymentGenerationResult(false, "支付单创建失败: " + e.getMessage());

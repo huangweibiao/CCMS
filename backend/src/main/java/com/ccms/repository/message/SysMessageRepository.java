@@ -35,26 +35,28 @@ public interface SysMessageRepository extends JpaRepository<SysMessage, Long> {
     /**
      * 根据阅读状态查询消息
      * 
-     * @param readStatus 阅读状态：0-未读，1-已读
+     * @param isRead 阅读状态：0-未读，1-已读
      * @return 消息列表
      */
-    List<SysMessage> findByReadStatus(Integer readStatus);
+    List<SysMessage> findByIsRead(Integer isRead);
 
     /**
      * 查询用户的未读消息
      * 
      * @param receiverId 接收人ID
-     * @return 未读消息列表
+     * @param isRead 阅读状态
+     * @return 消息列表
      */
-    List<SysMessage> findByReceiverIdAndReadStatus(Long receiverId, Integer readStatus);
+    List<SysMessage> findByReceiverIdAndIsRead(Long receiverId, Integer isRead);
 
     /**
      * 查询用户的未读消息数量
      * 
      * @param receiverId 接收人ID
-     * @return 未读消息数量
+     * @param isRead 阅读状态
+     * @return 消息数量
      */
-    Long countByReceiverIdAndReadStatus(Long receiverId, Integer readStatus);
+    Long countByReceiverIdAndIsRead(Long receiverId, Integer isRead);
 
     /**
      * 根据业务ID和业务类型查询消息
@@ -63,27 +65,27 @@ public interface SysMessageRepository extends JpaRepository<SysMessage, Long> {
      * @param businessType 业务类型
      * @return 消息列表
      */
-    List<SysMessage> findByBusinessIdAndBusinessType(Long businessId, Integer businessType);
+    List<SysMessage> findByBusinessIdAndBusinessType(Long businessId, String businessType);
 
     /**
      * 更新消息阅读状态
      * 
      * @param id 消息ID
-     * @param readStatus 阅读状态
+     * @param isRead 阅读状态
      */
     @org.springframework.data.jpa.repository.Modifying
-    @Query("UPDATE SysMessage sm SET sm.readStatus = :readStatus, sm.readTime = CURRENT_TIMESTAMP WHERE sm.id = :id")
-    void updateReadStatus(@Param("id") Long id, @Param("readStatus") Integer readStatus);
+    @Query("UPDATE SysMessage sm SET sm.isRead = :isRead, sm.readTime = CURRENT_TIMESTAMP WHERE sm.id = :id")
+    void updateIsRead(@Param("id") Long id, @Param("isRead") Integer isRead);
 
     /**
      * 批量更新消息阅读状态
      * 
      * @param receiverId 接收人ID
-     * @param readStatus 新阅读状态
+     * @param isRead 新阅读状态
      */
     @org.springframework.data.jpa.repository.Modifying
-    @Query("UPDATE SysMessage sm SET sm.readStatus = :readStatus, sm.readTime = CURRENT_TIMESTAMP WHERE sm.receiverId = :receiverId AND sm.readStatus = 0")
-    void batchUpdateReadStatus(@Param("receiverId") Long receiverId, @Param("readStatus") Integer readStatus);
+    @Query("UPDATE SysMessage sm SET sm.isRead = :isRead, sm.readTime = CURRENT_TIMESTAMP WHERE sm.receiverId = :receiverId AND sm.isRead = 0")
+    void batchUpdateIsRead(@Param("receiverId") Long receiverId, @Param("isRead") Integer isRead);
 
     /**
      * 删除过期消息
@@ -91,7 +93,7 @@ public interface SysMessageRepository extends JpaRepository<SysMessage, Long> {
      * @param expireDays 过期天数
      */
     @org.springframework.data.jpa.repository.Modifying
-    @Query("DELETE FROM SysMessage sm WHERE sm.createTime < CURRENT_DATE - :expireDays")
+    @Query("DELETE FROM SysMessage sm WHERE sm.createTime < FUNCTION('DATE_SUB', CURRENT_TIMESTAMP, :expireDays, 'DAY')")
     void deleteExpiredMessages(@Param("expireDays") Integer expireDays);
 
     /**
@@ -100,6 +102,6 @@ public interface SysMessageRepository extends JpaRepository<SysMessage, Long> {
      * @param receiverId 接收人ID
      * @return 消息列表
      */
-    @Query("SELECT sm FROM SysMessage sm WHERE sm.receiverId = :receiverId AND sm.createTime >= CURRENT_DATE - 7 ORDER BY sm.createTime DESC")
+    @Query("SELECT sm FROM SysMessage sm WHERE sm.receiverId = :receiverId AND sm.createTime >= FUNCTION('DATE_SUB', CURRENT_TIMESTAMP, 7, 'DAY') ORDER BY sm.createTime DESC")
     List<SysMessage> findRecentMessagesByUserId(@Param("receiverId") Long receiverId);
 }

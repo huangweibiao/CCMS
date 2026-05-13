@@ -64,7 +64,7 @@ public class SysOperLogController {
      * 根据操作人ID获取操作日志
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<SysOperLog>> getOperLogsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<List<SysOperLog>> getOperLogsByUserId(@PathVariable String userId) {
         List<SysOperLog> logs = operLogRepository.findByOperUserId(userId);
         return ResponseEntity.ok(logs);
     }
@@ -91,7 +91,7 @@ public class SysOperLogController {
      * 根据业务ID获取操作日志
      */
     @GetMapping("/business/{businessId}")
-    public ResponseEntity<List<SysOperLog>> getOperLogsByBusinessId(@PathVariable Long businessId) {
+    public ResponseEntity<List<SysOperLog>> getOperLogsByBusinessId(@PathVariable String businessId) {
         List<SysOperLog> logs = operLogRepository.findByBusinessId(businessId);
         return ResponseEntity.ok(logs);
     }
@@ -113,7 +113,8 @@ public class SysOperLogController {
     @GetMapping("/recent")
     public ResponseEntity<List<SysOperLog>> getRecentOperLogs(
             @RequestParam(defaultValue = "7") Integer days) {
-        List<SysOperLog> logs = operLogRepository.findRecentOperLogs(days);
+        java.time.LocalDateTime startTime = java.time.LocalDateTime.now().minusDays(days);
+        List<SysOperLog> logs = operLogRepository.findRecentOperLogs(startTime);
         return ResponseEntity.ok(logs);
     }
 
@@ -133,7 +134,7 @@ public class SysOperLogController {
      */
     @GetMapping("/user/{userId}/count")
     public ResponseEntity<Map<String, Object>> countUserOperations(
-            @PathVariable Long userId,
+            @PathVariable String userId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
         Long count = operLogRepository.countByOperUserIdAndOperTimeBetween(userId, startTime, endTime);
@@ -159,7 +160,8 @@ public class SysOperLogController {
      */
     @DeleteMapping("/expired")
     public ResponseEntity<Void> deleteExpiredLogs(@RequestParam(defaultValue = "90") Integer expireDays) {
-        operLogRepository.deleteExpiredLogs(expireDays);
+        java.time.LocalDateTime expireTime = java.time.LocalDateTime.now().minusDays(expireDays);
+        operLogRepository.deleteExpiredLogs(expireTime);
         return ResponseEntity.ok().build();
     }
 }

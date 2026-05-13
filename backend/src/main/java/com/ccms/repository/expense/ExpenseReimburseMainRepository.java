@@ -19,7 +19,7 @@ public interface ExpenseReimburseMainRepository extends BaseRepository<ExpenseRe
     
     List<ExpenseReimburseMain> findBySubmitUserId(Long submitUserId);
     
-    List<ExpenseReimburseMain> findByDeptId(Long deptId);
+    List<ExpenseReimburseMain> findByReimburseDeptId(Long reimburseDeptId);
     
     List<ExpenseReimburseMain> findByStatus(Integer status);
     
@@ -45,6 +45,4 @@ public interface ExpenseReimburseMainRepository extends BaseRepository<ExpenseRe
     
     // 添加缺失的方法
     List<ExpenseReimburseMain> findByReimburseUserId(Long reimburseUserId);
-    
-    List<ExpenseReimburseMain> findByReimburseDeptId(Long reimburseDeptId);
 }

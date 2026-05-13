@@ -15,13 +15,7 @@ import java.time.LocalDateTime;
 @Table(name = "finance_voucher")
 public class FinanceVoucher extends BaseEntity {
 
-    /**
-     * 主键ID
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+
 
     /**
      * 凭证编号
@@ -149,12 +143,7 @@ public class FinanceVoucher extends BaseEntity {
     @Column(name = "update_time")
     private LocalDateTime updateTime;
 
-    /**
-     * 乐观锁版本号
-     */
-    @Version
-    @Column(name = "version", nullable = false)
-    private Integer version;
+
 
     // getter方法
     public Long getId() {
@@ -245,9 +234,7 @@ public class FinanceVoucher extends BaseEntity {
         return postingUserId;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
+
 
     // setter方法
     public void setVoucherNo(String voucherNo) {
@@ -334,7 +321,5 @@ public class FinanceVoucher extends BaseEntity {
         this.postingTime = postingTime;
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
+
 }

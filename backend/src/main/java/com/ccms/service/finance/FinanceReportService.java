@@ -81,7 +81,7 @@ public class FinanceReportService {
             FinanceReport savedReport = reportRepository.save(report);
 
             return new ReportGenerationResult(true, "费用统计报表生成成功",
-                    savedReport.getReportId(), null);
+                    savedReport.getId(), null);
 
         } catch (Exception e) {
             return new ReportGenerationResult(false, "费用统计报表生成失败: " + e.getMessage());
@@ -113,7 +113,7 @@ public class FinanceReportService {
             FinanceReport savedReport = reportRepository.save(report);
 
             return new ReportGenerationResult(true, "支付统计报表生成成功",
-                    savedReport.getReportId(), null);
+                    savedReport.getId(), null);
 
         } catch (Exception e) {
             return new ReportGenerationResult(false, "支付统计报表生成失败: " + e.getMessage());
@@ -146,7 +146,7 @@ public class FinanceReportService {
             FinanceReport savedReport = reportRepository.save(report);
 
             return new ReportGenerationResult(true, "部门费用分析报表生成成功",
-                    savedReport.getReportId(), null);
+                    savedReport.getId(), null);
 
         } catch (Exception e) {
             return new ReportGenerationResult(false, "部门费用分析报表生成失败: " + e.getMessage());
@@ -175,7 +175,7 @@ public class FinanceReportService {
             FinanceReport savedReport = reportRepository.save(report);
 
             return new ReportGenerationResult(true, "科目余额分析报表生成成功",
-                    savedReport.getReportId(), null);
+                    savedReport.getId(), null);
 
         } catch (Exception e) {
             return new ReportGenerationResult(false, "科目余额分析报表生成失败: " + e.getMessage());
@@ -207,7 +207,7 @@ public class FinanceReportService {
             FinanceReport savedReport = reportRepository.save(report);
 
             return new ReportGenerationResult(true, "现金流报表生成成功",
-                    savedReport.getReportId(), null);
+                    savedReport.getId(), null);
 
         } catch (Exception e) {
             return new ReportGenerationResult(false, "现金流报表生成失败: " + e.getMessage());

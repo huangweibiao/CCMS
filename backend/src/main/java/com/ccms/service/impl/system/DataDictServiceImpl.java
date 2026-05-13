@@ -56,7 +56,7 @@ public class DataDictServiceImpl implements DataDictService {
             return new ArrayList<>(cachedDicts);
         }
         
-        List<DataDict> dicts = dataDictRepository.findByDictTypeAndStatusOrderBySortOrderAsc(dictType);
+                        List<DataDict> dicts = dataDictRepository.findByDictTypeAndStatusOrderBySortOrderAsc(dictType, 1);
         dictCache.put(dictType, dicts);
         updateCodeMaps(dictType, dicts);
         return dicts;
@@ -348,7 +348,7 @@ public class DataDictServiceImpl implements DataDictService {
                 if (!cacheInitialized) {
                     List<String> dictTypes = getAllDictTypes();
                     for (String dictType : dictTypes) {
-                        List<DataDict> dicts = dataDictRepository.findByDictTypeAndStatusOrderBySortOrderAsc(dictType);
+        List<DataDict> dicts = dataDictRepository.findByDictTypeAndStatusOrderBySortOrderAsc(dictType, 1);
                         dictCache.put(dictType, dicts);
                         updateCodeMaps(dictType, dicts);
                     }

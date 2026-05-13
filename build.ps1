@@ -206,7 +206,7 @@ set JAVA_OPTS=-Xmx512m -Xms256m -Dfile.encoding=UTF-8
 set JAR_FILE=ccms-backend-$Version.jar
 
  echo 正在启动应用...
- java %JAVA_OPTS% -jar %JAR_FILE% --spring.profiles.active=prod
+ java %JAVA_OPTS% -jar %JAR_FILE% --spring.profiles.active=dev
 
 pause
 "@
@@ -226,7 +226,7 @@ JAVA_OPTS="-Xmx512m -Xms256m -Dfile.encoding=UTF-8"
 JAR_FILE="ccms-backend-$Version.jar"
 
 echo "正在启动应用..."
-java \$JAVA_OPTS -jar \$JAR_FILE --spring.profiles.active=prod
+java \$JAVA_OPTS -jar \$JAR_FILE --spring.profiles.active=dev
 "@
 $startSh | Out-File -FilePath "$deployDir/start.sh" -Encoding UTF8
 
@@ -260,6 +260,6 @@ Write-Host ""
 Write-Host "运行命令:" -ForegroundColor Yellow
 Write-Host "  Windows:  cd '$deployDir' && .\\start.bat" -ForegroundColor White
 Write-Host "  Linux:    cd '$deployDir' && chmod +x start.sh && ./start.sh" -ForegroundColor White
-Write-Host "  Java命令: java -jar '$jarTarget' --spring.profiles.active=prod" -ForegroundColor White
+Write-Host "  Java命令: java -jar '$jarTarget' --spring.profiles.active=dev" -ForegroundColor White
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan

@@ -30,19 +30,19 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
     /**
      * 根据费用类型查询预算明细
      * 
-     * @param expenseType 费用类型：1-差旅费，2-办公费，3-业务招待费，4-交通费，5-通讯费，6-培训费，7-其他
+     * @param feeTypeId 费用类型ID
      * @return 预算明细列表
      */
-    List<BudgetDetail> findByFeeTypeId(Integer feeTypeId);
+    List<BudgetDetail> findByFeeTypeId(Long feeTypeId);
 
     /**
      * 根据预算主表ID和费用类型查询预算明细
      * 
      * @param budgetId 预算主表ID
-     * @param expenseType 费用类型
+     * @param feeTypeId 费用类型ID
      * @return 预算明细
      */
-    Optional<BudgetDetail> findByBudgetIdAndFeeTypeId(Long budgetId, Integer feeTypeId);
+    Optional<BudgetDetail> findByBudgetIdAndFeeTypeId(Long budgetId, Long feeTypeId);
 
     /**
      * 统计预算主表的预算总额
@@ -78,7 +78,7 @@ public interface BudgetDetailRepository extends JpaRepository<BudgetDetail, Long
      * @param usedAmount 使用金额
      */
     @Modifying
-    @Query("UPDATE BudgetDetail bd SET bd.usedAmount = bd.usedAmount + :usedAmount, bd.remainingAmount = bd.remainingAmount - :usedAmount WHERE bd.id = :id")
+    @Query("UPDATE BudgetDetail bd SET bd.usedAmount = bd.usedAmount + :usedAmount WHERE bd.id = :id")
     void updateUsedAmount(@Param("id") Long id, @Param("usedAmount") BigDecimal usedAmount);
 
     /**

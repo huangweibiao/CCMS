@@ -30,7 +30,7 @@ public class SecurityValidator {
     
     // 路径遍历攻击检测
     private static final Pattern PATH_TRAVERSAL_PATTERN = Pattern.compile(
-        "(\\.\\.[\\/\\]|\\/\\/|\\~\\~|file:|ftp:|http:|https:)"
+        "(\\.\\.[/\\\\]|\\/\\/|\\~\\~|file:|ftp:|http:|https:)"
     );
 
     /**

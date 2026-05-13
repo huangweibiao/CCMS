@@ -15,12 +15,18 @@ import java.time.LocalDateTime;
 public class FinancePayment extends BaseEntity {
 
     /**
-     * 支付单据ID
+     * 支付单据ID - 使用BaseEntity的id字段，映射到payment_id列
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Override
     @Column(name = "payment_id")
-    private Long paymentId;
+    public Long getId() {
+        return super.getId();
+    }
+    
+    @Override
+    public void setId(Long id) {
+        super.setId(id);
+    }
 
     /**
      * 支付单据编号
@@ -194,9 +200,7 @@ public class FinancePayment extends BaseEntity {
     @Column(name = "remark", length = 1024, columnDefinition = "TEXT")
     private String remark;
 
-    // Lombok注解构问题，手动添加getter/setter方法
-    public Long getPaymentId() { return paymentId; }
-    public void setPaymentId(Long paymentId) { this.paymentId = paymentId; }
+    // Lombok注解不完整，手动添加必要的getter/setter方法
 
     public String getPaymentNo() { return paymentNo; }
     public void setPaymentNo(String paymentNo) { this.paymentNo = paymentNo; }

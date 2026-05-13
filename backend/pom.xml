@@ -186,10 +186,9 @@
                 <configuration>
                     <executable>true</executable>
                     <mainClass>com.ccms.CcmsApplication</mainClass>
-                    <classifier>exec</classifier>
                     <layout>JAR</layout>
                     <profiles>
-                        <profile>prod</profile>
+                        <profile>dev</profile>
                     </profiles>
                     <jvmArguments>-Xmx512m -Xms256m</jvmArguments>
                 </configuration>
@@ -270,19 +269,7 @@
                 </configuration>
             </plugin>
             
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+
             
             <plugin>
                 <groupId>org.jacoco</groupId>

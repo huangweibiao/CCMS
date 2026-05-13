@@ -190,7 +190,7 @@ public interface TodoItemRepository extends JpaRepository<TodoItem, Long>, JpaSp
      * @param deleted 删除标记
      * @return 平均完成时间（天）
      */
-    @Query("SELECT AVG(DATEDIFF(DAY, t.createdTime, t.completedTime)) FROM TodoItem t WHERE t.assigneeId = :assigneeId AND t.status = 'COMPLETED' AND t.deleted = :deleted AND t.createdTime IS NOT NULL AND t.completedTime IS NOT NULL")
+    @Query(value = "SELECT AVG(DATEDIFF(t.completed_time, t.created_time)) FROM ccms_todo_item t WHERE t.assignee_id = :assigneeId AND t.status = 'COMPLETED' AND t.deleted = :deleted AND t.created_time IS NOT NULL AND t.completed_time IS NOT NULL", nativeQuery = true)
     Double findAverageCompletionDays(@Param("assigneeId") Long assigneeId, 
                                     @Param("deleted") Integer deleted);
     

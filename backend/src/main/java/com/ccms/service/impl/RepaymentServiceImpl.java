@@ -396,7 +396,7 @@ public class RepaymentServiceImpl implements RepaymentService {
     @Override
     public Object getUserRepaymentStats(Long userId) {
         // 获取用户的所有借款单
-        List<LoanMain> userLoans = loanMainRepository.findByUserId(userId);
+        List<LoanMain> userLoans = loanMainRepository.findByLoanUserId(userId);
         
         BigDecimal totalLoanAmount = BigDecimal.ZERO;
         BigDecimal totalRepaidAmount = BigDecimal.ZERO;

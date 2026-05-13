@@ -15,12 +15,13 @@ import java.time.LocalDateTime;
 public class FinanceReport extends BaseEntity {
 
     /**
-     * 报表ID
+     * 报表ID - 继承自BaseEntity的id字段，映射到report_id列
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "report_id")
-    private Long reportId;
+    @Override
+    public Long getId() {
+        return super.getId();
+    }
 
     /**
      * 报表名称
@@ -159,8 +160,6 @@ public class FinanceReport extends BaseEntity {
     private String remark;
 
     // Getter and Setter methods
-    public Long getReportId() { return reportId; }
-    public void setReportId(Long reportId) { this.reportId = reportId; }
 
     public String getReportName() { return reportName; }
     public void setReportName(String reportName) { this.reportName = reportName; }
@@ -221,4 +220,16 @@ public class FinanceReport extends BaseEntity {
 
     public String getRemark() { return remark; }
     public void setRemark(String remark) { this.remark = remark; }
+
+    // 为BaseEntity的isDeleted字段提供JPQL可访问的属性名
+    @Transient
+    public Boolean getIsDeleted() {
+        return super.getDeleted();
+    }
+
+    // 重写getDeleted方法以确保其在JPQL查询中可用
+    @Override
+    public Boolean getDeleted() {
+        return super.getDeleted();
+    }
 }

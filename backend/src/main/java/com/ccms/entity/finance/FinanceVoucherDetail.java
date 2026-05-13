@@ -14,13 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "finance_voucher_detail")
 public class FinanceVoucherDetail extends BaseEntity {
 
-    /**
-     * 主键ID
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+
 
     /**
      * 凭证ID

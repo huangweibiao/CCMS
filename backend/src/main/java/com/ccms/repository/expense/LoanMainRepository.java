@@ -29,11 +29,7 @@ public interface LoanMainRepository extends JpaRepository<LoanMain, Long> {
      */
     List<LoanMain> findByLoanUserId(Long loanUserId);
     
-    /**
-     * 根据借款人ID查询借款单列表
-     * 添加findByUserId方法以兼容代码
-     */
-    List<LoanMain> findByUserId(Long userId);
+
 
     /**
      * 根据借款人ID查询借款单列表（分页）
@@ -58,14 +54,15 @@ public interface LoanMainRepository extends JpaRepository<LoanMain, Long> {
                                         @Param("endDate") LocalDate endDate);
 
     /**
-     * 查询借款余额大于0的借款单
+     * 查询借款余额大于指定值的借款单
      */
-    List<LoanMain> findByBalanceAmountGreaterThan(BigDecimal zero);
+    @Query("SELECT lm FROM LoanMain lm WHERE (lm.loanAmount - lm.repaidAmount) > :amount")
+    List<LoanMain> findByBalanceGreaterThan(@Param("amount") BigDecimal amount);
 
     /**
      * 查询指定借款人未还清的借款单
      */
-    @Query("SELECT lm FROM LoanMain lm WHERE lm.loanUserId = :userId AND lm.balanceAmount > 0")
+    @Query("SELECT lm FROM LoanMain lm WHERE lm.loanUserId = :userId AND (lm.loanAmount - lm.repaidAmount) > 0")
     List<LoanMain> findUnpaidLoansByUserId(@Param("userId") Long userId);
 
     /**
@@ -88,7 +85,7 @@ public interface LoanMainRepository extends JpaRepository<LoanMain, Long> {
     /**
      * 统计指定借款人的未还余额
      */
-    @Query("SELECT SUM(lm.balanceAmount) FROM LoanMain lm WHERE lm.loanUserId = :userId")
+    @Query("SELECT SUM(lm.loanAmount - lm.repaidAmount) FROM LoanMain lm WHERE lm.loanUserId = :userId")
     BigDecimal sumBalanceAmountByUserId(@Param("userId") Long userId);
 
     /**
@@ -104,19 +101,19 @@ public interface LoanMainRepository extends JpaRepository<LoanMain, Long> {
     /**
      * 查询待还款的借款单（状态为1-借款中且余额大于0）
      */
-    @Query("SELECT lm FROM LoanMain lm WHERE lm.status = 1 AND lm.balanceAmount > 0")
+    @Query("SELECT lm FROM LoanMain lm WHERE lm.status = 1 AND (lm.loanAmount - lm.repaidAmount) > 0")
     List<LoanMain> findPendingRepaymentLoans();
 
     /**
      * 查询所有未还清的借款单（余额大于0）
      */
-    @Query("SELECT lm FROM LoanMain lm WHERE lm.balanceAmount > 0")
+    @Query("SELECT lm FROM LoanMain lm WHERE (lm.loanAmount - lm.repaidAmount) > 0")
     List<LoanMain> findUnpaidLoans();
 
     /**
      * 查询指定部门未还清的借款单
      */
-    @Query("SELECT lm FROM LoanMain lm WHERE lm.loanDeptId = :deptId AND lm.balanceAmount > 0")
+    @Query("SELECT lm FROM LoanMain lm WHERE lm.loanDeptId = :deptId AND (lm.loanAmount - lm.repaidAmount) > 0")
     List<LoanMain> findUnpaidLoansByDeptId(@Param("deptId") Long deptId);
 
     /**

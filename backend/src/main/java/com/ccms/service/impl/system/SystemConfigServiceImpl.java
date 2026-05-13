@@ -164,12 +164,12 @@ public class SystemConfigServiceImpl implements SystemConfigService {
 
     @Override
     public List<SystemConfig> getAllEnabledConfigs() {
-        return systemConfigRepository.findByEnabledTrueOrderByConfigTypeAscCreatedTimeDesc();
+        return systemConfigRepository.findByEnabledTrueOrderByConfigTypeAscCreateTimeDesc();
     }
 
     @Override
     public List<SystemConfig> getConfigsByType(SystemConfig.ConfigType configType) {
-        return systemConfigRepository.findByConfigTypeAndEnabledTrueOrderByCreatedTimeDesc(configType);
+        return systemConfigRepository.findByConfigTypeAndEnabledTrueOrderByCreateTimeDesc(configType);
     }
 
     @Override

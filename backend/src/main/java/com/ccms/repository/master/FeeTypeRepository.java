@@ -25,7 +25,7 @@ public interface FeeTypeRepository extends JpaRepository<FeeType, Long>, JpaSpec
     /**
      * 根据状态查询费用类型，按排序号排序
      */
-    List<FeeType> findByStatusOrderBySortNoAsc(Integer status);
+    List<FeeType> findByStatusOrderBySortOrderAsc(Integer status);
 
     /**
      * 根据费用类型编码查询
@@ -35,47 +35,47 @@ public interface FeeTypeRepository extends JpaRepository<FeeType, Long>, JpaSpec
     /**
      * 根据预算控制标记查询
      */
-    List<FeeType> findByBudgetControlFlag(Integer budgetControlFlag);
+    List<FeeType> findByBudgetControl(Integer budgetControl);
 
     /**
      * 根据发票需求标记查询
      */
-    List<FeeType> findByInvoiceRequireFlag(Integer invoiceRequireFlag);
+    List<FeeType> findByNeedInvoice(Integer needInvoice);
 
     /**
      * 根据类别和状态查询，按排序号排序
      */
-    List<FeeType> findByCategoryAndStatusOrderBySortNo(Integer category, Integer status);
+    List<FeeType> findByCategoryAndStatusOrderBySortOrder(Integer category, Integer status);
 
     /**
-     * 获取所有费用类型并按parent_id和sort_no排序
+     * 获取所有费用类型并按parent_id和sort_order排序
      */
-    @Query("SELECT ft FROM FeeType ft ORDER BY COALESCE(ft.parentId, 0), ft.sortNo")
-    List<FeeType> findAllOrderByParentIdAndSortNo();
+    @Query("SELECT ft FROM FeeType ft ORDER BY COALESCE(ft.parentId, 0), ft.sortOrder")
+    List<FeeType> findAllOrderByParentIdAndSortOrder();
 
     /**
      * 批量更新预算控制标记
      */
     @Modifying
-    @Query("UPDATE FeeType ft SET ft.budgetControlFlag = :budgetControlFlag, ft.updateTime = CURRENT_TIMESTAMP WHERE ft.id IN :ids")
-    void batchUpdateBudgetControlFlag(@Param("ids") List<Long> ids, @Param("budgetControlFlag") Integer budgetControlFlag);
+    @Query("UPDATE FeeType ft SET ft.budgetControl = :budgetControl, ft.updateTime = CURRENT_TIMESTAMP WHERE ft.id IN :ids")
+    void batchUpdateBudgetControl(@Param("ids") List<Long> ids, @Param("budgetControl") Integer budgetControl);
 
     /**
      * 批量更新发票需求标记
      */
     @Modifying
-    @Query("UPDATE FeeType ft SET ft.invoiceRequireFlag = :invoiceRequireFlag, ft.updateTime = CURRENT_TIMESTAMP WHERE ft.id IN :ids")
-    void batchUpdateInvoiceRequireFlag(@Param("ids") List<Long> ids, @Param("invoiceRequireFlag") Integer invoiceRequireFlag);
+    @Query("UPDATE FeeType ft SET ft.needInvoice = :needInvoice, ft.updateTime = CURRENT_TIMESTAMP WHERE ft.id IN :ids")
+    void batchUpdateNeedInvoice(@Param("ids") List<Long> ids, @Param("needInvoice") Integer needInvoice);
 
     /**
      * 根据父级ID查询子类型
      */
-    List<FeeType> findByParentIdOrderBySortNo(Long parentId);
+    List<FeeType> findByParentIdOrderBySortOrder(Long parentId);
 
     /**
      * 查询根级费用类型（parent_id为null）
      */
-    List<FeeType> findByParentIdIsNullOrderBySortNo();
+    List<FeeType> findByParentIdIsNullOrderBySortOrder();
 
     /**
      * 检查费用类型编码是否存在

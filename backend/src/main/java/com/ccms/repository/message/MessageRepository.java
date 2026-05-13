@@ -22,7 +22,7 @@ public interface MessageRepository extends BaseRepository<Message, Long> {
     
     List<Message> findByBusinessTypeAndBusinessId(String businessType, Long businessId);
     
-    List<Message> findByReceiverIdAndStatus(String receiverId, String status);
+    List<Message> findByReceiverIdAndStatus(Long receiverId, String status);
     
     @Query("SELECT COUNT(m) FROM Message m WHERE m.receiverId = :receiverId AND m.read = false")
     Long countUnreadMessages(@Param("receiverId") Long receiverId);

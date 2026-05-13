@@ -20,18 +20,18 @@ public interface SysPermissionRepository extends JpaRepository<SysPermission, Lo
     /**
      * 根据权限编码查询权限
      * 
-     * @param permissionCode 权限编码
+     * @param permCode 权限编码
      * @return 权限信息
      */
-    Optional<SysPermission> findByPermissionCode(String permissionCode);
+    Optional<SysPermission> findByPermCode(String permCode);
 
     /**
      * 根据权限名称查询权限
      * 
-     * @param permissionName 权限名称
+     * @param permName 权限名称
      * @return 权限信息
      */
-    Optional<SysPermission> findByPermissionName(String permissionName);
+    Optional<SysPermission> findByPermName(String permName);
 
     /**
      * 根据父权限ID查询子权限列表
@@ -44,17 +44,17 @@ public interface SysPermissionRepository extends JpaRepository<SysPermission, Lo
     /**
      * 根据权限类型查询权限列表
      * 
-     * @param permissionType 权限类型：0-菜单，1-按钮，2-接口
+     * @param permType 权限类型：1-菜单，2-按钮，3-接口
      * @return 权限列表
      */
-    List<SysPermission> findByPermissionType(Integer permissionType);
+    List<SysPermission> findByPermType(Integer permType);
 
     /**
      * 查询所有可用的权限列表
      * 
      * @return 可用权限列表
      */
-    @Query("SELECT p FROM SysPermission p WHERE p.status = 1 ORDER BY p.sort ASC")
+    @Query("SELECT p FROM SysPermission p ORDER BY p.sortOrder ASC")
     List<SysPermission> findAllActivePermissions();
 
     /**
@@ -63,7 +63,7 @@ public interface SysPermissionRepository extends JpaRepository<SysPermission, Lo
      * @param roleId 角色ID
      * @return 权限列表
      */
-    @Query("SELECT p FROM SysPermission p JOIN SysRolePermission rp ON p.id = rp.permissionId WHERE rp.roleId = :roleId AND p.status = 1 ORDER BY p.sort ASC")
+    @Query("SELECT p FROM SysPermission p JOIN SysRolePermission rp ON p.id = rp.permissionId WHERE rp.roleId = :roleId ORDER BY p.sortOrder ASC")
     List<SysPermission> findByRoleId(@Param("roleId") Long roleId);
 
     /**
@@ -75,7 +75,7 @@ public interface SysPermissionRepository extends JpaRepository<SysPermission, Lo
     @Query("SELECT DISTINCT p FROM SysPermission p " +
            "JOIN SysRolePermission rp ON p.id = rp.permissionId " +
            "JOIN SysUserRole ur ON rp.roleId = ur.roleId " +
-           "WHERE ur.userId = :userId AND p.status = 1")
+           "WHERE ur.userId = :userId")
     List<SysPermission> findByUserId(@Param("userId") Long userId);
 
     /**
@@ -83,14 +83,8 @@ public interface SysPermissionRepository extends JpaRepository<SysPermission, Lo
      * 
      * @return 树形权限列表
      */
-    @Query("SELECT p FROM SysPermission p WHERE p.parentId = 0 AND p.status = 1 ORDER BY p.sort ASC")
+    @Query("SELECT p FROM SysPermission p WHERE p.parentId = 0 ORDER BY p.sortOrder ASC")
     List<SysPermission> findRootPermissions();
 
-    /**
-     * 根据权限路径查询权限
-     * 
-     * @param permissionPath 权限路径
-     * @return 权限信息
-     */
-    Optional<SysPermission> findByPermissionPath(String permissionPath);
+
 }

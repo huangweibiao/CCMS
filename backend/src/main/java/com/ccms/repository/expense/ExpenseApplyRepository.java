@@ -33,8 +33,9 @@ public interface ExpenseApplyRepository extends BaseRepository<ExpenseApply, Lon
     @Query("SELECT COUNT(ea) FROM ExpenseApply ea WHERE ea.applyUserId = :userId AND ea.status = :status")
     Long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") Integer status);
     
-    // 添加缺失的方法
-    List<ExpenseApply> findByUserId(Long userId);
+    // 使用现有的applyUserId字段替代userId查询
+    @Query("SELECT ea FROM ExpenseApply ea WHERE ea.applyUserId = :userId")
+    List<ExpenseApply> findByUserId(@Param("userId") Long userId);
     
     // 添加缺失的统计方法
     @Query("SELECT COUNT(ea) FROM ExpenseApply ea WHERE ea.status = :status AND ea.currentApproverId = :approverId")

@@ -20,9 +20,9 @@ public interface DataDictRepository extends JpaRepository<DataDict, Long> {
     Optional<DataDict> findByDictTypeAndDictCode(String dictType, String dictCode);
 
     /**
-     * 根据字典类型查找启用的字典项
+     * 根据字典类型和状态查找字典项
      */
-    List<DataDict> findByDictTypeAndStatusOrderBySortOrderAsc(String dictType);
+    List<DataDict> findByDictTypeAndStatusOrderBySortOrderAsc(String dictType, Integer status);
 
     /**
      * 根据字典类型查找所有字典项

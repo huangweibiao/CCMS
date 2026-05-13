@@ -22,12 +22,12 @@ public interface SystemConfigRepository extends JpaRepository<SystemConfig, Long
     /**
      * 根据配置类型查找启用的配置
      */
-    List<SystemConfig> findByConfigTypeAndEnabledTrueOrderByCreatedTimeDesc(SystemConfig.ConfigType configType);
+    List<SystemConfig> findByConfigTypeAndEnabledTrueOrderByCreateTimeDesc(SystemConfig.ConfigType configType);
 
     /**
      * 查找所有启用的配置
      */
-    List<SystemConfig> findByEnabledTrueOrderByConfigTypeAscCreatedTimeDesc();
+    List<SystemConfig> findByEnabledTrueOrderByConfigTypeAscCreateTimeDesc();
 
     /**
      * 检查配置键是否已存在（忽略指定ID）

@@ -21,10 +21,10 @@ public interface BudgetMainRepository extends JpaRepository<BudgetMain, Long> {
     /**
      * 根据预算编码查询预算
      * 
-     * @param budgetCode 预算编码
+     * @param budgetNo 预算编码
      * @return 预算信息
      */
-    Optional<BudgetMain> findByBudgetCode(String budgetCode);
+    Optional<BudgetMain> findByBudgetNo(String budgetNo);
 
     /**
      * 根据部门ID查询预算列表
@@ -37,10 +37,10 @@ public interface BudgetMainRepository extends JpaRepository<BudgetMain, Long> {
     /**
      * 根据预算周期查询预算列表
      * 
-     * @param budgetCycle 预算周期：0-月度，1-季度，2-半年度，3-年度
+     * @param budgetPeriod 预算周期：MONTH-月度，QUARTER-季度，YEAR-年度
      * @return 预算列表
      */
-    List<BudgetMain> findByBudgetCycle(Integer budgetCycle);
+    List<BudgetMain> findByBudgetPeriod(String budgetPeriod);
 
     /**
      * 根据预算状态查询预算列表
@@ -88,12 +88,12 @@ public interface BudgetMainRepository extends JpaRepository<BudgetMain, Long> {
     BigDecimal calculateTotalBudgetAmountByDeptAndYear(@Param("deptId") Long deptId, @Param("year") Integer year);
 
     /**
-     * 检查预算编码是否存在
+     * 根据预算编码查询是否已存在相同编码的预算
      * 
-     * @param budgetCode 预算编码
+     * @param budgetNo 预算编码
      * @return 是否存在
      */
-    boolean existsByBudgetCode(String budgetCode);
+    boolean existsByBudgetNo(String budgetNo);
 
     /**
      * 查询所有审批中的预算
@@ -103,12 +103,12 @@ public interface BudgetMainRepository extends JpaRepository<BudgetMain, Long> {
     List<BudgetMain> findByStatusAndApprovalStatus(Integer status, Integer approvalStatus);
 
     /**
-     * 根据创建人ID查询预算列表
+     * 根据创建用户ID查询预算列表
      * 
-     * @param createUserId 创建人ID
+     * @param createBy 创建用户ID
      * @return 预算列表
      */
-    List<BudgetMain> findByCreateUserId(Long createUserId);
+    List<BudgetMain> findByCreateBy(Long createBy);
 
     /**
      * 更新预算状态

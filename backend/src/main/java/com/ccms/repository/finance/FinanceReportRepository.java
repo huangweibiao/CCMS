@@ -28,7 +28,7 @@ public interface FinanceReportRepository extends BaseRepository<FinanceReport, L
      * @param reportType 报表类型
      * @return 报表列表
      */
-    @Query("SELECT r FROM FinanceReport r WHERE r.reportType = :reportType AND r.isDeleted = false ORDER BY r.createTime DESC")
+    @Query("SELECT r FROM FinanceReport r WHERE r.reportType = :reportType AND r.deleted = false ORDER BY r.createTime DESC")
     List<FinanceReport> findActiveReportsByType(@Param("reportType") FinanceReportType reportType);
 
     /**
@@ -36,7 +36,7 @@ public interface FinanceReportRepository extends BaseRepository<FinanceReport, L
      * @param reportPeriod 报表周期
      * @return 报表列表
      */
-    @Query("SELECT r FROM FinanceReport r WHERE r.reportPeriod = :reportPeriod AND r.isDeleted = false ORDER BY r.createTime DESC")
+    @Query("SELECT r FROM FinanceReport r WHERE r.reportPeriod = :reportPeriod AND r.deleted = false ORDER BY r.createTime DESC")
     List<FinanceReport> findReportsByPeriod(@Param("reportPeriod") FinanceReportPeriod reportPeriod);
 
     /**
@@ -45,7 +45,7 @@ public interface FinanceReportRepository extends BaseRepository<FinanceReport, L
      * @param endDate 结束日期
      * @return 报表列表
      */
-    @Query("SELECT r FROM FinanceReport r WHERE r.reportDate BETWEEN :startDate AND :endDate AND r.isDeleted = false ORDER BY r.reportDate DESC")
+    @Query("SELECT r FROM FinanceReport r WHERE r.reportDate BETWEEN :startDate AND :endDate AND r.deleted = false ORDER BY r.reportDate DESC")
     List<FinanceReport> findReportsByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
     /**
@@ -54,7 +54,7 @@ public interface FinanceReportRepository extends BaseRepository<FinanceReport, L
      * @param endDate 结束日期
      * @return 报表数量
      */
-    @Query("SELECT COUNT(r) FROM FinanceReport r WHERE r.reportDate BETWEEN :startDate AND :endDate AND r.isDeleted = false")
+    @Query("SELECT COUNT(r) FROM FinanceReport r WHERE r.reportDate BETWEEN :startDate AND :endDate AND r.deleted = false")
     Long countReportsByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
     /**
@@ -83,14 +83,14 @@ public interface FinanceReportRepository extends BaseRepository<FinanceReport, L
      * @param reportName 报表名称
      * @return 报表列表
      */
-    @Query("SELECT r FROM FinanceReport r WHERE r.reportName LIKE %:reportName% AND r.isDeleted = false ORDER BY r.createTime DESC")
+    @Query("SELECT r FROM FinanceReport r WHERE r.reportName LIKE %:reportName% AND r.deleted = false ORDER BY r.createTime DESC")
     List<FinanceReport> findByReportNameLike(@Param("reportName") String reportName);
 
     /**
      * 查询待审核的报表
      * @return 待审核报表列表
      */
-    @Query("SELECT r FROM FinanceReport r WHERE r.approvalStatus = 0 AND r.isDeleted = false ORDER BY r.createTime DESC")
+    @Query("SELECT r FROM FinanceReport r WHERE r.approvalStatus = 0 AND r.deleted = false ORDER BY r.createTime DESC")
     List<FinanceReport> findPendingApprovalReports();
 
     /**
@@ -98,7 +98,7 @@ public interface FinanceReportRepository extends BaseRepository<FinanceReport, L
      * @param generationStatus 生成状态
      * @return 报表列表
      */
-    @Query("SELECT r FROM FinanceReport r WHERE r.generationStatus = 1 AND r.isDeleted = false ORDER BY r.createTime DESC")
+    @Query("SELECT r FROM FinanceReport r WHERE r.generationStatus = 1 AND r.deleted = false ORDER BY r.createTime DESC")
     List<FinanceReport> findGeneratedReports();
 
     /**
@@ -106,7 +106,7 @@ public interface FinanceReportRepository extends BaseRepository<FinanceReport, L
      * @param reportType 报表类型
      * @return 报表数量
      */
-    @Query("SELECT COUNT(r) FROM FinanceReport r WHERE r.reportType = :reportType AND r.isDeleted = false")
+    @Query("SELECT COUNT(r) FROM FinanceReport r WHERE r.reportType = :reportType AND r.deleted = false")
     Long countByReportType(@Param("reportType") FinanceReportType reportType);
 
     /**

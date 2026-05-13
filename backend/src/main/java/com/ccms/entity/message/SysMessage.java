@@ -127,6 +127,17 @@ public class SysMessage extends BaseEntity {
         this.readTime = readTime;
     }
 
+    // 为readStatus查询提供映射，实际上指向isRead字段
+    @Transient
+    public Integer getReadStatus() {
+        return this.isRead;
+    }
+
+    @Transient
+    public void setReadStatus(Integer readStatus) {
+        this.isRead = readStatus;
+    }
+
     @Override
     public String toString() {
         return "SysMessage{" +

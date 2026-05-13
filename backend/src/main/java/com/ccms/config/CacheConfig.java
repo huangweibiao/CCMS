@@ -84,9 +84,13 @@ public class CacheConfig {
         // 根据环境配置选择缓存管理器
         String env = System.getProperty("spring.profiles.active", "dev");
         
-        if ("prod".equals(env) || "staging".equals(env)) {
+        // 检查Redis是否启用（通过检查是否有Redis连接工厂）
+        boolean redisEnabled = (redisConnectionFactory != null);
+        
+        if (("prod".equals(env) || "staging".equals(env)) && redisEnabled) {
             return redisCacheManager(redisConnectionFactory);
         } else {
+            // 如果Redis未启用，使用内存缓存管理器
             return memoryCacheManager();
         }
     }

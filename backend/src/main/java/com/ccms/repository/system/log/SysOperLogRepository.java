@@ -23,7 +23,7 @@ public interface SysOperLogRepository extends JpaRepository<SysOperLog, Long> {
      * @param operUserId 操作人ID
      * @return 日志列表
      */
-    List<SysOperLog> findByOperUserId(Long operUserId);
+    List<SysOperLog> findByOperUserId(String operUserId);
 
     /**
      * 根据操作模块查询日志
@@ -47,7 +47,7 @@ public interface SysOperLogRepository extends JpaRepository<SysOperLog, Long> {
      * @param businessId 业务ID
      * @return 日志列表
      */
-    List<SysOperLog> findByBusinessId(Long businessId);
+    List<SysOperLog> findByBusinessId(String businessId);
 
     /**
      * 查询指定时间范围内的日志
@@ -61,11 +61,11 @@ public interface SysOperLogRepository extends JpaRepository<SysOperLog, Long> {
     /**
      * 查询最近的操作日志
      * 
-     * @param days 天数
+     * @param startTime 开始时间
      * @return 日志列表
      */
-    @Query("SELECT sol FROM SysOperLog sol WHERE sol.operTime >= CURRENT_DATE - :days ORDER BY sol.operTime DESC")
-    List<SysOperLog> findRecentOperLogs(@Param("days") Integer days);
+    @Query("SELECT sol FROM SysOperLog sol WHERE sol.operTime >= :startTime ORDER BY sol.operTime DESC")
+    List<SysOperLog> findRecentOperLogs(@Param("startTime") LocalDateTime startTime);
 
     /**
      * 统计用户的操作次数
@@ -75,7 +75,7 @@ public interface SysOperLogRepository extends JpaRepository<SysOperLog, Long> {
      * @param endTime 结束时间
      * @return 操作次数
      */
-    Long countByOperUserIdAndOperTimeBetween(Long operUserId, LocalDateTime startTime, LocalDateTime endTime);
+    Long countByOperUserIdAndOperTimeBetween(String operUserId, LocalDateTime startTime, LocalDateTime endTime);
 
     /**
      * 查询模块操作频率统计
@@ -93,8 +93,8 @@ public interface SysOperLogRepository extends JpaRepository<SysOperLog, Long> {
      * @param expireDays 过期天数
      */
     @org.springframework.data.jpa.repository.Modifying
-    @Query("DELETE FROM SysOperLog sol WHERE sol.operTime < CURRENT_DATE - :expireDays")
-    void deleteExpiredLogs(@Param("expireDays") Integer expireDays);
+    @Query("DELETE FROM SysOperLog sol WHERE sol.operTime < :expireTime")
+    void deleteExpiredLogs(@Param("expireTime") LocalDateTime expireTime);
 
     /**
      * 根据操作IP查询日志
@@ -112,5 +112,5 @@ public interface SysOperLogRepository extends JpaRepository<SysOperLog, Long> {
      * @return 日志列表
      */
     @Query("SELECT sol FROM SysOperLog sol WHERE sol.operUserId = :operUserId ORDER BY sol.operTime DESC LIMIT :limit")
-    List<SysOperLog> findRecentOpsByUser(@Param("operUserId") Long operUserId, @Param("limit") Integer limit);
+    List<SysOperLog> findRecentOpsByUser(@Param("operUserId") String operUserId, @Param("limit") Integer limit);
 }

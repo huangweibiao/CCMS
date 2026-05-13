@@ -46,7 +46,7 @@ public class MessageController {
         Page<SysMessage> messagePage;
 
         if (messageType != null && isRead != null) {
-            List<SysMessage> all = sysMessageRepository.findByReceiverIdAndReadStatus(null, isRead);
+            List<SysMessage> all = sysMessageRepository.findByReceiverIdAndIsRead(null, isRead);
             List<SysMessage> filtered = all.stream()
                     .filter(m -> messageType.equals(m.getMessageType()))
                     .toList();
@@ -59,7 +59,7 @@ public class MessageController {
             int end = Math.min(start + size, list.size());
             messagePage = new PageImpl<>(list.subList(start, end), pageRequest, list.size());
         } else if (isRead != null) {
-            List<SysMessage> list = sysMessageRepository.findByReadStatus(isRead);
+            List<SysMessage> list = sysMessageRepository.findByIsRead(isRead);
             int start = Math.min(page * size, list.size());
             int end = Math.min(start + size, list.size());
             messagePage = new PageImpl<>(list.subList(start, end), pageRequest, list.size());
@@ -112,7 +112,7 @@ public class MessageController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"));
-        List<SysMessage> unreadMessages = sysMessageRepository.findByReceiverIdAndReadStatus(userId, 0);
+        List<SysMessage> unreadMessages = sysMessageRepository.findByReceiverIdAndIsRead(userId, 0);
 
         int start = Math.min(page * size, unreadMessages.size());
         int end = Math.min(start + size, unreadMessages.size());
@@ -159,7 +159,7 @@ public class MessageController {
     @PutMapping("/user/{userId}/read-all")
     @Transactional
     public ResponseEntity<Map<String, Object>> markAllMessagesAsRead(@PathVariable Long userId) {
-        List<SysMessage> unreadMessages = sysMessageRepository.findByReceiverIdAndReadStatus(userId, 0);
+        List<SysMessage> unreadMessages = sysMessageRepository.findByReceiverIdAndIsRead(userId, 0);
         LocalDateTime now = LocalDateTime.now();
         for (SysMessage message : unreadMessages) {
             message.setIsRead(1);
@@ -199,8 +199,8 @@ public class MessageController {
 
         List<SysMessage> userMessages = sysMessageRepository.findByReceiverId(userId);
         long totalCount = userMessages.size();
-        long unreadCount = sysMessageRepository.countByReceiverIdAndReadStatus(userId, 0);
-        long readCount = sysMessageRepository.countByReceiverIdAndReadStatus(userId, 1);
+        long unreadCount = sysMessageRepository.countByReceiverIdAndIsRead(userId, 0);
+        long readCount = sysMessageRepository.countByReceiverIdAndIsRead(userId, 1);
 
         long todoCount = userMessages.stream().filter(m -> Integer.valueOf(1).equals(m.getMessageType())).count();
         long reminderCount = userMessages.stream().filter(m -> Integer.valueOf(2).equals(m.getMessageType())).count();
