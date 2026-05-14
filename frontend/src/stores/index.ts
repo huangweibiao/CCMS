@@ -7,5 +7,5 @@ const pinia = createPinia()
 
 export default pinia
 
-export * from './user'
+export * from './auth'
 export * from './permission'

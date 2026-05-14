@@ -357,6 +357,8 @@
                     <include>**/*.p12</include>
                     <include>**/*.jks</include>
                     <include>**/*.sql</include>
+                    <include>static/**</include>
+                    <include>static/**/*</include>
                 </includes>
             </resource>
             <resource>

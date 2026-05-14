@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import { useUserStore } from '@/stores/user'
+import { useAuthStore } from '@/stores/auth'
 import { usePermissionStore } from '@/stores/permission'
 import { authApi } from '@/api/auth'
 
@@ -39,9 +39,9 @@ class HttpClient {
     this.instance.interceptors.request.use(
       (config) => {
         // 添加认证token
-        const userStore = useUserStore()
-        if (userStore.token) {
-          config.headers.Authorization = `Bearer ${userStore.token}`
+        const authStore = useAuthStore()
+        if (authStore.token) {
+          config.headers.Authorization = `Bearer ${authStore.token}`
         }
         
         // 添加请求时间戳，防止缓存
@@ -169,22 +169,22 @@ class HttpClient {
     isRefreshing = true
 
     try {
-      const userStore = useUserStore()
+      const authStore = useAuthStore()
       
       // 尝试刷新token
       const response = await authApi.refreshToken()
       
       if (response.data.code === 200) {
         // 更新token
-        userStore.token = response.data.data.token
-        localStorage.setItem('ccms_token', userStore.token)
+        authStore.token = response.data.data.token
+        authStore.persist()
         
         // 重新执行待处理的请求
         requests.forEach(callback => callback())
         requests = []
         
         // 重新发送当前请求
-        error.config.headers.Authorization = `Bearer ${userStore.token}`
+        error.config.headers.Authorization = `Bearer ${authStore.token}`
         return this.instance(error.config)
       } else {
         // 刷新token失败，强制登出
@@ -204,11 +204,11 @@ class HttpClient {
    * 强制用户登出
    */
   private forceLogout(message: string) {
-    const userStore = useUserStore()
+    const authStore = useAuthStore()
     const permissionStore = usePermissionStore()
     
     // 清除状态
-    userStore.logout()
+    authStore.clear()
     permissionStore.reset()
     
     // 显示登出提示

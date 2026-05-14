@@ -2,10 +2,10 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { MenuTree, PermissionState, UserPermission, PermissionResult, MenuItem } from '@/types/permission'
 import { permissionApi } from '@/api/permission'
-import { useUserStore } from './user'
+import { useAuthStore } from './auth'
 
 export const usePermissionStore = defineStore('permission', () => {
-  const userStore = useUserStore()
+  const authStore = useAuthStore()
   
   // 状态定义
   const menuTree = ref<MenuTree[]>([])
@@ -103,7 +103,7 @@ export const usePermissionStore = defineStore('permission', () => {
    * 加载用户权限数据
    */
   const loadUserPermissions = async (): Promise<void> => {
-    if (!userStore.isAuthenticated) {
+    if (!authStore.token) {
       throw new Error('未登录用户无法加载权限')
     }
     
@@ -169,7 +169,7 @@ export const usePermissionStore = defineStore('permission', () => {
     if (!hasLoadedPermissions.value) return false
     
     // 管理员拥有所有权限
-    if (userStore.isAdmin || userStore.isSuperAdmin) return true
+    // FIXME: 需要检查如何判断用户是否为管理员或超级管理员
     
     const checkSinglePermission = (code: string): boolean => {
       // 检查权限集合
@@ -235,8 +235,8 @@ export const usePermissionStore = defineStore('permission', () => {
       await loadUserPermissions()
       
       // 从用户store获取角色信息
-      if (userStore.userInfo?.roles) {
-        roles.value = userStore.userInfo.roles
+      if (authStore.user?.roles) {
+        roles.value = authStore.user.roles
       }
     } catch (error) {
       throw error
@@ -299,7 +299,7 @@ export const usePermissionStore = defineStore('permission', () => {
    * 检查权限并缓存结果
    */
   const checkPermissionWithCache = async (permissionCode: string): Promise<boolean> => {
-    if (!userStore.isAuthenticated) return false
+    if (!authStore.token) return false
     
     // 检查缓存
     const cachedResult = permissionCache.value.get(permissionCode)

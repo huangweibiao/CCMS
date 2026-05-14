@@ -2,7 +2,8 @@ package com.ccms.config;
 
 import com.ccms.security.JwtAuthenticationFilter;
 import com.ccms.security.JwtAuthenticationEntryPoint;
-import com.ccms.service.UserService;
+import com.ccms.security.JwtTokenProvider;
+import com.ccms.security.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,17 +35,21 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
-    private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final CustomUserDetailsService userDetailsService;
 
     @Autowired
-    public SecurityConfig(JwtAuthenticationEntryPoint unauthorizedHandler, UserService userService) {
+    public SecurityConfig(JwtAuthenticationEntryPoint unauthorizedHandler, 
+                         JwtTokenProvider jwtTokenProvider,
+                         CustomUserDetailsService userDetailsService) {
         this.unauthorizedHandler = unauthorizedHandler;
-        this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(userService);
+        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
     }
 
     @Bean
@@ -69,7 +74,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/").permitAll()
                 .requestMatchers(HttpMethod.GET, "/index.html").permitAll()
                 .requestMatchers(HttpMethod.GET, "/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/auth/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
@@ -77,19 +82,25 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/error").permitAll()
                 
-                // 前端页面和静态资源
-                .requestMatchers(HttpMethod.GET, "/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/static/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/css/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/js/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/fonts/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/assets/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
-                .requestMatchers(HttpMethod.GET, "/logo*.png").permitAll()
-                .requestMatchers(HttpMethod.GET, "/*.txt").permitAll()
-                .requestMatchers(HttpMethod.GET, "/index").permitAll()
+                // 前端页面和静态资源 - 精确匹配以阻止潜在的重定向循环
+                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/static/**").permitAll()
+                .requestMatchers("/css/**").permitAll()
+                .requestMatchers("/js/**").permitAll()
+                .requestMatchers("/images/**").permitAll()
+                .requestMatchers("/fonts/**").permitAll()
+                .requestMatchers("/assets/**").permitAll()
+                .requestMatchers("/favicon.ico").permitAll()
+                .requestMatchers("/logo*.png").permitAll()
+                .requestMatchers("/*.txt").permitAll()
+                .requestMatchers("/index").permitAll()
+                
+                // SPA前端路由
+                .requestMatchers(HttpMethod.GET, "/dashboard").permitAll()
+                .requestMatchers(HttpMethod.GET, "/expense").permitAll()
+                .requestMatchers(HttpMethod.GET, "/budget").permitAll()
+                .requestMatchers(HttpMethod.GET, "/approval").permitAll()
+                .requestMatchers(HttpMethod.GET, "/report").permitAll()
                 
                 // 需要认证的其他接口
                 .anyRequest().authenticated()

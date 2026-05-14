@@ -126,28 +126,17 @@ const router = createRouter({
   routes
 })
 
-// 简化路由守卫
-router.beforeEach((to, from, next) => {
-  // 如果目标路由需要认证，检查登录状态
-  if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      // 未登录，重定向到登录页
-      next('/login')
-      return
-    }
+import { useAuthStore } from '@/stores/auth'
+
+router.beforeEach((to) => {
+  const auth = useAuthStore()
+  if (to.path !== '/login' && !auth.token) {
+    return '/login'
   }
-  
-  // 如果已经在登录页且已登录，重定向到首页
-  if (to.path === '/login') {
-    const token = localStorage.getItem('token')
-    if (token) {
-      next('/')
-      return
-    }
+  if (to.path === '/login' && auth.token) {
+    return '/'
   }
-  
-  next()
+  return true
 })
 
 export default router

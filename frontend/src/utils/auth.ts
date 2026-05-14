@@ -1,4 +1,4 @@
-import { useUserStore } from '@/stores/user'
+import { useAuthStore } from '@/stores/auth'
 
 /**
  * 认证工具类
@@ -11,15 +11,14 @@ export class AuthUtil {
    * @param permission 权限标识
    */
   static hasPermission(permission: string): boolean {
-    const userStore = useUserStore()
-    if (!userStore.userInfo) return false
+    const authStore = useAuthStore()
+    if (!authStore.user) return false
     
     // 管理员拥有所有权限
-    if (userStore.isAdmin) return true
+    if (authStore.user.role === 'admin') return true
     
     // 根据用户角色判断权限
-    // 这里可以根据实际需求扩展权限检查逻辑
-    const userRole = userStore.userInfo.role
+    const userRole = authStore.user.role
     
     // 示例权限检查逻辑
     const rolePermissions: Record<string, string[]> = {
@@ -39,8 +38,8 @@ export class AuthUtil {
    */
   static canAccessRoute(routeMeta: any): boolean {
     if (routeMeta.requiresAdmin) {
-      const userStore = useUserStore()
-      return userStore.isAdmin
+      const authStore = useAuthStore()
+      return authStore.user?.role === 'admin'
     }
     
     if (routeMeta.requiredPermission) {
@@ -54,8 +53,8 @@ export class AuthUtil {
    * 初始化认证状态
    */
   static initAuth(): void {
-    const userStore = useUserStore()
-    userStore.initFromStorage()
+    const authStore = useAuthStore()
+    // auth store的状态已经通过localStorage自动初始化
   }
   
   /**
@@ -63,8 +62,8 @@ export class AuthUtil {
    * 实现JWT令牌的完整验证，包括格式、过期时间和签名验证
    */
   static isTokenValid(): boolean {
-    const userStore = useUserStore()
-    const token = userStore.token
+    const authStore = useAuthStore()
+    const token = authStore.token
     
     // 基本验证
     if (!token) {
@@ -84,7 +83,7 @@ export class AuthUtil {
       // 验证过期时间
       if (payload.exp && Date.now() >= payload.exp * 1000) {
         console.warn('Token已过期，自动清除')
-        userStore.clearAuth()
+        authStore.clear()
         return false
       }
       
@@ -102,7 +101,7 @@ export class AuthUtil {
       }
       
       // 验证sub（主题）- 用户ID
-      if (!payload.sub || !userStore.userInfo || payload.sub !== userStore.userInfo.id.toString()) {
+      if (!payload.sub || !authStore.user || payload.sub !== authStore.user.id.toString()) {
         console.warn('Token用户信息不匹配')
         return false
       }
@@ -123,22 +122,22 @@ export class AuthUtil {
    * @param roles 角色名称数组
    */
   static hasRole(roles: string[]): boolean {
-    const userStore = useUserStore()
-    if (!userStore.userInfo) return false
-    return roles.includes(userStore.userInfo.role)
+    const authStore = useAuthStore()
+    if (!authStore.user) return false
+    return roles.includes(authStore.user.role)
   }
   
   /**
    * 获取用户可访问的路由列表
    */
   static getAccessibleRoutes(): any[] {
-    const userStore = useUserStore()
-    if (!userStore.userInfo) return []
+    const authStore = useAuthStore()
+    if (!authStore.user) return []
     
     // 这里可以返回用户有权限访问的路由列表
     // 示例逻辑：管理员可访问所有路由，普通用户只能访问部分
     const allRoutes = []
-    if (userStore.isAdmin) {
+    if (authStore.user.role === 'admin') {
       return allRoutes // 返回所有路由
     }
     
@@ -149,7 +148,7 @@ export class AuthUtil {
       user: ['dashboard', 'expense-apply/*', 'expense-reimburse/*']
     }
     
-    const userRole = userStore.userInfo.role
+    const userRole = authStore.user.role
     return allRoutes.filter((route: any) => {
       const routeName = route.name as string
       const allowedRoutes = roleRoutes[userRole] || []
@@ -167,7 +166,7 @@ export class AuthUtil {
    */
   static setupAuthGuard(router: any): void {
     router.beforeEach((to: any, from: any, next: any) => {
-      const userStore = useUserStore()
+      const authStore = useAuthStore()
       
       // 设置页面标题
       if (to.meta.title) {
@@ -175,13 +174,13 @@ export class AuthUtil {
       }
       
       // 如果需要认证但未登录，跳转到登录页
-      if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+      if (to.meta.requiresAuth && !authStore.token) {
         next('/login')
         return
       }
       
       // 如果已登录但尝试访问登录页，跳转到首页
-      if (to.path === '/login' && userStore.isAuthenticated) {
+      if (to.path === '/login' && authStore.token) {
         next('/dashboard')
         return
       }

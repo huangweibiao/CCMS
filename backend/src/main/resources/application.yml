@@ -8,6 +8,17 @@ app:
   name: CCMS
   version: 1.0.0
   description: 企业级费控管理系统
+  # JWT配置
+  jwt:
+    secret: ccms-jwt-secret-key-2024-changeme-in-production
+    expiration: 86400000  # 24小时
+    prefix: "Bearer "
+    header: "Authorization"
+  # 安全配置
+  security:
+    anonymous-paths: "/api/auth/login,/api/auth/register,/api/auth/refresh,/api/auth/logout,/api/public/**"
+    require-permission-paths: "/api/admin/**"
+    require-role-paths: "/api/super-admin/**"
 
 # 日志配置
 logging:

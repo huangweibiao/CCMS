@@ -74,7 +74,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { useAuthStore } from '@/stores/auth'
 import { AuthUtil } from '@/utils/auth'
 import { 
   House, 
@@ -91,7 +91,7 @@ import {
 
 const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
+const authStore = useAuthStore()
 
 // 侧边栏折叠状态
 const isCollapse = ref(false)
