@@ -162,6 +162,66 @@ public class AuthController {
     }
 
     /**
+     * 校验菜单权限
+     */
+    @PostMapping("/check-menu-permission")
+    public ResponseEntity<Map<String, Boolean>> checkMenuPermission(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> request) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        String menuCode = request.get("menuCode");
+        boolean hasPermission = userService.checkMenuPermission(token, menuCode);
+        Map<String, Boolean> result = new HashMap<>();
+        result.put("hasPermission", hasPermission);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 获取用户菜单树
+     */
+    @GetMapping("/menu-tree")
+    public ResponseEntity<List<Map<String, Object>>> getMenuTree(
+            @RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        List<Map<String, Object>> menuTree = userService.getUserMenuTree(token);
+        return ResponseEntity.ok(menuTree);
+    }
+
+    /**
+     * 获取用户菜单列表
+     */
+    @GetMapping("/menu-list")
+    public ResponseEntity<List<Map<String, Object>>> getMenuList(
+            @RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        List<Map<String, Object>> menuList = userService.getUserMenuList(token);
+        return ResponseEntity.ok(menuList);
+    }
+
+    /**
+     * 获取用户所有权限标识
+     */
+    @GetMapping("/permission-codes")
+    public ResponseEntity<List<String>> getPermissionCodes(
+            @RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        List<String> permissionCodes = userService.getUserPermissionCodes(token);
+        return ResponseEntity.ok(permissionCodes);
+    }
+
+    /**
      * 验证令牌有效性
      */
     @GetMapping("/validate")

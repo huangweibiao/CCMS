@@ -8,6 +8,9 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import App from './App.vue'
 import router from './router'
 
+// 权限系统相关导入
+import { installPermissionDirectives } from '@/directives/permission'
+
 // 全局样式
 import './assets/css/index.css'
 
@@ -27,6 +30,9 @@ app.use(router)
 app.use(ElementPlus, {
   locale: zhCn,
 })
+
+// 注册权限指令
+installPermissionDirectives(app)
 
 // 挂载应用
 app.mount('#app')

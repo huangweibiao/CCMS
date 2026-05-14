@@ -15,8 +15,10 @@ export const useUserStore = defineStore('user', () => {
   // 计算属性
   const isAuthenticated = computed(() => !!token.value)
   const isAdmin = computed(() => userInfo.value?.role === 'admin')
+  const isSuperAdmin = computed(() => userInfo.value?.role === 'super_admin')
   const userName = computed(() => userInfo.value?.userName || '')
   const deptName = computed(() => userInfo.value?.deptName || '')
+  const roles = computed(() => userInfo.value?.roles || [])
   
   // Actions
   /**
@@ -90,6 +92,47 @@ export const useUserStore = defineStore('user', () => {
       logout()
     }
   }
+
+  /**
+   * 检查token是否过期
+   */
+  const checkTokenExpiry = (): boolean => {
+    if (!token.value) return true
+    
+    // 简化的token过期检查
+    try {
+      const payload = JSON.parse(atob(token.value.split('.')[1]))
+      const currentTime = Date.now() / 1000
+      return payload.exp < currentTime
+    } catch {
+      return true
+    }
+  }
+
+  /**
+   * 刷新token
+   */
+  const refreshToken = async (): Promise<void> => {
+    try {
+      const response = await authApi.refreshToken()
+      token.value = response.data.token
+      localStorage.setItem('ccms_token', token.value)
+    } catch (error) {
+      console.error('刷新token失败:', error)
+      logout()
+    }
+  }
+
+  /**
+   * 加载用户信息
+   */
+  const loadUserInfo = async (): Promise<void> => {
+    try {
+      await refreshUserInfo()
+    } catch (error) {
+      throw error
+    }
+  }
   
   return {
     // State
@@ -99,13 +142,18 @@ export const useUserStore = defineStore('user', () => {
     // Getters
     isAuthenticated,
     isAdmin,
+    isSuperAdmin,
     userName,
     deptName,
+    roles,
     
     // Actions
     login,
     logout,
     initFromStorage,
-    refreshUserInfo
+    refreshUserInfo,
+    checkTokenExpiry,
+    refreshToken,
+    loadUserInfo
   }
 })

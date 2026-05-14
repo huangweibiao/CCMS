@@ -111,4 +111,59 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT u.status, COUNT(u) FROM User u WHERE u.department.id = :departmentId GROUP BY u.status")
     List<Object[]> countByStatusAndDepartment(@Param("departmentId") Long departmentId);
+
+    /**
+     * 根据用户ID查询用户的菜单权限列表
+     */
+    @Query("SELECT DISTINCT m FROM User u " +
+           "JOIN u.roles r " +
+           "JOIN com.ccms.entity.system.permission.RoleMenu rm ON r.id = rm.roleId " +
+           "JOIN com.ccms.entity.system.permission.Menu m ON rm.menuId = m.id " +
+           "WHERE u.id = :userId AND m.status = 1 AND m.visible = true " +
+           "ORDER BY m.sortOrder ASC")
+    List<Object[]> findUserMenus(@Param("userId") Long userId);
+
+    /**
+     * 根据用户ID查询用户的权限代码列表
+     */
+    @Query("SELECT DISTINCT m.permissionCode FROM User u " +
+           "JOIN u.roles r " +
+           "JOIN com.ccms.entity.system.permission.RoleMenu rm ON r.id = rm.roleId " +
+           "JOIN com.ccms.entity.system.permission.Menu m ON rm.menuId = m.id " +
+           "WHERE u.id = :userId AND m.status = 1 AND m.permissionCode IS NOT NULL")
+    List<String> findUserPermissionCodes(@Param("userId") Long userId);
+
+    /**
+     * 查询用户有权限访问的菜单路径
+     */
+    @Query("SELECT DISTINCT m.path FROM User u " +
+           "JOIN u.roles r " +
+           "JOIN com.ccms.entity.system.permission.RoleMenu rm ON r.id = rm.roleId " +
+           "JOIN com.ccms.entity.system.permission.Menu m ON rm.menuId = m.id " +
+           "WHERE u.id = :userId AND m.status = 1 AND m.path IS NOT NULL")
+    List<String> findUserAllowedPaths(@Param("userId") Long userId);
+
+    /**
+     * 检查用户是否有特定菜单权限
+     */
+    @Query("SELECT COUNT(m) > 0 FROM User u " +
+           "JOIN u.roles r " +
+           "JOIN com.ccms.entity.system.permission.RoleMenu rm ON r.id = rm.roleId " +
+           "JOIN com.ccms.entity.system.permission.Menu m ON rm.menuId = m.id " +
+           "WHERE u.id = :userId AND m.status = 1 AND (m.permissionCode = :permissionCode OR m.path = :path)")
+    boolean hasUserPermission(@Param("userId") Long userId, 
+                              @Param("permissionCode") String permissionCode, 
+                              @Param("path") String path);
+
+    /**
+     * 查询用户的角色代码列表
+     */
+    @Query("SELECT DISTINCT r.roleCode FROM User u JOIN u.roles r WHERE u.id = :userId AND r.status = 1")
+    List<String> findUserRoleCodes(@Param("userId") Long userId);
+
+    /**
+     * 查询用户收藏的菜单列表
+     */
+    @Query("SELECT m FROM User u JOIN u.menus m WHERE u.id = :userId AND m.status = 1 ORDER BY m.sortOrder ASC")
+    List<Object[]> findUserFavoriteMenus(@Param("userId") Long userId);
 }

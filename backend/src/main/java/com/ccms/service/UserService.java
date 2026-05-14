@@ -222,4 +222,37 @@ public interface UserService {
      * @return 用户信息
      */
     Map<String, Object> getUserProfileByToken(String token);
+
+    /**
+     * 获取用户菜单权限树
+     *
+     * @param token 访问令牌
+     * @return 菜单权限树
+     */
+    List<Map<String, Object>> getUserMenuTree(String token);
+
+    /**
+     * 获取用户菜单列表（平铺格式）
+     *
+     * @param token 访问令牌
+     * @return 菜单列表
+     */
+    List<Map<String, Object>> getUserMenuList(String token);
+
+    /**
+     * 检查用户对菜单的访问权限
+     *
+     * @param token 访问令牌
+     * @param menuCode 菜单编码
+     * @return 是否有访问权限
+     */
+    boolean checkMenuPermission(String token, String menuCode);
+
+    /**
+     * 获取用户所有权限标识
+     *
+     * @param token 访问令牌
+     * @return 权限标识列表
+     */
+    List<String> getUserPermissionCodes(String token);
 }

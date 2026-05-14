@@ -13,13 +13,36 @@ app:
 logging:
   level:
     com.ccms: INFO
+    # 权限系统详细日志
+    com.ccms.controller.system: DEBUG
+    com.ccms.service.impl: DEBUG
+    com.ccms.service.UserService: DEBUG
+    com.ccms.service.impl.UserServiceImpl: DEBUG
+    com.ccms.controller.system.AuthController: DEBUG
+    com.ccms.controller.system.PermissionController: DEBUG
+    com.ccms.controller.system.UserController: DEBUG
+    com.ccms.controller.system.MenuController: DEBUG
+    com.ccms.controller.system.RoleController: DEBUG
+    
     org.springframework.security: INFO
     org.hibernate.SQL: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
   file:
     name: logs/ccms.log
   pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg [userId=%X{userId},sessionId=%X{sessionId}]%n"
+    
+# 权限系统监控配置
+monitoring:
+  permission:
+    # 权限验证响应时间阈值（毫秒）
+    validation-timeout-ms: 500
+    # 登录失败告警阈值（次数）
+    login-failure-alert-threshold: 5
+    # 权限变更记录保留天数
+    permission-change-logs-retention-days: 90
+    # 菜单访问日志级别
+    menu-access-log-level: INFO
 
 # CORS跨域配置（分环境配置）
 cors:

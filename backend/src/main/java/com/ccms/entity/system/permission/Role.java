@@ -4,10 +4,9 @@ import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
 
 /**
- * 角色表实体类
- * 对应表名：sys_role
- * 
- * @author 系统生成
+ * 角色实体类
+ * 对应表名：ccms_sys_role
+ * 基于D:\\aitols\\base-app项目的权限体系进行标准化
  */
 @Entity
 @Table(name = "ccms_sys_role")
@@ -48,6 +47,12 @@ public class Role extends BaseEntity {
      */
     @Column(name = "permissions", length = 2000)
     private String permissions;
+    
+    /**
+     * 角色所属数据范围，便于数据权限控制
+     */
+    @Column(name = "data_permission", length = 100)
+    private String dataPermission;
 
     // Getters and Setters
     public String getRoleCode() {
@@ -98,6 +103,14 @@ public class Role extends BaseEntity {
         this.permissions = permissions;
     }
 
+    public String getDataPermission() {
+        return dataPermission;
+    }
+
+    public void setDataPermission(String dataPermission) {
+        this.dataPermission = dataPermission;
+    }
+
     @Override
     public String toString() {
         return "Role{" +
@@ -111,5 +124,12 @@ public class Role extends BaseEntity {
                 ", createTime=" + getCreateTime() +
                 ", updateTime=" + getUpdateTime() +
                 '}';
+    }
+
+    /**
+     * 检查是否是超级管理员角色
+     */
+    public boolean isSuperAdmin() {
+        return "SUPER_ADMIN".equals(this.roleCode);
     }
 }

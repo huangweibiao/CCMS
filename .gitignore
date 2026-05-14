@@ -147,5 +147,7 @@ ui-tests/allure-results/
 
 # Comate specs
 .comate/
+.idea/
+.vscode/
 
 uploads/

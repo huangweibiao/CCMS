@@ -2,6 +2,7 @@ package com.ccms.entity.system.user;
 
 import com.ccms.entity.system.dept.Department;
 import com.ccms.entity.system.permission.Role;
+import com.ccms.entity.system.permission.Menu;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -74,6 +75,16 @@ public class User {
                inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    /**
+     * 用户直接关联的菜单（快捷方式或收藏菜单）
+     */
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "sys_user_menu",
+               joinColumns = @JoinColumn(name = "user_id"),
+               inverseJoinColumns = @JoinColumn(name = "menu_id"))
+    private Set<Menu> menus = new HashSet<>();
+
     @Column(length = 20)
     private String phone;
 
@@ -132,6 +143,10 @@ public class User {
 
     public Department getDepartment() { return department; }
     public void setDepartment(Department department) { this.department = department; }
+    
+    public Long getDeptId() { 
+        return department != null ? department.getId() : null; 
+    }
 
     public User getLeader() { return leader; }
     public void setLeader(User leader) { this.leader = leader; }
@@ -141,6 +156,9 @@ public class User {
 
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
+
+    public Set<Menu> getMenus() { return menus; }
+    public void setMenus(Set<Menu> menus) { this.menus = menus; }
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
@@ -241,5 +259,15 @@ public class User {
      */
     public boolean hasRole(String roleCode) {
         return getRoleCodes().contains(roleCode);
+    }
+    
+    /**
+     * 获取用户主角色（如果有多个角色，返回第一个）
+     */
+    public Role getRole() {
+        if (roles != null && !roles.isEmpty()) {
+            return roles.iterator().next();
+        }
+        return null;
     }
 }

@@ -2,128 +2,132 @@ package com.ccms.entity.system.permission;
 
 import com.ccms.entity.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 /**
- * 系统菜单实体类
+ * 菜单实体类
+ * 对应表名：ccms_sys_menu
+ * 基于D:\aitols\base-app项目的权限体系进行标准化
  */
 @Entity
 @Table(name = "ccms_sys_menu")
 public class Menu extends BaseEntity {
 
-    @NotBlank
-    @Size(max = 100)
+    /**
+     * 菜单名称
+     */
+    @Column(name = "menu_name", length = 64, nullable = false)
     private String menuName;
-
-    @Size(max = 100)
-    private String menuCode;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private Menu parent;
-
+    
+    /**
+     * 菜单类型：DIR-目录 MENU-菜单 BUTTON-按钮
+     */
+    @Column(name = "menu_type", length = 20, nullable = false)
     private String menuType;
-
-    @Size(max = 200)
-    private String menuUrl;
-
-    @Size(max = 100)
-    private String menuIcon;
-
+    
+    /**
+     * 路由路径
+     */
+    @Column(name = "path", length = 200)
+    private String path;
+    
+    /**
+     * 组件路径
+     */
+    @Column(name = "component", length = 200)
     private String component;
-
-    private String perms;
-
-    private String target;
-
+    
+    /**
+     * 权限标识
+     */
+    @Column(name = "permission_code", length = 100)
+    private String permissionCode;
+    
+    /**
+     * 图标
+     */
+    @Column(name = "icon", length = 100)
+    private String icon;
+    
+    /**
+     * 排序
+     */
+    @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
-
-    private boolean visible = true;
-
-    private boolean enabled = true;
-
-    private boolean isFrame = false;
-
-    private Integer level = 1;
+    
+    /**
+     * 是否可见
+     */
+    @Column(name = "visible", nullable = false)
+    private Boolean visible = true;
+    
+    /**
+     * 状态：0-禁用 1-启用
+     */
+    @Column(name = "status", nullable = false, columnDefinition = "tinyint default 1")
+    private Integer status = 1;
+    
+    /**
+     * 父菜单ID
+     */
+    @Column(name = "parent_id", nullable = false, columnDefinition = "bigint default 0")
+    private Long parentId = 0L;
+    
+    /**
+     * 菜单备注
+     */
+    @Column(name = "remark", length = 500)
+    private String remark;
 
     // 构造器
     public Menu() {}
 
-    public Menu(String menuName, String menuCode, String menuType) {
+    public Menu(String menuName, String menuType, String path, Integer sortOrder) {
         this.menuName = menuName;
-        this.menuCode = menuCode;
         this.menuType = menuType;
+        this.path = path;
+        this.sortOrder = sortOrder;
     }
 
     // Getters and Setters
     public String getMenuName() { return menuName; }
     public void setMenuName(String menuName) { this.menuName = menuName; }
 
-    public String getMenuCode() { return menuCode; }
-    public void setMenuCode(String menuCode) { this.menuCode = menuCode; }
-
-    public Menu getParent() { return parent; }
-    public void setParent(Menu parent) { this.parent = parent; }
-
     public String getMenuType() { return menuType; }
     public void setMenuType(String menuType) { this.menuType = menuType; }
 
-    public String getMenuUrl() { return menuUrl; }
-    public void setMenuUrl(String menuUrl) { this.menuUrl = menuUrl; }
-
-    public String getMenuIcon() { return menuIcon; }
-    public void setMenuIcon(String menuIcon) { this.menuIcon = menuIcon; }
+    public String getPath() { return path; }
+    public void setPath(String path) { this.path = path; }
 
     public String getComponent() { return component; }
     public void setComponent(String component) { this.component = component; }
 
-    public String getPerms() { return perms; }
-    public void setPerms(String perms) { this.perms = perms; }
+    public String getPermissionCode() { return permissionCode; }
+    public void setPermissionCode(String permissionCode) { this.permissionCode = permissionCode; }
 
-    public String getTarget() { return target; }
-    public void setTarget(String target) { this.target = target; }
+    public String getIcon() { return icon; }
+    public void setIcon(String icon) { this.icon = icon; }
 
     public Integer getSortOrder() { return sortOrder; }
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
 
-    public boolean isVisible() { return visible; }
-    public void setVisible(boolean visible) { this.visible = visible; }
+    public Boolean getVisible() { return visible; }
+    public void setVisible(Boolean visible) { this.visible = visible; }
 
-    public boolean isEnabled() { return enabled; }
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public Integer getStatus() { return status; }
+    public void setStatus(Integer status) { this.status = status; }
 
-    public boolean isFrame() { return isFrame; }
-    public void setFrame(boolean frame) { isFrame = frame; }
+    public Long getParentId() { return parentId; }
+    public void setParentId(Long parentId) { this.parentId = parentId; }
 
-    public Integer getLevel() { return level; }
-    public void setLevel(Integer level) { this.level = level; }
+    public String getRemark() { return remark; }
+    public void setRemark(String remark) { this.remark = remark; }
     
     /**
-     * 获取菜单完整路径
+     * 检查是否是目录
      */
     @Transient
-    public String getFullPath() {
-        if (parent == null) {
-            return menuName;
-        }
-        return parent.getFullPath() + "/" + menuName;
-    }
-    
-    /**
-     * 检查是否是一级菜单
-     */
-    @Transient
-    public boolean isTopMenu() {
-        return parent == null;
-    }
-    
-    /**
-     * 检查是否是按钮权限
-     */
-    @Transient
-    public boolean isButton() {
-        return "BUTTON".equals(menuType);
+    public boolean isDir() {
+        return "DIR".equals(menuType);
     }
     
     /**
@@ -135,10 +139,42 @@ public class Menu extends BaseEntity {
     }
     
     /**
-     * 检查是否有权限
+     * 检查是否是按钮权限
+     */
+    @Transient
+    public boolean isButton() {
+        return "BUTTON".equals(menuType);
+    }
+    
+    /**
+     * 检查是否是一级菜单
+     */
+    @Transient
+    public boolean isTopMenu() {
+        return parentId == 0L || parentId == null;
+    }
+    
+    /**
+     * 检查是否有权限标识
      */
     @Transient
     public boolean hasPermission() {
-        return perms != null && !perms.trim().isEmpty();
+        return permissionCode != null && !permissionCode.trim().isEmpty();
+    }
+    
+    /**
+     * 检查菜单是否激活
+     */
+    @Transient
+    public boolean isActive() {
+        return status != null && status == 1;
+    }
+    
+    /**
+     * 检查菜单是否可见
+     */
+    @Transient
+    public boolean isVisibleMenu() {
+        return visible != null && visible && isActive();
     }
 }
