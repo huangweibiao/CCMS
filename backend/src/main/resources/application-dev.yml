@@ -67,8 +67,13 @@ init:
 management:
   endpoint:
     health:
+      show-details: never
+      show-components: always
       probes:
         enabled: false
+  health:
+    redis:
+      enabled: true
 
 # 开发环境特殊配置
 dev:
