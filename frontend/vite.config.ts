@@ -1,156 +1,94 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { resolve } from 'path'
-import { createHtmlPlugin } from 'vite-plugin-html'
-import { visualizer } from 'rollup-plugin-visualizer'
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  
-  const isProduction = mode === 'production'
-  const isDevelopment = mode === 'development'
-  const isAnalyze = mode === 'analyze'
-  
-  const plugins = [
+export default defineConfig({
+  plugins: [
     vue(),
-    createHtmlPlugin({
-      minify: isProduction,
-      inject: {
-        data: {
-          title: env.VITE_APP_TITLE || '企业级费控管理系统',
-          description: env.VITE_APP_DESCRIPTION || 'Corporate Cost Management System'
-        }
-      }
-    })
-  ]
-  
-  // 生产环境添加包分析插件
-  if (isAnalyze) {
-    plugins.push(
-      visualizer({
-        filename: './dist/bundle-analysis.html',
-        open: true,
-        gzipSize: true,
-        brotliSize: true
-      })
-    )
-  }
-  
-  return {
-    plugins,
-    
-    // 基础路径配置（前后端不分离部署，使用相对路径）
-    base: './',
-    
-    // 路径别名配置
-    resolve: {
-      alias: {
-        '@': resolve(__dirname, 'src'),
-        '@components': resolve(__dirname, 'src/components'),
-        '@views': resolve(__dirname, 'src/views'),
-        '@utils': resolve(__dirname, 'src/utils'),
-        '@api': resolve(__dirname, 'src/api'),
-        '@stores': resolve(__dirname, 'src/stores')
-      }
-    },
-    
-    // 开发服务器配置
-    server: {
-      port: parseInt(env.VITE_PORT) || 3000,
-      host: env.VITE_HOST || 'localhost',
-      open: isDevelopment,
-      cors: true,
-      proxy: {
-        '/api': {
-          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
-          changeOrigin: true,
-          secure: false,
-          rewrite: (path) => path.replace(/^\/api/, '')
-        }
-      }
-    },
-    
-    // 预览服务器配置
-    preview: {
-      port: 4173,
-      host: 'localhost',
-      cors: true
-    },
-    
-    // 优化依赖预构建
-    optimizeDeps: {
-      include: [
+    // 自动导入组件和API
+    AutoImport({
+      resolvers: [ElementPlusResolver()],
+      imports: [
         'vue',
         'vue-router',
-        'pinia',
-        'element-plus',
-        '@element-plus/icons-vue',
-        'echarts',
-        'axios',
-        'dayjs'
+        'pinia'
       ],
-      exclude: []
-    },
-    
-    // 构建配置
-    build: {
-      outDir: '../backend/src/main/resources/static',
-      assetsDir: 'assets',
-      sourcemap: isProduction ? 'hidden' : false,
-      minify: isProduction ? 'terser' : false,
-      terserOptions: {
-        compress: {
-          drop_console: isProduction,
-          drop_debugger: isProduction
-        }
-      },
-      rollupOptions: {
-        output: {
-          chunkFileNames: 'js/[name]-[hash].js',
-          entryFileNames: 'js/[name]-[hash].js',
-          assetFileNames: (assetInfo) => {
-            const extType = assetInfo.name.split('.').pop()
-            if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-              return 'img/[name]-[hash][extname]'
-            }
-            if (/woff|woff2|eot|ttf|otf/i.test(extType)) {
-              return 'fonts/[name]-[hash][extname]'
-            }
-            return '[ext]/[name]-[hash][extname]'
-          },
-          manualChunks: {
-            vendor: ['vue', 'vue-router', 'pinia'],
-            'ui-core': ['element-plus', '@element-plus/icons-vue'],
-            charts: ['echarts'],
-            utils: ['axios', 'dayjs']
-          }
-        }
-      },
-      // 大文件警告阈值（KB）
-      chunkSizeWarningLimit: 1000
-    },
-    
-    // CSS配置
-    css: {
-      preprocessorOptions: {
-      scss: {
-          additionalData: `@use "@/styles/variables.scss" as *;`
-        }
-      }
-    },
-    
-    // 环境变量前缀
-    envPrefix: 'VITE_',
-    
-    // 测试配置
-    test: {
-      globals: true,
-      environment: 'jsdom',
-      setupFiles: ['./src/test/setup.ts'],
-      coverage: {
-        reporter: ['text', 'json', 'html'],
-        exclude: ['src/test/**', '**/*.d.ts']
+      dts: 'src/auto-imports.d.ts'
+    }),
+    Components({
+      resolvers: [ElementPlusResolver()],
+      dts: 'src/components.d.ts'
+    })
+  ],
+  
+  // 基础路径配置
+  base: './',
+  
+  // 路径别名配置
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@views': resolve(__dirname, 'src/views'),
+      '@utils': resolve(__dirname, 'src/utils'),
+      '@api': resolve(__dirname, 'src/api'),
+      '@stores': resolve(__dirname, 'src/stores')
+    }
+  },
+  
+  // 开发服务器配置
+  server: {
+    port: 3000,
+    host: 'localhost',
+    cors: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
       }
     }
+  },
+  
+  // 预览服务器配置
+  preview: {
+    port: 3000,
+    host: 'localhost',
+    cors: true
+  },
+  
+  // 优化依赖预构建
+  optimizeDeps: {
+    include: [
+      'vue',
+      'vue-router',
+      'pinia',
+      'element-plus',
+      '@element-plus/icons-vue'
+    ]
+  },
+  
+  // 构建配置
+  build: {
+    outDir: '../backend/src/main/resources/static',
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    rollupOptions: {
+      output: {
+        chunkFileNames: 'js/[name]-[hash].js',
+        entryFileNames: 'js/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]'
+      }
+    },
+    chunkSizeWarningLimit: 1000
   }
 })

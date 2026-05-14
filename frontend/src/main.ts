@@ -15,24 +15,53 @@ import { installPermissionDirectives } from '@/directives/permission'
 import './assets/css/index.css'
 
 /**
- * Vue应用实例创建和配置
+ * Vue应用启动函数
  */
-const app = createApp(App)
+const startApp = () => {
+  const app = createApp(App)
 
-// 注册Element Plus图标
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
+  try {
+    // 注册Element Plus图标
+    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+      app.component(key, component)
+    }
+
+    // 使用插件
+    app.use(createPinia())
+    app.use(router)
+    app.use(ElementPlus, {
+      locale: zhCn,
+    })
+
+    // 注册权限指令（条件性注册，避免依赖错误）
+    try {
+      installPermissionDirectives(app)
+      console.log('权限指令注册成功')
+    } catch (directiveError) {
+      console.warn('权限指令注册失败，但应用继续启动:', directiveError)
+    }
+
+    // 挂载应用
+    app.mount('#app')
+    
+    console.log('CCMS应用启动成功')
+  } catch (error) {
+    console.error('CCMS应用启动失败:', error)
+    // 显示友好的错误提示
+    const appContainer = document.getElementById('app')
+    if (appContainer) {
+      appContainer.innerHTML = `
+        <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+          <h2>应用启动失败</h2>
+          <p>请刷新页面重试或联系技术支持</p>
+          <p style="color: #666; font-size: 14px;">错误信息: ${error}</p>
+        </div>
+      `
+    }
+  }
 }
 
-// 使用插件
-app.use(createPinia())
-app.use(router)
-app.use(ElementPlus, {
-  locale: zhCn,
+// 应用启动
+document.addEventListener('DOMContentLoaded', () => {
+  startApp()
 })
-
-// 注册权限指令
-installPermissionDirectives(app)
-
-// 挂载应用
-app.mount('#app')
